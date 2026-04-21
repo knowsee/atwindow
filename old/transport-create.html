@@ -1,0 +1,941 @@
+<style>
+  .layui-col-space15>*{
+    padding: 0!important;
+  }
+  .layuimini-main .layui-card {
+    background-size: 100% 100%;
+    border-radius:9px;
+  }
+  .layui-col-xs12{
+    border-radius:10px;
+  }
+  /*.layuimini-main .layui-card2 {
+      min-height: 200px;
+      background-color: #fff;
+      background-size: 100% 100%;
+      border-radius:10px;
+      margin: 0px 0px 0px 24px;
+  }*/
+  .layuimini-main{
+    margin: 0!important;
+  }
+  .layui-card{
+    box-shadow: none;
+  }
+  .z_top{
+    margin-top:-12px;
+  }
+  .layui-card-header{
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 72px!important;
+  }
+  .one{
+    background: #F3F6FA;
+    border-radius: 12px;
+    margin: 20px 20px 20px 20px;
+    padding: 0 24px 20px 24px;
+  }
+  .layui-tab-content{
+    background-color: #fff;
+    background-size: 100% 100%;
+    border-radius:10px;
+    margin: 24px 24px 32px 24px;
+  }
+
+  .layui-layer-title{
+    background: #FFFFFF!important;
+    height: 57px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 57px;
+  }
+
+  .layui-form input{
+    border-radius: 8px!important;
+  }
+  .layui-input, .layui-select, .layui-textarea{
+    height: 42px;
+  }
+  .layui-col-space15{
+    margin: 0 !important;
+  }
+
+  .layui-layout-admin .layui-footer{
+    height: 62px!important;
+    margin-top: 20px!important;
+    background-color: #FFFFFF!important;
+  }
+  .footer .layui-btn{
+    width: 9%;
+    height: 38px;
+    background: #1890FF;
+    border-radius: 19px;
+    float: right;
+    margin-top: 12px;
+  }
+
+  .layui-form-label{
+    padding: 0!important;
+  }
+  .form-div{
+    padding-top: 20px;
+  }
+  .layui-form-item{
+    margin-bottom: 4px!important;
+  }
+  .tianjia_bg{
+    width: 64%;
+    height: 42px;
+    border-radius: 4px;
+    border: 1px dashed #D8E0E7;
+    margin-top: 16px;
+    text-align: center;
+    line-height: 42px;
+    color: #212529;
+    font-weight: 400;
+    font-size: 13px;
+  }
+  .tianjia_bg:hover{
+    width: 64%;
+    height: 42px;
+    border-radius: 4px;
+    border: 1px dashed #1890FF;
+    margin-top: 16px;
+    text-align: center;
+    line-height: 42px;
+    color: #1890FF;
+    font-weight: 400;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .back{
+    margin: 13px 0 -12px 24px;
+  }
+  .back a{
+    color: #1890FF;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .layui-tab-title{
+    height: 74px;
+    background-color: #fff;
+    background-size: 100% 100%;
+    border-radius:10px;
+    margin: 24px 24px 0px 24px;
+    padding-left: 24px;
+  }
+  .layui-tab-title{
+    border: none;
+  }
+  .layui-tab-title li {
+    color: #6C757D;
+    padding: 0 0!important;
+    min-width: 0!important;
+    text-align:left!important;
+    line-height: 65px;
+  }
+  .layui-tab-title .layui-this:after{
+    min-width: 0!important;
+    text-align:left!important;
+    border: none;
+    margin-top: 16px!important;
+    border-bottom: #1890FF 2px solid!important;
+  }
+  .excel{
+    opacity: 0;
+    height: 104px;
+    width: 104px;
+    position: absolute;
+    margin-top: -64px!important;
+    cursor: pointer;
+  }
+  .qm{display: none}
+</style>
+<script src="/js/check-token.js"></script>
+<form class="layui-form" lay-filter="form">
+  <div class="layuimini-container layui-anim layui-anim-upbit">
+    <div class="back">
+      <span><a href="/#/page/goods/transport-list.html">< <span language="ReturnOrderList"></span></a></span>
+    </div>
+
+    <div class="layui-tab" lay-filter="docDemoTabBrief">
+      <ul class="layui-tab-title">
+        <li class="layui-this"><a href="#/page/goods/transport-create.html"><span language="NewOrder"></span></a></li>
+        <li style="margin-left: 32px"><a href="#/page/goods/transport-create-batch.html"><span language="BulkNew"></span></a></li>
+      </ul>
+
+      <div class="layui-tab-content">
+        <div class="layui-tab-item layui-show">
+          <div class="layuimini-main">
+            <div class="layui-row layui-col-space15">
+              <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                  <div class="layui-card-header z_top">
+                    <span style="float: left"><div language="ShippingAddress"></div></span>
+                    <span style="float: right;color: #1890FF;font-size: 13px;cursor: pointer" id="chooseRecAddress"><span language="Selectdeliveryaddress"></span>&nbsp;&nbsp;<img src="/images/new/zuo.svg"></span>
+                  </div>
+                  <div class="layui-card-body1">
+                    <div class="one">
+                      <div class="layui-form-item" style="padding-top: 20px">
+                        <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="Nation"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="Name"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="provinceState"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="City"></span></label>
+                      </div>
+                      <div class="layui-form-item layui-hide">
+                        <input type="text" name="rec-people-id" autocomplete="off" class="layui-hide-sm">
+                        <input type="text" name="id" id="osrder_id" autocomplete="off" class="layui-hide-sm">
+                        <input type="text" name="fee" id="fee" value="0" autocomplete="off" class="layui-hide-sm">
+                      </div>
+                      <div class="layui-form-item box-item">
+                        <label class="layui-form-label" style="width: 20%">
+                          <select name="rec-people-country"  lay-verify="required" lay-search=""></select>
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="rec-people-name" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入姓名">
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="rec-people-province" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入省/州">
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="rec-people-city" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入城市">
+                        </label>
+                      </div>
+                      <div class="layui-form-item" style="padding-top: 10px">
+                        <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="Address1"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span language="Address2"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="PostCode"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="Telephone"></span></label>
+                      </div>
+                      <div class="layui-form-item box-item">
+                        <label class="layui-form-label" style="width: 20%">
+                          <input type="text" name="rec-people-address" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入地址">
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="rec-people-address2" autocomplete="off" class="layui-input" placeholder="非必填">
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="rec-people-postCode" lay-verify="required" autocomplete="off" class="layui-input" placeholder="12345-1234（不要有空格）">
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="rec-people-telephone" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请填写手机号">
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                  <div class="layui-card-header z_top"><span language="Shippingmethod"></span></div>
+                  <div class="layui-card-body1">
+                    <div class="one">
+                      <div class="layui-form-item" style="padding-top: 20px">
+                        <label class="layui-form-label" style="width: 25%"><span style="color:red;">*</span><span language="Shippingmethod"></span></label>
+                        <label class="layui-form-label" style="width: 10%; margin-left: 2%;"><span style="color:red;">*</span><span language="Shippingwarehouse"></span></label>
+                        <label class="layui-form-label" style="width: 10%; margin-left: 2%;"><span style="color:red;">*</span><span language="Shippingproduct"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="Ownordernumber"></span></label>
+                      </div>
+                      <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 25%;">
+                          <select name="transport_type" id="transport_type" lay-filter="transport_type" lay-verify="required">
+                            <option value="0">请选择</option>
+                            <option value="200">自提</option>
+                            <option value="29">USPS（非预上网）</option>
+                            <option value="27">USPS（T5）</option>
+                            <option value="56">Amazon</option>
+                            <option value="50">UPS Ground（限重1-150磅，2-6个工作日签收）</option>
+                          </select>
+                        </label>
+                        <label class="layui-form-label" style="width: 10%; margin-left: 2%;">
+                          <select name="warehouse_id" id="warehouse_id" lay-verify="required"></select>
+                        </label>
+                        <label class="layui-form-label" style="width: 10%; margin-left: 2%;">
+                          <select name="type" lay-verify="required">
+                            <option value="良品">良品</option>
+                            <option value="不良品">不良品</option>
+                          </select>
+                        </label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                          <input type="text" name="cankaohao" lay-verify="required" autocomplete="off" class="layui-input"  placeholder="不能少于15位">
+                        </label>
+                      </div>
+
+                      <div class="layui-form-item" style="padding-top: 20px">
+                        <label class="layui-form-label" style="width: 100%"> <span language="ztbq"></span></label>
+                      </div>
+                      <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 5%;">
+                          <button type="button" class="fnsku_btn_xb" style="cursor: pointer;width: 104px;height: 104px;background: #F2F2F2;border-radius: 4px;border: 1px solid #D8E0E7;">
+                            <img src="/images/new/plus.png" style="margin: 0px 40px 56px 40px">
+                            <p style="margin-top: -50px;font-size: 14px;font-weight: 400;color: #8FA0AE;"><span language="uploadfiles"></span></p>
+                          </button>
+                        </label>
+                      </div>
+                      <div class="layui-form-item" style="padding-top: 10px">
+                        <label class="layui-form-label" style="width: 42%">
+                          <span style="display: none;color:rgba(0, 0, 0, 0.45);" id="span"><span language="scdj"></span><a target="_blank" href="#" id="href" style="color: #1890FF"><span language="check"></span></a></span>
+                          <input type="text" name="fnsku_file_xb" class="layui-input layui-hide"/>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                  <div class="layui-card-header z_top"><span language="iteminformation"></span></div>
+                  <div class="layui-card-body1">
+                    <div class="one">
+                      <div class="layui-form-item" style="padding-top: 20px">
+                        <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span>SKU</label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="quantity"></span></label>
+                        <label class="layui-form-label" style="width: 20%; margin-left: 2%;"><span style="color:red;">*</span><span language="sbjz"></span></label>
+                      </div>
+                      <div class="pro-box box dapeng">
+                        <div class="layui-form-item skuArr">
+                          <!--<div class="layui-col-md1 layui-hide">
+                            <div class="layui-show-xs-block layui-hide-sm">ID</div>
+                            <input type="text" name="id" autocomplete="off" class="layui-input">
+                          </div>-->
+                          <label class="layui-form-label" style="width: 20%">
+                            <select name="en_sku" lay-filter="skuData" lay-verify="required" lay-search="">
+                            </select>
+                          </label>
+                          <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                            <input type="number" name="goods_num" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入sku数量">
+                          </label>
+                          <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+                            <input type="number" name="goods_value" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入申报价值">
+                          </label>
+                        </div>
+                      </div>
+                      <div class="tianjia_bg" id="addProBtn">
+                        + <span language="add"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                  <div class="layui-card-header z_top"><span language="ValueAddedServices"></span></div>
+                  <div class="layui-card-body1">
+                    <div class="one">
+                      <div class="layui-form-item" style="padding-top: 20px">
+                        <label class="layui-form-label" style="width: 20%"><span language="PackagingMaterials"></span></label>
+                        <label class="layui-form-label qm" style="width: 20%; margin-left: 2%;"><span language="Signatureservice"></span></label>
+                      </div>
+                      <div class="layui-form-item">
+                        <label class="layui-form-label" style="width: 20%;">
+                          <select name="carton_type" id="carton_type" lay-filter="carton_type" lay-verify="required">
+                            <option value="0">不需要</option>
+                            <option value="12">纸箱 - (15(in) * 15(in) * 24(in)) = 4$</option>
+                            <option value="19">纸箱 - (16(in) * 18(in) * 12(in)) = 4$</option>
+                            <option value="27">纸箱 - (16(in) * 12(in) * 6(in)) = 1.5$</option>
+                            <option value="20">纸箱 - (22(in) * 18(in) * 12(in)) = 5$</option>
+                            <option value="21">纸箱 - (24(in) * 18(in) * 12(in)) = 5$</option>
+                            <option value="22">气泡袋 - (28(cm) * 22(cm)) = 0.6$</option>
+                            <option value="23">气泡袋 - (23(cm) * 13(cm)) = 0.5$</option>
+                            <option value="24">快递袋 - (61(cm) * 61(cm)) = 0.6$</option>
+                            <option value="25">快递袋 - (34(cm) * 26(cm)) = 0.5$</option>
+                            <option value="26">快递袋 - (23(cm) * 16(cm)) = 0.4$</option>
+                          </select>
+                        </label>
+                        <label class="layui-form-label qm" style="width: 20%; margin-left: 2%;">
+                          <select name="signature_type" id="signature_type" lay-filter="signature_type" lay-verify="required">
+                            <option value="0">不需要</option>
+                            <option value="1">需要</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="layui-tab-item">
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div style="padding-bottom: 50px;"></div>
+  <div class="layui-footer footer footer-demo">
+    <a href="javascript:;" class="layui-btn layui-btn-normal" lay-submit lay-filter="submitBtn"><span language="placeorder"></span></a>
+    <!--<a href="javascript:;" class="layui-btn layui-btn-normal" lay-submit lay-filter="gusuan" id="gusuan" style="margin-right: 8px;background: #FFFFFF;border: 1px solid #1890FF;color: #1890FF;"><span language="Freightestimate"></span></a>-->
+  </div>
+</form>
+<div id="skuItem" style="display: none">
+  <div class="layui-form-item skuArr">
+    <label class="layui-form-label" style="width: 20%">
+      <select name="en_sku" lay-filter="skuData" lay-verify="required" lay-search="">
+      </select>
+    </label>
+    <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+      <input type="number" name="goods_num" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入sku数量">
+    </label>
+    <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+      <input type="number" name="goods_value" lay-verify="required" autocomplete="off" class="layui-input" placeholder="请输入申报价值">
+    </label>
+    <label class="layui-form-label" style="width: 10%; margin-left: 2%;">
+      <span style="cursor: pointer;height: 42px;line-height: 32px;" onclick="removeBox(this)"><img src="/images/new/del.png"></span>
+    </label>
+  </div>
+</div>
+
+<script>
+  //面包屑
+  /*$('.s_one').html('一件代发&nbsp;/&nbsp;订单列表&nbsp;/&nbsp;');
+  $('.s_two').html('新建订单');*/
+  var upload;
+  layui.use(['upload', 'table'], function() {
+    upload = layui.upload;
+    var table = layui.table;
+    var layIdx1;
+    var layIdx2;
+    form.render();
+    var type = getQueryString('type'); /* 创建 or 查看 or 修改 */
+    var id = getQueryString('id');
+    countryRec();
+    getSku();
+    initWarehouseList(3);
+    form.render();
+    form.on('select(transport_type)', function(formData){
+      if (formData.value == 60 || formData.value ==61){
+        $('.qm').show();
+      }else{
+        $('.qm').hide();
+      }
+    });
+
+    //获取sku
+    $("#addProBtn").click(function(){
+      var sourceDiv = $('#skuItem').html();
+      $('.dapeng').append(sourceDiv);
+      form.render();
+    });
+
+    /* 当前收件人信息 */
+    var recAddressCur = {};
+    uploadFile($('.fnsku_btn_xb')[0], null, null, function(
+            res,
+            index,
+            upload,
+            _this
+    ) {
+      if (res.code == 1) {
+        $('input[name=fnsku_file_xb]').val(res.data.file_url);
+        $('#span').show();
+        $('#href').attr('href','https://backend.atwindow.com/' + res.data.file_url);
+      }
+    });
+    function countryRec(cn_name){
+      $.ajax({
+        type: 'post',
+        url: common.queryCountry,
+        data: {
+          token: token
+        },
+        success: function(res) {
+          if (res.code == 1) {
+            var countryList = res.data;
+            $('select[name=rec-people-country]').html("<option value=''></option>");
+            countryList.forEach(function(item, idx) {
+              var name =
+                      item.short_name + ' - ' + item.en_name + ' - ' + item.cn_name;
+              if (cn_name == item.cn_name){
+                $('select[name=rec-people-country]').append(
+                        "<option value='" + item.cn_name + "' selected>" + name + '</option>'
+                );
+              }else{
+                $('select[name=rec-people-country]').append(
+                        "<option value='" + item.cn_name + "'>" + name + '</option>'
+                );
+              }
+
+            });
+
+            form.render();
+          } else {
+            layer.msg(res.msg);
+          }
+        },
+        error: function() {
+          layer.msg('请求国家失败');
+        }
+      });
+    }
+
+    function getSku(en_sku) {
+      //console.log(en_sku);
+      //return false;
+      $.ajax({
+        type: 'post',
+        url: common.skuDataTh,
+        data: {
+          token: token
+        },
+        success: function(res) {
+          if (res.code == 1) {
+            var skuData = res.data;
+            //console.log(skuData);
+            $('select[name=en_sku]').html("<option value=''>请选择</option>");
+            $.each(skuData,function(index,value){
+              if (en_sku == value.en_sku){
+                $('select[name=en_sku]').append(
+                        "<option value='" + value.en_sku + "' selected>" + value.en_sku + '(' + value.cn_name + ')</option>'
+                );
+              }else{
+                $('select[name=en_sku]').append(
+                        "<option value='" + value.en_sku + "'>" + value.en_sku + '(' + value.cn_name + ')</option>'
+                );
+              }
+
+            });
+            form.render();
+          } else {
+            layer.msg(res.msg);
+          }
+        },
+        error: function() {
+          layer.msg('请求sku失败');
+        }
+      });
+    }
+
+    var expressList = '';
+    initExpressList(function(html) {
+      expressList = html;
+      checkType();
+    });
+
+    /* 初始化收件人表格 */
+    function reloadRecPeople(params = {}) {
+      var where = {
+        type: 2,
+        token: token
+      };
+      Object.assign(where, params);
+      table.render({
+        elem: '#recAddressTable',
+        id: 'recAddressTable',
+        url: common.queryAddr, //数据接口
+        method: 'post',
+        request: {
+          pageName: 'current_page', //页码的参数名称，默认：page
+          limitName: 'per_page_num' //每页数据量的参数名，默认：limit
+        },
+        where: where,
+        page: true, //开启分页
+        cols: [
+          [
+            //表头
+            // { type: 'checkbox' },
+            { field: 'name', title: '<div language=\'Name\'></div>' },
+            { field: 'address', title: '<div language=\'Address1\'></div>' },
+            { field: 'postcode', title: '<div language=\'PostCode\'></div>'},
+            {
+              title: '<div language=\'operate\'></div>',
+              width: 180,
+              align: 'center',
+              templet: function(d) {
+                return `<a href="javascript:;" class="xuanze" lay-event="add"><div language="choice"></div></a>`
+              }
+            }
+          ]
+        ],
+        parseData: function(res) {
+          return {
+            code: 0, //解析接口状态
+            msg: res.msg, //解析提示文本
+            count: res.data ? res.data.count : 0, //解析数据长度
+            data: res.data ? res.data.data : [] //解析数据列表
+          };
+        },done: function(){
+          setLanguage();
+        }
+      });
+    }
+
+    table.on('tool(recAddressTable)', function(obj) {
+      //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+      var data = obj.data; //获得当前行数据
+      var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+      var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+      if (layEvent === 'add') {
+        recAddressCur = data;
+
+        $( "input[name='rec-people-name']").val(recAddressCur.name);
+        $( "input[name='rec-people-id']").val(recAddressCur.id);
+        $( "input[name='rec-people-country']").val(recAddressCur.country);
+        $( "input[name='rec-people-province']").val(recAddressCur.province);
+        $( "input[name='rec-people-city']").val(recAddressCur.city);
+        $( "input[name='rec-people-address']").val(recAddressCur.address);
+        $( "input[name='rec-people-address2']").val(recAddressCur.address2);
+        $( "input[name='rec-people-doorno']").val(recAddressCur.doorno);
+        $( "input[name='rec-people-postCode']").val(recAddressCur.postcode);
+        $( "input[name='rec-people-telephone']").val(recAddressCur.telephone);
+        countryRec(recAddressCur.country);
+        layer.msg('添加成功！', { icon: 1 });
+        layer.close(layIdx1);
+      }
+    });
+    /* 发件人信息 - 选择地址 */
+    $('#chooseSendAddress').click(function() {
+      var openWH = layuimini.getOpenWidthHeight();
+      layIdx1 = layer.open({
+        type: 1,
+        title: '选择发件人信息',
+        content: $('#chooseSendModal'),
+        area: [openWH[0] + 'px', openWH[1] + 'px'],
+        offset: [openWH[2] + 'px', openWH[3] + 'px'],
+        success: function(layero) {
+          reloadSendPeople();
+        }
+      });
+    });
+
+    /* 收件人信息 - 选择地址 */
+    $('#chooseRecAddress').click(function() {
+      var openWH = layuimini.getOpenWidthHeight();
+      layIdx1 = layer.open({
+        type: 1,
+        title:"<span language='Selectdeliveryaddress'></span>",
+        content: $('#chooseRecModal'),
+        shadeClose:true,
+        area: ['820px', '650px'],
+        success: function(layero) {
+          reloadRecPeople();
+        }
+      });
+    });
+    $('#addSendAddress').unbind('click');
+
+    /* 发件人信息 - 添加地址 */
+    $('#addSendAddress').click(function() {
+      var content = layuimini.getHrefContent('page/template/sendPeople.html');
+      var openWH = layuimini.getOpenWidthHeight();
+      layIdx2 = layer.open({
+        type: 1,
+        title: '添加发件人地址',
+        content: content,
+        area: [openWH[0] + 'px', openWH[1] + 'px'],
+        offset: [openWH[2] + 'px', openWH[3] + 'px'],
+        success: function() {
+          initCountryList();
+          form.render();
+        }
+      });
+    });
+    $('#addRecAddress').unbind('click');
+    /* 收件人信息 - 添加地址 */
+    $('#addRecAddress').click(function() {
+      var content = layuimini.getHrefContent('page/template/recPeople.html');
+      var openWH = layuimini.getOpenWidthHeight();
+      layIdx2 = layer.open({
+        type: 1,
+        title: '添加收件人信息',
+        content: content,
+        area: [openWH[0] + 'px', openWH[1] + 'px'],
+        offset: [openWH[2] + 'px', openWH[3] + 'px'],
+        success: function() {
+          initCountryList();
+          initUploadBtn();
+          form.render();
+        }
+      });
+    });
+
+    /* 发件人信息 - 添加地址提交 */
+    form.on('submit(addSendAddrSubmit)', function(obj) {
+      var data = obj.field;
+      data.type = 1;
+      data.is_default = Number(data.is_default);
+      requestPost(common.addAddr, data, function(res) {
+        if (res.code == 1) {
+          table.reload('sendAddressTable');
+          layer.close(layIdx2);
+        }
+      });
+      return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+    /* 收件人信息 - 添加地址提交 */
+    form.on('submit(addRecAddrSubmit)', function(obj) {
+      var field = obj.field;
+      delete field['file'];
+      field.type = 2;
+      field.is_amazon = Number(field.is_amazon);
+      requestPost(common.addAddr, field, function(res) {
+        if (res.code == 1) {
+          table.reload('recAddressTable');
+          layer.close(layIdx2);
+        }
+      });
+      return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+
+    /* 检索收件人 */
+    form.on('submit(checkRecPeople)', function(obj) {
+      reloadRecPeople(obj.field);
+      return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+
+    /* 提交草稿 */
+    form.on('submit(submitBtn)', function(obj) {
+      var field = obj.field;
+      if (field.transport_type == 0){
+        layer.msg("请选择发货渠道",{icon:0});
+        return false;
+      }
+      field.receive_addr_id = Number(field.receive_addr_id);
+      field.product_info = [];
+      var proList = $('.pro-box .skuArr');
+      for (var i = 0; i < proList.length; i++) {
+        var item = proList[i];
+        var inputList = $(item).find('input,select');
+        var obj = {};
+        for (var j = 0; j < inputList.length; j++) {
+          var inputItem = inputList[j];
+          obj[$(inputItem).attr('name')] = $(inputItem).val();
+          if (i == 0) {
+            delete field[$(inputItem).attr('name')];
+          }
+        }
+        field.product_info.push(obj);
+      }
+      field.id = $("#osrder_id").val();
+      //var url = type == 'edit' ? common.editOrder : common.addOrder;
+      var url = type == 'edit' ? common.editTbReturn : common.addTbReturn;
+      requestPost(url, field, function(res) {
+        if (res.code == 1) {
+          layer.msg("提交成功",{icon:1});
+          setTimeout(function() {
+            //window.location.reload();
+            window.location.href="/#/page/goods/transport-list.html"
+          }, 2000);
+        }
+      });
+      return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+
+    /* 模板文件上传 */
+    //uploadFileCreateOrder('#upload-btn', common.batchaddOrder, 'xls|xlsx');
+    /* 判断 编辑 查看 添加 */
+    function checkType() {
+      if (type == 'detail' || type == 'edit' || type == 'copy') {
+        //requestPost(common.detailOrder, { id: id }, function(res) {
+        requestPost(common.viewTbReturn, { id: id }, function(res) {
+          if (res.code == 1) {
+            var data = res.data;
+            recAddressCur = data.receive_addr;
+            //sendAddressCur = data.send_addr;
+            $('input[name=bao_value]').val(data.order_info.bao_value);
+            $('input[name=remark]').val(data.order_info.remark);
+            $('input[name=box_weight]').val(data.order_info.box_weight);
+            $('input[name=box_length]').val(data.order_info.box_length);
+            $('input[name=box_width]').val(data.order_info.box_width);
+            $('input[name=box_height]').val(data.order_info.box_height);
+            $('#transport_type').val(data.order_info.transport_type);
+            $('#warehouse_id').val(data.order_info.warehouse_id);
+            $('#carton_type').val(data.order_info.material_type);
+            $('input[name=bao_fee]').val(data.order_info.bao_fee);
+            $('input[name=cankaohao]').val(data.order_info.cankaohao);
+            $('input[name=id]').val(id);
+            $('input[name=fnsku_file_xb]').val(data.order_info.ht_pdf);
+
+
+            $( "input[name='rec-people-name']").val(recAddressCur.name);
+            $( "input[name='rec-people-id']").val(recAddressCur.id);
+            $( "input[name='rec-people-country']").val(recAddressCur.country);
+            $( "input[name='rec-people-province']").val(recAddressCur.province);
+            $( "input[name='rec-people-city']").val(recAddressCur.city);
+            $( "input[name='rec-people-address']").val(recAddressCur.address);
+            $( "input[name='rec-people-address2']").val(recAddressCur.address2);
+            $( "input[name='rec-people-doorno']").val(recAddressCur.doorno);
+            $( "input[name='rec-people-postCode']").val(recAddressCur.postcode);
+            $( "input[name='rec-people-telephone']").val(recAddressCur.telephone);
+            countryRec(recAddressCur.country);
+
+            var product_info = data.product_info;
+            $('.bg-box').html('');
+            if (type == 'detail' || type == 'edit') {
+              $('.pro-box').html('');
+
+              product_info.forEach(function(item, idx) {
+                $('.pro-box').append(`<div class="layui-form-item skuArr">
+                        <div class="layui-col-md2 layui-hide">
+                            <div class="layui-show-xs-block layui-hide-sm">ID</div>
+                            <input type="text" name="id" value="${item.id}" autocomplete="off" class="layui-input">
+                        </div>
+    <label class="layui-form-label" style="width: 20%">
+      <select name="en_sku" lay-filter="skuData" lay-verify="required"  lay-search="">
+                            <option value="${item.en_sku}">${item.en_sku}_${item.cn_name}</option>
+                      </select>
+    </label>
+    <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+      <input type="number" name="goods_num" lay-verify="required" value="${item.goods_num}" autocomplete="off" class="layui-input"/>
+    </label>
+    <label class="layui-form-label" style="width: 20%; margin-left: 2%;">
+      <input type="number" name="goods_value" lay-verify="required" value="${item.goods_value}" autocomplete="off" class="layui-input"/>
+    </label>
+  </div>`);
+              });
+              $("#addProBtn,#addBgBtn").hide()
+            }
+          }
+          if (type == 'detail') {
+            $('button').hide();
+            $('.layui-btn-normal').hide();
+            $('input,select').attr('disabled', true);
+            $('.cz').hide();
+            $("#chooseRecAddress").hide()
+            $("select[name=en_sku]").attr('disabled', true);
+          }
+          if (type == 'edit') {
+            $("select[name=en_sku]").attr('disabled', true);
+            $("select[name=warehouse_id]").attr('disabled', true);
+            $("input[name=goods_num]").attr('disabled', true);
+          }
+          $('.layui-tab-title').hide();
+
+        });
+        form.render();
+      }
+    }
+    function initUploadBtn() {
+      uploadFile('#idcard_z', null, null, function(res, index, upload) {
+        if (res.code == 1) {
+          $('#idcard_z')
+                  .parent()
+                  .find('input[name=idcard_z_url]')
+                  .val(res.data.file_url);
+          $('#idcard_z')
+                  .parent()
+                  .find('.img_box img')
+                  .attr('src', imgUrl + res.data.file_url);
+        }
+      });
+      uploadFile('#idcard_f', null, null, function(res, index, upload) {
+        if (res.code == 1) {
+          $('#idcard_f')
+                  .parent()
+                  .find('input[name=idcard_f_url]')
+                  .val(res.data.file_url);
+          $('#idcard_f')
+                  .parent()
+                  .find('.img_box img')
+                  .attr('src', imgUrl + res.data.file_url);
+        }
+      });
+    }
+  });
+
+  /* 包裹删除 */
+  function removeBox(obj) {
+    _this = event.target;
+    var len = $(_this)
+            .parent()
+            .parent()
+            .parent()
+            .parent()
+            .find('.skuArr').length;
+    if (len <= 1) {
+      return false;
+    }
+    $(_this)
+            .parent()
+            .parent()
+            .parent()
+            .remove();
+  }
+
+  /* 数量改变 */
+  function changeNum() {
+    var sum = 0;
+    var list = $('.pro-box input[name=goods_num]');
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      sum += Number($(item).val());
+    }
+    $('#all_num').html(sum);
+    changePrice();
+  }
+
+  /* 价格改变 */
+  function changePrice() {
+    var sum = 0;
+    var list = $('.pro-box .box-item');
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      var value = $(item)
+              .find('input[name=value]')
+              .val();
+      var num = $(item)
+              .find('input[name=goods_num]')
+              .val();
+      sum += Number(value) * Number(num);
+    }
+    $('#all_price').html(sum.toFixed(2));
+  }
+
+
+  function checkSku(id)
+  {
+    var skuno = "#en_sku_"+id;
+    var en_sku = $(skuno).val();
+    var token = getCookie('token');
+    $.ajax({
+      url: common.checkPro,
+      type: 'post',
+      data: {en_sku:en_sku,"token":token},
+      success: function(res) {
+        if (res.code == 1) {
+          var name_no = "#cn_name_"+id;
+          $(name_no).val(res.data.cn_name);
+        } else {
+          layer.msg("该sku没有对应的产品");
+          return false;
+        }
+      },
+      error: function() {
+        layer.msg('请求接口错误！', { icon: 5 });
+      }
+    });
+  }
+</script>
+<script type="text/javascript">
+  var pathnameArr= new Array();
+  var pathname = window.location.href;
+  pathnameArr = pathname.split("#"); //字符分割
+  var x = pathnameArr[1].split("?");
+  var xxx = init[x[0]];
+  $('.s_one').attr('language',xxx['one']);
+  $('.s_two').attr('language',xxx['two']);
+
+  setTimeout(()=>{
+    setLanguage();
+  }, 100)
+
+  setLang();
+
+  var lang = getCookie('lang');
+
+  if (lang === 'en'){
+    $("input[name='remark']").attr('placeholder',"optional");
+    $("input[name='goods_num']").attr('placeholder','Please enter the number of sku');
+    $("input[name='goods_value']").attr('placeholder','Please enter declared value');
+  }else{
+    $("input[name='remark']").attr('placeholder','选填');
+    $("input[name='goods_num']").attr('placeholder','请输入sku数量');
+    $("input[name='goods_value']").attr('placeholder','请输入申报价值');
+  }
+</script>

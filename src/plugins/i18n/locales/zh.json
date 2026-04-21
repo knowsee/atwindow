@@ -1,0 +1,127 @@
+{
+  "nav": {
+    "heading": {
+      "business": "业务菜单"
+    },
+    "dashboard": "控制台",
+    "printLabel": {
+      "_": "打印标签",
+      "create": "创建标签",
+      "shippingList": "订单列表",
+      "batchUpload": "批量出单",
+      "orders": "订单列表（旧）"
+    },
+    "dropShipping": {
+      "_": "一件代发",
+      "begin": "开通服务",
+      "products": "产品管理",
+      "inbound": "入库列表",
+      "orders": "订单列表",
+      "relabel": "换标"
+    },
+    "dropShippingReturns": {
+      "_": "一件代发退货",
+      "orders": "订单列表",
+      "packages": "退货包裹"
+    },
+    "dataCenter": {
+      "_": "数据中心",
+      "sales": "销量分析",
+      "inventory": "库存数据",
+      "returnInventory": "退货库存"
+    },
+    "account": {
+      "_": "账户管理",
+      "personalization": "个性化配置",
+      "auth": "授权管理",
+      "funds": "资金管理",
+      "addresses": "地址管理"
+    }
+  },
+  "search": {
+    "trigger": "搜索",
+    "tryFromMenu": "可从以下菜单进入",
+    "noResultFor": "无匹配结果"
+  },
+  "login": {
+    "title": "登录",
+    "subtitle": "使用账号与密码登录管理后台",
+    "form": {
+      "account": {
+        "label": "账号",
+        "placeholder": "请输入账号"
+      },
+      "password": {
+        "label": "密码",
+        "placeholder": "请输入密码"
+      },
+      "submit": "登录"
+    },
+    "error": {
+      "invalidCredentials": "登录失败，请检查账号或密码",
+      "network": "网络异常，请稍后重试"
+    }
+  },
+  "$vuetify": {
+    "badge": "标记",
+    "noDataText": "暂无数据",
+    "close": "关闭",
+    "open": "打开",
+    "loading": "加载中",
+    "carousel": {
+      "ariaLabel": {
+        "delimiter": "分隔符"
+      }
+    },
+    "colorPicker": {
+      "ariaLabel": {
+        "hueSlider": "色相滑块",
+        "eyedropper": "取色器",
+        "hexInput": "十六进制输入"
+      }
+    },
+    "dataFooter": {
+      "itemsPerPageText": "每页行数：",
+      "itemsPerPageAll": "全部",
+      "pageText": "第 {0}-{1} 条，共 {2} 条",
+      "firstPage": "第一页",
+      "prevPage": "上一页",
+      "nextPage": "下一页",
+      "lastPage": "最后一页"
+    },
+    "pagination": {
+      "ariaLabel": {
+        "root": "分页",
+        "previous": "上一页",
+        "first": "首页",
+        "last": "末页",
+        "next": "下一页",
+        "currentPage": "当前页",
+        "page": "页"
+      }
+    },
+    "input": {
+      "clear": "清除",
+      "appendAction": "附加操作",
+      "prependAction": "前置操作",
+      "counterSize": "计数长度",
+      "otp": "验证码"
+    },
+    "fileInput": {
+      "counterSize": "计数长度"
+    },
+    "rating": {
+      "ariaLabel": {
+        "item": "评分项"
+      }
+    },
+    "video": {
+      "seek": "跳转",
+      "play": "播放",
+      "pause": "暂停",
+      "showVolume": "显示音量",
+      "enterFullscreen": "全屏",
+      "volume": "音量"
+    }
+  }
+}

@@ -1,0 +1,630 @@
+<style>
+  .layui-table-cell{
+    height: auto;
+  }
+  .layui-input-block{
+    margin-left: 0px!important;
+  }
+  .layuimini-main1{
+    margin: 24px 24px 0px 24px;
+    border-radius: 9px;
+    background-color: #ffffff;
+    min-height: 82px;
+  }
+  .order_list_3{
+    margin-top: 24px;
+    margin-left: 16px;
+  }
+  .layui-btn1{
+    width: 80px;
+    height: 38px;
+    background: #FFFFFF;
+    border-radius: 19px;
+    border: 1px solid #D8E0E7;
+    font-size: 14px;
+    font-weight: 400;
+    color: #6C757D;
+  }
+  .layui-btn2{
+    width: 80px;
+    height: 38px;
+    background: #FFFFFF;
+    border-radius: 19px;
+    border: 1px solid #1890FF;
+    font-size: 14px;
+    font-weight: 400;
+    color: #1890FF;
+  }
+  .layui-form-label {
+    width: 140px;
+  }
+  .layui-input-block {
+    margin-left: 170px;
+  }
+  .layui-col-space15>* {
+    padding: 0px!important;
+  }
+  .layuimini-main .layui-card {
+    height: 568px;
+    background-size: 100% 100%;
+    border-radius:9px;
+    margin: 10px 10px 10px 10px;
+  }
+  .layui-col-xs12{
+    border-radius:10px;
+  }
+  .layuimini-main .layui-card2 {
+    min-height: 200px;
+    background-color: #fff;
+    background-size: 100% 100%;
+    border-radius:10px;
+    margin: 10px 10px 10px 10px;
+  }
+  .layuimini-main{
+    border: none;
+    background: none;
+  }
+  .layui-card{
+    box-shadow: none;
+  }
+  .layui-card-header{
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .up{
+    font-size: 13px;
+    font-weight: 400;
+    color: #1890FF;
+    cursor:pointer;
+  }
+
+  .layui-table th{
+    font-size: 14px;
+    color: #212529;
+  }
+  .layui-table td{
+    font-size: 13px;
+    color: #212529;
+  }
+  .layui-tab-title{
+    border: none;
+  }
+  .layui-tab-title li {
+    padding: 0 0!important;
+    min-width: 0!important;
+    text-align:left!important;
+  }
+  .layui-tab-title li a{
+    color: #6C757D;
+  }
+  .layui-tab-title .layui-this a{
+    color: #0C0C0C!important;
+  }
+  .layui-tab-title .layui-this:after{
+    border: none;
+    border-bottom: #1890FF 1px solid;
+    color: #0C0C0C!important;
+  }
+
+  .address{
+    width: 10%;
+    height: 38px;
+    line-height: 35px;
+    background: #1890FF;
+    border-radius: 19px;float: right; margin-top: 24px;
+    cursor:pointer;
+    text-align: center!important;
+  }
+  .address span{
+    width: 56px;
+    height: 22px;
+    font-size: 14px;
+    font-family: Nunito-Regular, Nunito;
+    font-weight: 400;
+    color: #FFFFFF;
+    line-height: 18px;
+    padding-left: 0px;
+    margin-top: 15px
+  }
+  .address1{
+    width: 138px;
+    height: 38px;
+    line-height: 35px;
+    background: #FFFFFF;
+    border-radius: 19px;float: right; margin-top: 24px;
+    border: 1px solid #1890FF;
+    cursor:pointer;
+    text-align: center;
+  }
+  .address1 span{
+    width: 56px;
+    height: 22px;
+    font-size: 14px;
+    font-family: Nunito-Regular, Nunito;
+    font-weight: 400;
+    color: #1890FF;
+    padding-left: 0px;
+    margin-top: 15px
+  }
+  .one{
+    height: 288px;
+    background: #F3F6FA;
+    border-radius: 12px;
+    margin: 20px 20px 20px 20px;
+  }
+  .two{
+    margin: 30px 0 0 30px;
+    color: red;
+    font-size: 16px;
+  }
+  .layui-tab-content{
+    padding: 0;
+  }
+
+  .layui-layer-title{
+    background: #FFFFFF!important;
+    height: 57px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 57px;
+  }
+  .layui-input, .layui-select, .layui-textarea{
+    height: 48px;
+  }
+  .layui-btn-xs{
+    cursor: pointer;
+  }
+
+  .layui-layer-dialog .layui-layer-content {
+    font-size: 14px  !important;  //字体大小;
+    height: 24px!important;
+    line-height: 24px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /*padding: 20px;*/
+    position: relative;
+    color: #6C757D;
+    font-weight: bold; //字体加粗
+  word-break: break-all;
+  }
+  .layui-table-view table tr {
+    height: 60px!important;
+  }
+  .layui-layout-admin .layui-footer{
+    height: 62px!important;
+    margin-top: 20px!important;
+    background-color: #FFFFFF!important;
+  }
+  .footer .layui-btn{
+    width: 108px;
+    height: 38px;
+    background: #1890FF;
+    border-radius: 19px;
+    float: right;
+    margin-top: 12px;
+  }
+  .layui-table-header table thead tr th span{
+    color: #212529;
+    font-weight: bold;
+    font-family: Nunito-Bold, Nunito;
+  }
+</style>
+<div class="layuimini-container">
+  <div class="layuimini-main1">
+    <form class="layui-form">
+      <div class="layui-row">
+        <div class="layui-col-md3 order_list_3" style="margin-left: 24px">
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <input
+                      type="text"
+                      name="sku"
+                      autocomplete="off"
+                      class="layui-input"
+                      placeholder="sku"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md3 order_list_3">
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <input
+                      type="text"
+                      class="layui-input"
+                      name="tracking_no"
+                      placeholder="自有单号"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md3 order_list_3">
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <input
+                      type="text"
+                      class="layui-input"
+                      name="time"
+                      id="time"
+                      readonly
+                      placeholder="时间范围"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md1 order_list_3" style="width: 176px;float:right;margin-right: 24px">
+          <button type="reset" class="layui-btn1 layui-btn-normal" >
+            <span language="reset"></span>
+          </button>
+          <button class="layui-btn2 layui-btn-normal" lay-submit lay-filter="submitBtn">
+            <span language="query"></span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="layuimini-container layui-anim layui-anim-upbit">
+  <div class="layuimini-main">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-xs12 layui-col-md12">
+        <div class="layui-card2 top-panel">
+          <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+            <div class="layui-card-header">
+              <div  class="layui-col-xs12 layui-col-md8" style="padding-top: 10px">
+                <ul class="layui-tab-title">
+                  <li class="layui-this"><a href="javascript:;" data-title="1"><span language="pendingreceipt"></span></a></li>
+                  <li style="margin-left: 32px"><a href="javascript:;" data-title="2"><span language="Ithasbeenaddedto"></span></a></li>
+                  <!--<li style="margin-left: 32px"><a href="javascript:;" data-title="3"><span language="tobereleased"></span></a></li>-->
+                  <li style="margin-left: 32px"><a href="/#/page/generation/inventory-list.html" data-title="0"><span language="stocklist"></span></a></li>
+                </ul>
+              </div>
+              <!--<div  class="layui-col-xs12 layui-col-md4 address">
+                <span data-content-href="page/generation/warehouse-create.html">
+                  <img src="/images/new/jiahao.svg"><bb language="CreateNewinventory"></bb>
+                </span>
+              </div>-->
+              <div  class="layui-col-xs12 layui-col-md4 address">
+                <span data-content-href="page/generation/warehouse-create-batch.html">
+                  <img src="/images/new/jiahao.svg"><bb language="BulkNew"></bb>
+                </span>
+              </div>
+              <div  class="layui-col-xs12 layui-col-md4 address1" style="margin-right: 8px;">
+                <span data-content-href="page/generation/warehouse-create.html">
+                  <img src="/images/new/jiahao_lan.svg"><bb language="CreateNewinventory"></bb>
+                </span>
+              </div>
+            </div>
+            <div class="layui-tab-content layui-row user_info">
+              <div class="layui-tab-item layui-show">
+                <div class="layui-col-md12">
+                  <div class="layui-card-body1">
+                    <table id="table" class="layui-table" lay-filter="table"></table>
+                    <script type="text/html" id="test-dropdown-toolbar-barDemo">
+                      <a class="layui-btn-xs" lay-event="more"><img src="/images/new/dian.png"></a>
+                    </script>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div style="padding-bottom: 50px;"></div>
+<div class="layui-footer footer footer-demo">
+  <a href="javascript:;" class="layui-btn layui-btn-normal" style="margin-right: 8px;"  id="delBatch"><span language="batchDelete"></span></a>
+  <a href="javascript:;" class="layui-btn layui-btn-normal" style="margin-right: 8px;"  id="print"><span language="batchPrinting"></span></a>
+</div>
+<script src="/js/check-token.js"></script>
+
+<script>
+  //面包屑
+  /*$('.s_one').html('一件代发&nbsp;/&nbsp;');
+  $('.s_two').html('入库管理');*/
+  layui.use(["laydate", "table"], function() {
+    var laydate = layui.laydate;
+    var table = layui.table;
+    var layIdx1;
+
+    form.render();
+    //日期范围选择
+    laydate.render({
+      elem: "#time",
+      range: "至" //或 range: '~' 来自定义分割字符
+    });
+
+    var searchConfig = {
+      status: 1,
+      asn: "",
+      tracking_no: "",
+      starttime: "",
+      endtime: "",
+      sku: ""
+    };
+    initTable();
+    /* 初始化表格 */
+    function initTable() {
+      var where = {
+        token: token
+      };
+      Object.assign(where, searchConfig);
+      table.render({
+        height: 550,
+        elem: "#table",
+        url: common.rukuList, //数据接口
+        method: "post",
+        request: {
+          pageName: "current_page", //页码的参数名称，默认：page
+          limitName: "per_page_num" //每页数据量的参数名，默认：limit
+        },
+        where: where,
+        page: true, //开启分页
+		limits: [10,20,50,100,200,300,500,1000],
+        /*toolbar: "#toolbarTop",*/
+        cols: [
+          [
+            //表头
+            { type: "checkbox",width: 42 },
+            { field: "id", title: "ID",width: 80},
+            { field: "warehouse_name", title: "<div language='Warehousing'></div>",width: 150},
+            { field: "box_type", title: "<div language='type'></div>",width: 80},
+            { field: "tracking_no", title: "<div language='cankaohao'></div>",width: 180},
+            /*{ field: "kuaidi_number", title: "<div language='kuaidi_number'></div>",width: 145},*/
+            { field: "cn_name", title: "<div language='ProductChinesename'></div>",width: 130 },
+            { field: "sku", title: "sku" ,width: 150},
+            { field: "sku_num", title: "<div language='numberskuForecast'></div>" ,width: 100},
+            { field: "real_sku_num", title: "<div language='Numberskulisted'></div>",width: 100},
+            { field: "weight", title: "<div language='weight'></div>" ,width: 100},
+            //{ field: "status", title: "状态" },
+            { field: "statusStr", title: "<div language='state'></div>" ,width: 90},
+            { field: "createtime", title: "<div language='createTime'></div>" ,width: 130},
+            { field: "receivetime", title: "<div language='warehousingtime'></div>" ,width: 130},
+            {
+              fixed: '',
+              title: "<div language='operate'></div>",
+              width: 130,
+              align: "center", toolbar: '#test-dropdown-toolbar-barDemo'
+            }
+          ]
+        ],
+        parseData: function(res) {
+
+          return {
+            code: 0, //解析接口状态
+            msg: res.msg, //解析提示文本
+            count: res.data ? res.data.count : 0, //解析数据长度
+            data: res.data ? res.data.data : [] //解析数据列表
+          };
+        },done: function(){
+          setTimeout(()=>{
+            setLanguage();
+          }, 100)
+        }
+      });
+    }
+
+    /* 检索条件 */
+    form.on("submit(submitBtn)", function(obj) {
+      field = obj.field;
+      field.starttime = field.time.split(" 至 ")[0];
+      field.endtime = field.time.split(" 至 ")[1];
+      delete field["time"];
+      Object.assign(searchConfig, field);
+      initTable();
+      //搜索时，增加语言包
+      setLanguage();
+      return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+
+    $(".layui-tab-title a").click(function() {
+      var title = $(this).attr("data-title");
+      var hasCheckBox = false;
+      searchConfig.status = title;
+      // if (title == "认领区") {
+      //   hasCheckBox = true;
+      // }
+      initTable();
+    });
+    table.on("tool(table)", function(obj) {
+      //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+      var data = obj.data; //获得当前行数据
+      var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+      var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+      var that = this;
+      if (layEvent === "more") {
+        if (data.status == 3){
+          var menuList = [{
+            title: "<div language='edit'></div>"
+            ,type: 'edit'
+            ,id: data.id
+          }];
+        }else if (data.status == 1){
+          var menuList = [{
+            title: "<div language='edit'></div>"
+            ,type: 'edit'
+            ,id: data.id
+          }, {
+            title: "<div language='del'></div>"
+            ,type: 'del'
+            ,id: data.id
+          }, {
+            title: "<div language='check'></div>"
+            ,type: 'detail'
+            ,id: data.id
+          }, {
+            title: "<div language='shippingmark'></div>"
+            ,type: 'dayin'
+            ,id: data.id
+          }];
+        }else if (data.status == 2){
+          var menuList = [{
+            title: "<div language='shippingmark'></div>"
+            ,type: 'dayin'
+            ,id: data.id
+          }];
+        }else{
+          var menuList = [];
+        }
+
+        //更多下拉菜单
+        dropdown.render({
+          elem: that
+          ,show: true //外部事件触发即显示
+          ,data: menuList
+          ,click: function(odata, othis){
+            //根据 id 做出不同操作
+            if(odata.type === 'del'){
+              layer.confirm('删除后不可恢复', {
+                        title:['<img src="/images/new/jinggao.png">&nbsp;确认要删除吗？', 'font-size:16px;background:#212529'],
+                        shadeClose:true,
+                        area:['424px','170px'], //弹框的大小
+                        btn:['确认','取消'] //按钮
+                      }, function(index){
+                        requestPost(common.delReturn, { id: odata.id }, function(res) {
+                          if (res.code == 1) {
+                            window.location.reload();
+                            initTable();
+                          }
+                        });
+                      }
+              )
+            }
+            if (odata.type === "detail") {
+              window.location.href = '#/page/generation/warehouse-create.html?type=detail&id='+odata.id;
+              return false;
+            }
+            if (odata.type === "edit") {
+              window.location.href = '#/page/generation/warehouse-create.html?type=edit&id='+odata.id;
+              return false;
+            }
+            if (odata.type === "dayin") {
+              window.open('https://backend.atwindow.com/'+data.pdf_url,'top');
+              //window.open('http://back.com/'+data.pdf_url,'top');
+              return false;
+            }
+          }
+        });
+      }
+      setLanguage();
+    });
+    //批量打印
+    $('#print').click(function() {
+      var checkStatus = table.checkStatus('table');
+      var data = checkStatus.data;
+	  /*
+      if (data.length > 100) {
+        layer.alert('勾选批量打印，条数不能超过100', {
+          title:["<img src='/images/new/jinggao.png'>&nbsp;温馨提示", 'font-size:16px;background:#212529'],
+          skin: 'layer-ext-demo'
+        })
+        return false;
+      }
+	  */
+      var str = "";
+      data.forEach(function(item, idx) {
+        str += item.id + ",";
+      });
+
+      var create_time = $('#time').val();
+      if (str == "" && create_time == "") {
+        layer.alert('请勾选数据或选择创建日期，操作批量打印箱唛！！！', {
+          title:["<img src='/images/new/jinggao.png'>&nbsp;温馨提示", 'font-size:16px;background:#212529'],
+          skin: 'layer-ext-demo'
+        })
+        return false;
+      }
+      var two = layer.load(1);
+      requestPost(common.dayinPl, {str:str,create_time:create_time}, function(res) {
+        if (res.code == 1) {
+          var str = "本次打印"+res.data.num+"条";
+          layer.confirm(str, {btn: ['确定', '取消'], title: "确定打印"}, function () {
+            layer.close(two);
+            window.open(res.data.pdf_url,'top');
+          });
+          layer.close(two);
+        }else{
+          layer.close(two);
+          layer.alert(res.msg, {
+            icon: 2,
+            skin: 'layer-ext-demo'
+          })
+        }
+        layer.close(two);
+      });
+    });
+    //批量删除
+    $('#delBatch').click(function() {
+      var checkStatus = table.checkStatus('table');
+      var data = checkStatus.data;
+      if (data.length > 100) {
+        layer.alert('勾选批量删除，条数不能超过100', {
+          title:["<img src='/images/new/jinggao.png'>&nbsp;温馨提示", 'font-size:16px;background:#212529'],
+          skin: 'layer-ext-demo'
+        })
+        return false;
+      }
+      var str = "";
+      data.forEach(function(item, idx) {
+        str += item.id + ",";
+      });
+      if (str == "") {
+        layer.alert('请勾选数据，操作批量删除！！！', {
+          title:["<img src='/images/new/jinggao.png'>&nbsp;温馨提示", 'font-size:16px;background:#212529'],
+          skin: 'layer-ext-demo'
+        })
+        return false;
+      }
+      layer.confirm('删除后不可恢复', {
+                title:['<img src="/images/new/jinggao.png">&nbsp;确认要批量删除吗？', 'font-size:16px;background:#212529'],
+                shadeClose:true,
+                area:['424px','170px'], //弹框的大小
+                btn:['确认','取消'] //按钮
+              }, function(index){
+                  requestPost(common.delBatch, {str:str}, function(res) {
+                    if (res.code == 1) {
+                      window.location.reload();
+                      initTable();
+                    }else{
+                      layer.alert(res.msg, {
+                        icon: 2,
+                        skin: 'layer-ext-demo'
+                      })
+                    }
+                  });
+              }
+      )
+    });
+  });
+</script>
+<script type="text/javascript">
+  var pathnameArr= new Array();
+  var pathname = window.location.href;
+  pathnameArr = pathname.split("#"); //字符分割
+  var x = pathnameArr[1].split("?");
+  var xxx = init[x[0]];
+  $('.s_one').attr('language',xxx['one']);
+  $('.s_two').attr('language',xxx['two']);
+
+  setTimeout(()=>{
+    setLanguage();
+  }, 100)
+
+  setLang();
+
+  var lang = getCookie('lang');
+
+  if (lang === 'en'){
+    $("input[name='sku']").attr('placeholder',"sku");
+    $("input[name='tracking_no']").attr('placeholder','Waybill number');
+    $("input[name='time']").attr('placeholder','time limit');
+  }else{
+    $("input[name='sku']").attr('placeholder','sku');
+    $("input[name='tracking_no']").attr('placeholder','自有单号');
+    $("input[name='time']").attr('placeholder','时间范围');
+  }
+</script>

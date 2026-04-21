@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>订单管理</title>
+
+  <!-- Vue 2 + Element UI -->
+  <script src="/js/next/vue.js"></script>
+  <link rel="stylesheet" href="/js/next/index.css">
+  <script src="/js/next/index.js"></script>
+
+  <style>
+    :root {
+      --primary: #1E9FFF;
+      --primary-light: #ECF5FF;
+      --primary-dark: #0D84E8;
+      --success: #5FB878;
+      --warning: #FFB800;
+      --danger: #FF5722;
+      --info: #909399;
+      --border: #EBEEF5;
+      --bg: #F2F3F5;
+      --text-1: #303133;
+      --text-2: #606266;
+      --text-3: #909399;
+      --text-4: #C0C4CC;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* 移动端触摸滚动优化 */
+    * {
+      -webkit-overflow-scrolling: touch;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, 'PingFang SC', 'Microsoft YaHei';
+      background: var(--bg);
+      font-size: 14px;
+      color: var(--text-1);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      padding: 16px;
+    }
+
+    /* Vue组件样式调整 */
+    #app {
+      padding: 16px;
+    }
+
+    .el-input__inner,
+    .el-select {
+      border-radius: 6px !important;
+    }
+
+    .el-button {
+      border-radius: 6px !important;
+    }
+
+    .el-select {
+      width: 100% !important;
+    }
+
+    .search-toggle i.active {
+      transform: rotate(180deg);
+    }
+
+    /* Element UI主题色调整 */
+    .el-button--primary {
+      background-color: var(--primary) !important;
+      border-color: var(--primary) !important;
+    }
+
+    .el-button--primary:hover {
+      background-color: var(--primary-dark) !important;
+      border-color: var(--primary-dark) !important;
+    }
+
+    /* 卡片 */
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+      border: 1px solid #f0f0f0;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* 搜索表单 */
+    .search-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px 32px;
+      margin-bottom: 20px;
+    }
+
+    .form-item {
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+    }
+
+    .form-label {
+      flex-shrink: 0;
+      width: 100px;
+      text-align: right;
+      padding-right: 16px;
+      color: var(--text-2);
+    }
+
+    .form-input-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .layui-input,
+    .layui-select {
+      height: 36px;
+      line-height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0 12px;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .layui-input:hover,
+    .layui-select:hover {
+      border-color: var(--primary);
+    }
+
+    .layui-input:focus,
+    .layui-select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.15);
+    }
+
+    /* Layui下拉菜单样式修复 */
+    .layui-form-select dl {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 4px;
+    }
+
+    .layui-form-select dl dd {
+      padding: 8px 16px;
+      color: var(--text-2);
+      transition: all 0.2s;
+    }
+
+    .layui-form-select dl dd:hover {
+      background: #F5F7FA;
+      color: var(--primary);
+    }
+
+    .layui-form-select dl dd.layui-this {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    .layui-form-select .layui-edge {
+      border-top-color: var(--text-3);
+    }
+
+    .layui-form-select.layui-form-selected .layui-edge {
+      border-bottom-color: var(--primary);
+    }
+
+    /* 高级搜索 */
+    .search-advanced {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out, opacity 0.3s;
+      opacity: 0;
+    }
+
+    .search-advanced.show {
+      max-height: 800px;
+      opacity: 1;
+    }
+
+    /* 搜索操作 */
+    .search-actions {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 16px;
+      margin-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .search-toggle {
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.3s;
+    }
+
+    .search-toggle:hover {
+      opacity: 0.8;
+    }
+
+    .search-toggle i {
+      transition: transform 0.3s;
+    }
+
+    .search-toggle i.active {
+      transform: rotate(180deg);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* 按钮 */
+    .btn {
+      height: 36px;
+      padding: 0 20px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s;
+    }
+
+    .btn-default {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+    }
+
+    .btn-default:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 12px rgba(30, 159, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--primary-light);
+      box-shadow: 0 2px 4px rgba(30, 159, 255, 0.2);
+    }
+
+    /* Tab */
+    .tab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+    }
+
+    .tab-nav {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .tab-item {
+      position: relative;
+      padding: 10px 4px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .tab-item:hover {
+      color: var(--primary);
+    }
+
+    .tab-item.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .tab-item.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -21px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 3px 3px 0 0;
+      box-shadow: 0 -2px 4px rgba(30, 159, 255, 0.3);
+    }
+
+    /* 表格优化 */
+    .table-wrap {
+      padding: 24px;
+      margin-bottom: 80px;
+      position: relative;
+    }
+
+    /* Element UI 表格容器 - 确保触摸滚动 */
+    .el-table__body-wrapper {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .el-table__header-wrapper {
+      overflow: hidden;
+    }
+
+    /* Element UI 表格样式优化 */
+    .el-table {
+      font-size: 13px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .el-table th.el-table__cell {
+      background: linear-gradient(180deg, #fafafa 0%, #f5f5f5 100%) !important;
+      color: var(--text-1);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 14px 0;
+      border-bottom: 2px solid #e8e8e8;
+    }
+
+    .el-table td.el-table__cell {
+      padding: 12px 0;
+      color: var(--text-2);
+    }
+
+    .el-table--border {
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+    }
+
+    .el-table--border::after,
+    .el-table--group::after,
+    .el-table::before {
+      background-color: #e8e8e8;
+    }
+
+    .el-table td.el-table__cell,
+    .el-table th.el-table__cell.is-leaf {
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .el-table--border th.el-table__cell,
+    .el-table--border td.el-table__cell {
+      border-right: 1px solid #f0f0f0;
+    }
+
+    .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+      background: #fafafa;
+    }
+
+    .el-table__body tr:hover>td.el-table__cell {
+      background-color: #f5f7fa !important;
+    }
+
+    .el-table__fixed-right::before,
+    .el-table__fixed::before {
+      background-color: #e8e8e8;
+    }
+
+    /* 表格序号列样式 */
+    .el-table .el-table-column--selection .cell {
+      text-align: center;
+    }
+
+    /* 优化 Tag 样式 */
+    .el-tag {
+      border: none;
+      font-weight: 500;
+    }
+
+    .el-tag--warning {
+      background-color: #fff7e6;
+      color: #faad14;
+    }
+
+    .el-tag--success {
+      background-color: #f6ffed;
+      color: #52c41a;
+    }
+
+    .el-tag--danger {
+      background-color: #fff1f0;
+      color: #ff4d4f;
+    }
+
+    .el-tag--info {
+      background-color: #f5f5f5;
+      color: #8c8c8c;
+    }
+
+    /* Element UI Tag 样式调整 */
+    .el-tag {
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .el-tag--small {
+      height: 24px;
+      line-height: 22px;
+      padding: 0 8px;
+    }
+
+    /* 链接 */
+    .link {
+      color: var(--primary);
+      text-decoration: none;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .link:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    /* 底部工具栏 */
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 24px;
+      z-index: 999;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 分页样式 */
+    .pagination-wrap {
+      margin-top: 24px;
+      padding: 20px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .el-pagination {
+      font-weight: 500;
+    }
+
+    .el-pagination.is-background .el-pager li:not(.disabled).active {
+      background-color: var(--primary) !important;
+    }
+
+    .el-pagination.is-background .el-pager li:not(.disabled):hover {
+      color: var(--primary) !important;
+    }
+
+    .el-pagination__sizes .el-input .el-input__inner {
+      border-radius: 6px;
+    }
+
+    /* 日期选择器快捷选项 */
+    .el-picker-panel__sidebar {
+      width: 110px !important;
+      min-width: 110px !important;
+    }
+
+    .el-picker-panel__shortcut {
+      display: block;
+      padding: 8px 12px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.3s;
+      border-radius: 4px;
+      margin: 2px 4px;
+      font-size: 13px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .el-picker-panel__shortcut:hover {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .el-date-range-picker__content.is-left {
+      border-right: 1px solid #e4e7ed;
+    }
+
+    /* 日期选择器头部年份优化 */
+    .el-date-range-picker__header {
+      font-size: 14px !important;
+    }
+
+    .el-date-range-picker__header div {
+      font-size: 14px !important;
+      font-weight: 500;
+    }
+
+    /* 年份按钮 */
+    .el-picker-panel__icon-btn {
+      font-size: 12px !important;
+      width: 24px;
+      margin: 0 4px;
+    }
+
+    /* 日期表格头部 */
+    .el-date-table th {
+      font-size: 12px;
+      font-weight: normal;
+      color: #606266;
+    }
+
+    /* 下拉菜单 */
+    .menu {
+      min-width: 120px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding: 4px 0;
+    }
+
+    .menu-item {
+      display: block;
+      padding: 8px 16px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .menu-item:hover {
+      background: #F5F7FA;
+      color: var(--primary);
+    }
+
+    .menu-item-danger {
+      color: var(--danger);
+    }
+
+    .menu-item-danger:hover {
+      background: #FFF1F0;
+      color: var(--danger);
+    }
+
+    .el-date-editor .el-range-separator {
+      width: 10% !important;
+    }
+
+    /* 响应式优化 */
+    @media (max-width: 1200px) {
+      .search-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      #app {
+        padding: 12px;
+      }
+
+      .search-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .tab-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      /* Tab栏横向滚动 */
+      .tab-nav {
+        flex-wrap: nowrap;
+        gap: 20px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        padding-bottom: 10px;
+        margin-bottom: -10px;
+      }
+
+      .tab-nav::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      .tab-nav::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 2px;
+      }
+
+      .tab-nav::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 2px;
+      }
+
+      .tab-item {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
+      /* 表格横向滚动 */
+      .table-wrap {
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+      }
+
+      /* 表格横向滚动提示 */
+      .table-wrap::after {
+        content: '← 左右滑动查看更多 →';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-4);
+        padding: 8px;
+        background: linear-gradient(to top, rgba(255, 255, 255, 0.95), transparent);
+        pointer-events: none;
+        animation: fadeInOut 3s ease-in-out;
+      }
+
+      @keyframes fadeInOut {
+
+        0%,
+        100% {
+          opacity: 0;
+        }
+
+        10%,
+        90% {
+          opacity: 1;
+        }
+      }
+
+      .el-table {
+        min-width: 800px;
+      }
+
+      .el-table__body-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+
+      /* 优化表格在移动端的显示 */
+      .el-table th.el-table__cell {
+        font-size: 12px;
+        padding: 10px 8px;
+      }
+
+      .el-table td.el-table__cell {
+        font-size: 12px;
+        padding: 10px 8px;
+      }
+
+      /* Element UI 下拉菜单移动端优化 */
+      .el-dropdown-menu {
+        max-width: 90vw;
+      }
+
+      /* 日期选择器移动端优化 */
+      .el-date-range-picker {
+        width: 90vw !important;
+        max-width: 600px;
+      }
+
+      .el-picker-panel__sidebar {
+        width: 90px !important;
+        min-width: 90px !important;
+        padding: 4px;
+      }
+
+      .el-picker-panel__shortcut {
+        padding: 6px 8px;
+        font-size: 12px;
+        margin: 2px;
+        white-space: nowrap;
+        text-align: center;
+      }
+
+      .el-date-range-picker__content {
+        padding: 8px;
+      }
+
+      .el-date-range-picker .el-picker-panel__body {
+        min-width: auto;
+      }
+
+      /* 分页移动端优化 */
+      .pagination-wrap {
+        padding: 16px 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .el-pagination {
+        white-space: nowrap;
+      }
+
+      /* 简化分页按钮 */
+      .el-pagination .btn-prev,
+      .el-pagination .btn-next {
+        min-width: 36px;
+        padding: 0 8px;
+      }
+
+      .el-pagination .el-pager li {
+        min-width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 13px;
+      }
+
+      /* 分页大小选择器 */
+      .el-pagination__sizes {
+        margin: 0 8px;
+      }
+
+      .el-pagination__sizes .el-input__inner {
+        height: 32px;
+        line-height: 32px;
+        font-size: 13px;
+      }
+
+      /* 页面跳转 */
+      .el-pagination__jump {
+        margin-left: 8px;
+      }
+
+      .el-pagination__editor.el-input .el-input__inner {
+        height: 32px;
+        line-height: 32px;
+        width: 50px;
+        font-size: 13px;
+      }
+
+      .btn-group {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .btn-group .btn {
+        flex: 1;
+        min-width: 100px;
+      }
+
+      .footer-bar {
+        padding: 0 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .form-label {
+        width: 70px;
+        font-size: 13px;
+      }
+
+      .card-body {
+        padding: 16px;
+      }
+
+      .table-wrap {
+        padding: 8px;
+        margin-left: -12px;
+        margin-right: -12px;
+        width: calc(100% + 24px);
+      }
+
+      .el-table {
+        min-width: 600px;
+      }
+
+      .el-table th.el-table__cell,
+      .el-table td.el-table__cell {
+        font-size: 11px;
+        padding: 8px 6px;
+      }
+
+      .card-header {
+        font-size: 15px;
+        padding: 14px 16px;
+      }
+
+      /* Element UI 表单组件触摸优化 */
+      .el-input__inner,
+      .el-select,
+      .el-button {
+        min-height: 40px;
+        font-size: 14px;
+      }
+
+      /* Element UI 下拉菜单触摸优化 */
+      .el-select-dropdown__item {
+        min-height: 40px;
+        line-height: 40px;
+        padding: 0 16px;
+      }
+
+      /* Element UI Tag 触摸优化 */
+      .el-tag {
+        padding: 4px 10px;
+        font-size: 11px;
+      }
+
+      /* 移动端分页进一步简化 */
+      .pagination-wrap {
+        padding: 12px 0;
+      }
+
+      .el-pagination .btn-prev,
+      .el-pagination .btn-next {
+        min-width: 32px;
+        padding: 0 6px;
+      }
+
+      .el-pagination .el-pager li {
+        min-width: 28px;
+        height: 28px;
+        line-height: 28px;
+        font-size: 12px;
+        margin: 0 2px;
+      }
+
+      /* 隐藏一些不必要的分页元素 */
+      .el-pagination__sizes {
+        display: none;
+      }
+
+      .el-pagination__jump {
+        font-size: 12px;
+      }
+
+      .el-pagination__editor.el-input .el-input__inner {
+        height: 28px;
+        width: 40px;
+        font-size: 12px;
+      }
+
+      /* 日期选择器进一步简化 */
+      .el-date-range-picker {
+        width: 95vw !important;
+        max-width: 100%;
+      }
+
+      .el-picker-panel__sidebar {
+        width: 80px !important;
+        min-width: 80px !important;
+        padding: 2px;
+      }
+
+      .el-picker-panel__shortcut {
+        padding: 5px 4px;
+        font-size: 11px;
+        margin: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+      }
+
+      .el-date-range-picker__header {
+        font-size: 12px !important;
+      }
+
+      .el-date-range-picker__header div {
+        font-size: 12px !important;
+      }
+
+      .el-picker-panel__icon-btn {
+        font-size: 10px !important;
+        width: 20px;
+      }
+
+      .el-date-table th {
+        font-size: 11px;
+      }
+
+      .el-date-table td {
+        padding: 2px;
+      }
+
+      .el-date-table td span {
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        font-size: 11px;
+      }
+    }
+
+    /* 全局滚动条优化 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <!-- 页面标题 -->
+    <div class="card">
+      <div class="card-header">订单管理</div>
+    </div>
+
+    <!-- 搜索区 -->
+    <div class="card">
+      <div class="card-body">
+        <el-form :model="searchForm">
+          <!-- 基础搜索 -->
+          <div class="search-grid">
+            <div class="form-item">
+              <label class="form-label">订单号</label>
+              <div class="form-input-wrap">
+                <el-input v-model="searchForm.cankaohao" placeholder="请输入订单号/参考号" />
+              </div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">收件人</label>
+              <div class="form-input-wrap">
+                <el-input v-model="searchForm.recipient_name" placeholder="请输入收件人姓名" />
+              </div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">SKU</label>
+              <div class="form-input-wrap">
+                <el-input v-model="searchForm.skuName" placeholder="请输入SKU编码" />
+              </div>
+            </div>
+
+            <div class="form-item">
+              <label class="form-label">国际单号</label>
+              <div class="form-input-wrap">
+                <el-input v-model="searchForm.ht_tracking_no" placeholder="请输入国际追踪号" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 高级搜索 -->
+          <div class="search-advanced" :class="{show: advancedShow}">
+            <div class="search-grid">
+              <div class="form-item">
+                <label class="form-label">仓库</label>
+                <div class="form-input-wrap">
+                  <el-select v-model="searchForm.warehouse_id" placeholder="全部仓库">
+                    <el-option value="" label="全部仓库"></el-option>
+                    <el-option v-for="item in warehouses" :key="item.id" :value="item.id"
+                      :label="item.warehouse"></el-option>
+                  </el-select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">运输方式</label>
+                <div class="form-input-wrap">
+                  <el-select v-model="searchForm.transport_type" placeholder="全部运输方式">
+                    <el-option value="" label="全部运输方式"></el-option>
+                    <el-option value="27" label="USPS"></el-option>
+                    <el-option value="50" label="UPS"></el-option>
+                    <el-option value="52" label="FedEx 2Day"></el-option>
+                    <el-option value="53" label="SPEEDX"></el-option>
+                    <el-option value="56" label="Amazon"></el-option>
+                    <el-option value="200" label="自提"></el-option>
+                    <el-option value="213" label="NEXTDAY"></el-option>
+                    <el-option value="214" label="USPS-Y"></el-option>
+                  </el-select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">ERP来源</label>
+                <div class="form-input-wrap">
+                  <el-select v-model="searchForm.erp_type" placeholder="全部来源">
+                    <el-option value="" label="全部来源"></el-option>
+                    <el-option value="1" label="系统"></el-option>
+                    <el-option value="2" label="马帮"></el-option>
+                    <el-option value="3" label="第三方ERP"></el-option>
+                    <el-option value="4" label="Tiktok"></el-option>
+                    <el-option value="5" label="Temu"></el-option>
+                  </el-select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">是否偏远</label>
+                <div class="form-input-wrap">
+                  <el-select v-model="searchForm.is_qujian" placeholder="全部">
+                    <el-option value="" label="全部"></el-option>
+                    <el-option value="1" label="是"></el-option>
+                    <el-option value="0" label="否"></el-option>
+                  </el-select>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">创建时间</label>
+                <div class="form-input-wrap">
+                  <el-date-picker v-model="searchForm.createtime" type="datetimerange" range-separator="至"
+                    start-placeholder="开始时间" end-placeholder="结束时间" value-format="yyyy-MM-dd HH:mm:ss"
+                    :picker-options="datePickerOptions" style="width: 100%;">
+                  </el-date-picker>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">发货时间</label>
+                <div class="form-input-wrap">
+                  <el-date-picker v-model="searchForm.fahuotime" type="datetimerange" range-separator="至"
+                    start-placeholder="开始时间" end-placeholder="结束时间" value-format="yyyy-MM-dd HH:mm:ss"
+                    :picker-options="datePickerOptions" style="width: 100%;">
+                  </el-date-picker>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <label class="form-label">问题原因</label>
+                <div class="form-input-wrap">
+                  <el-input v-model="searchForm.question_reason" placeholder="请输入问题原因" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 操作栏 -->
+          <div class="search-actions">
+            <div class="search-toggle" @click="toggleAdvanced">
+              <span>{{ advancedShow ? '收起高级搜索' : '展开高级搜索' }}</span>
+              <i class="el-icon-arrow-down" :class="{active: advancedShow}"></i>
+            </div>
+            <div class="btn-group">
+              <el-button icon="el-icon-refresh-left" @click="resetSearch">重置</el-button>
+              <el-button type="primary" icon="el-icon-search" @click="doSearch">查询</el-button>
+            </div>
+          </div>
+        </el-form>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="card">
+      <div class="tab-header">
+        <ul class="tab-nav">
+          <li class="tab-item" :class="{active: currentStatus === '100'}" @click="changeTab('100')">全部订单</li>
+          <li class="tab-item" :class="{active: currentStatus === '1'}" @click="changeTab('1')">待确认</li>
+          <li class="tab-item" :class="{active: currentStatus === '2'}" @click="changeTab('2')">已确认</li>
+          <li class="tab-item" :class="{active: currentStatus === '4'}" @click="changeTab('4')">待发货</li>
+          <li class="tab-item" :class="{active: currentStatus === '6'}" @click="changeTab('6')">海外仓已发出</li>
+          <li class="tab-item" :class="{active: currentStatus === '15'}" @click="changeTab('15')">已退运费</li>
+          <li class="tab-item" :class="{active: currentStatus === '14'}" @click="changeTab('14')">问题订单</li>
+          <li class="tab-item" :class="{active: currentStatus === 'xl'}" @click="changeTab('xl')">销量</li>
+        </ul>
+
+        <div class="btn-group">
+          <el-button icon="el-icon-plus" @click="openPage('page/generation/order-create.html')">
+            新建订单
+          </el-button>
+          <el-button type="primary" icon="el-icon-document-copy"
+            @click="openPage('page/generation/order-create-batch.html')">
+            批量新建
+          </el-button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <!-- 销量表格 -->
+        <el-table v-if="isXlTab()" :data="tableData" v-loading="tableLoading" stripe border>
+          <el-table-column type="index" label="序号" width="60" fixed></el-table-column>
+          <el-table-column prop="en_sku" label="SKU" width="180" sortable></el-table-column>
+          <el-table-column prop="cn_name" label="产品中文名" min-width="200">
+            <template slot-scope="scope">
+              <div>
+                {{ scope.row.cn_name || '-' }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="warehouse_name" label="仓库" width="150">
+            <template slot-scope="scope">
+              <div>
+                {{ scope.row.warehouse_name || '-' }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="sku_num" label="库存数量" width="120" align="right" sortable></el-table-column>
+          <el-table-column prop="order_num" label="销售数量" width="120" align="right" sortable>
+            <template slot-scope="scope">
+              <span style="color:#1E9FFF;font-weight:600;">{{ scope.row.order_num }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="inventory_ratio" width="150" align="right">
+            <template slot="header">
+              <span>库存比率</span>
+              <el-tooltip effect="dark" placement="top">
+                <div slot="content">
+                  库存比率 = 库存数量 ÷ 销售数量<br/>
+                  数据统计范围：上月1日 到 本月1日
+                </div>
+                <i class="el-icon-question" style="color:#909399;margin-left:4px;cursor:help;"></i>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" width="180" align="center">
+            <template slot="header">
+              <span>库存评估</span>
+              <el-tooltip effect="dark" placement="top">
+                <div slot="content">
+                  正常： 0.3 ≤ 比率 ≤ 3.0<br/>
+                  库存偏低： 比率 < 0.3 且库存 > 0<br/>
+                  库存偏高： 比率 > 3.0 或无出库<br/>
+                  缺货： 库存 ≤ 0 且有出库<br/>
+                  注：需筛选仓库后查询
+                </div>
+                <i class="el-icon-question" style="color:#909399;margin-left:4px;cursor:help;"></i>
+              </el-tooltip>
+            </template>
+            <template slot-scope="scope">
+              <el-tag :type="getInventoryStatusType(scope.row.status)" size="small">
+                {{ getInventoryStatusText(scope.row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+
+        </el-table>
+
+        <!-- 订单表格 -->
+        <el-table v-else :data="tableData" v-loading="tableLoading" stripe border>
+          <el-table-column type="index" label="序号" width="60" fixed="left"></el-table-column>
+          <el-table-column prop="order_sn" label="订单编号" min-width="220"></el-table-column>
+          <el-table-column prop="cankaohao" label="参考号" width="250">
+            <template slot-scope="scope">
+              <div>
+                {{ scope.row.cankaohao || '-' }}
+                <div v-if="scope.row.ht_orderno && scope.row.erp_type == 5" style="color:#909399;font-size:12px;">(Temu:
+                  {{ scope.row.ht_orderno }})</div>
+                <span v-if="scope.row.is_qujian == 1" style="color:#FF5722;margin-left:4px;font-size:12px;">(偏远)</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="ht_tracking_no" label="国际追踪号" width="200">
+            <template slot-scope="scope">
+              <a v-if="scope.row.ht_tracking_no" :href="'https://t.17track.net/zh-cn#nums=' + scope.row.ht_tracking_no"
+                target="_blank" class="link">{{ scope.row.ht_tracking_no }}</a>
+              <span v-else style="color:#909399;">-</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="warehouse_name" label="发货仓库" width="150"></el-table-column>
+          <el-table-column prop="name" label="收件人" width="120"></el-table-column>
+          <el-table-column prop="country" label="国家" width="80" align="center"></el-table-column>
+          <el-table-column prop="sku" label="SKU" min-width="150"></el-table-column>
+          <el-table-column prop="skuNum" label="SKU数量" width="100" align="center"></el-table-column>
+          <el-table-column prop="status" label="状态" width="120" align="center">
+            <template slot-scope="scope">
+              <el-tag :type="getStatusType(scope.row.status)" size="small">
+                {{ getStatusText(scope.row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="transport_type" label="运输方式" width="150"></el-table-column>
+          <el-table-column prop="erp_type" label="ERP来源" width="150" align="center">
+            <template slot-scope="scope">
+              {{ getErpType(scope.row.erp_type) }}
+              <el-tag v-if="scope.row.erp_type == 5" size="small">{{ scope.row.from_shop }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="total_fee" label="总费用" width="100" align="right">
+            <template slot-scope="scope">
+              {{ formatMoney(scope.row.total_fee) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="question_reason" label="问题原因" width="150"></el-table-column>
+          <el-table-column prop="createtime" label="创建时间" width="160"></el-table-column>
+          <el-table-column prop="fahuotime" label="发货时间" width="160"></el-table-column>
+          <el-table-column label="操作" width="100" align="center">
+            <template slot-scope="scope">
+              <el-dropdown @command="(cmd) => handleCommand(cmd, scope.row)" trigger="click">
+                <span style="color:#1E9FFF;cursor:pointer;">
+                  <i class="el-icon-more"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-for="item in getMenuItems(scope.row)" :key="item.command" :command="item.command">
+                    {{ item.label }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <!-- 分页 -->
+        <div class="pagination-wrap" v-if="totalCount > 0">
+          <el-pagination @size-change="handleSizeChange" @current-change="handlePageChange" :current-page="currentPage"
+            :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :total="totalCount" :layout="paginationLayout"
+            background>
+          </el-pagination>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部工具栏 -->
+    <div class="footer-bar">
+      <el-button type="primary" icon="el-icon-download" @click="exportOrders">
+        导出订单
+      </el-button>
+    </div>
+  </div>
+
+
+
+  <!-- JS -->
+  <script src="/lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/check-token.js"></script>
+  <script src="/js/pikaz-excel-js.js"></script>
+  <script type="text/javascript">
+    var pathnameArr = new Array();
+    var pathname = window.location.href;
+    pathnameArr = pathname.split("#"); //字符分割
+    var x = pathnameArr[1].split("?");
+    var xxx = init[x[0]];
+    $('.s_one').attr('language', xxx['one']);
+    $('.s_two').attr('language', xxx['two']);
+
+    setTimeout(() => {
+      setLanguage();
+    }, 100)
+
+    setLang();
+
+    var lang = getCookie('lang');
+
+    if (lang === 'en') {
+      $("input[name='cankaohao']").attr('placeholder', "order number");
+    } else {
+      $("input[name='cankaohao']").attr('placeholder', '订单号');
+    }
+  </script>
+  <script>
+    // 初始化全局变量
+    if (typeof token === 'undefined') {
+      window.token = localStorage.getItem('token') || '';
+    }
+
+    window.common.orderList = 'https://backend.atwindow.com/api/order/orderListV2';
+
+    // 等待Vue和Element UI加载完成
+    function initVueApp() {
+      if (typeof Vue === 'undefined' || typeof ELEMENT === 'undefined') {
+        setTimeout(initVueApp, 50);
+        return;
+      }
+
+      // Vue 应用
+      window.app = new Vue({
+        el: '#app',
+        data() {
+          return {
+            advancedShow: false,
+            currentStatus: '100',
+            searchForm: {
+              cankaohao: '',
+              recipient_name: '',
+              skuName: '',
+              ht_tracking_no: '',
+              warehouse_id: '',
+              transport_type: '',
+              erp_type: '',
+              is_qujian: '',
+              createtime: null,
+              fahuotime: null,
+              question_reason: ''
+            },
+            warehouses: [],
+            tableData: [],
+            tableLoading: false,
+            totalCount: 0,
+            currentPage: 1,
+            pageSize: 20,
+            datePickerOptions: {
+              shortcuts: [
+                {
+                  text: '今日',
+                  onClick(picker) {
+                    const start = new Date();
+                    start.setHours(0, 0, 0, 0);
+                    const end = new Date();
+                    end.setHours(23, 59, 59, 999);
+                    picker.$emit('pick', [start, end]);
+                  }
+                },
+                {
+                  text: '昨日',
+                  onClick(picker) {
+                    const start = new Date();
+                    start.setTime(start.getTime() - 3600 * 1000 * 24);
+                    start.setHours(0, 0, 0, 0);
+                    const end = new Date();
+                    end.setTime(end.getTime() - 3600 * 1000 * 24);
+                    end.setHours(23, 59, 59, 999);
+                    picker.$emit('pick', [start, end]);
+                  }
+                },
+                {
+                  text: '本周',
+                  onClick(picker) {
+                    const end = new Date();
+                    end.setHours(23, 59, 59, 999);
+                    const start = new Date();
+                    start.setHours(0, 0, 0, 0);
+                    // 获取本周一
+                    const day = start.getDay();
+                    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+                    start.setDate(diff);
+                    picker.$emit('pick', [start, end]);
+                  }
+                },
+                {
+                  text: '上周',
+                  onClick(picker) {
+                    const end = new Date();
+                    const start = new Date();
+                    // 获取上周一
+                    const day = start.getDay();
+                    const diff = start.getDate() - day + (day === 0 ? -6 : 1) - 7;
+                    start.setDate(diff);
+                    start.setHours(0, 0, 0, 0);
+                    // 上周日
+                    end.setDate(diff + 6);
+                    end.setHours(23, 59, 59, 999);
+                    picker.$emit('pick', [start, end]);
+                  }
+                },
+                {
+                  text: '本月',
+                  onClick(picker) {
+                    const start = new Date();
+                    start.setDate(1);
+                    start.setHours(0, 0, 0, 0);
+                    const end = new Date();
+                    end.setHours(23, 59, 59, 999);
+                    picker.$emit('pick', [start, end]);
+                  }
+                },
+                {
+                  text: '最近三个月',
+                  onClick(picker) {
+                    const end = new Date();
+                    end.setHours(23, 59, 59, 999);
+                    const start = new Date();
+                    start.setMonth(start.getMonth() - 3);
+                    start.setHours(0, 0, 0, 0);
+                    picker.$emit('pick', [start, end]);
+                  }
+                }
+              ]
+            }
+          };
+        },
+        computed: {
+          // 移动端使用简化的分页布局
+          paginationLayout() {
+            return window.innerWidth <= 768
+              ? 'prev, pager, next, jumper'
+              : 'total, sizes, prev, pager, next, jumper';
+          }
+        },
+        mounted() {
+          this.loadWarehouses();
+          this.loadTableData();
+
+          // 监听窗口大小变化
+          window.addEventListener('resize', () => {
+            this.$forceUpdate();
+          });
+        },
+        methods: {
+          toggleAdvanced() {
+            this.advancedShow = !this.advancedShow;
+          },
+
+          changeTab(status) {
+            if (status === this.currentStatus) return;
+
+            this.currentStatus = status;
+
+            if (status === 'xl') {
+              const now = new Date();
+              const start = new Date();
+              start.setDate(start.getDate() - 30);
+
+              // Element UI 日期选择器需要数组格式
+              this.searchForm.createtime = [
+                this.formatDateValue(start),
+                this.formatDateValue(now)
+              ];
+
+              if (!this.advancedShow) {
+                this.advancedShow = true;
+              }
+            }
+
+            this.loadTableData();
+          },
+
+          doSearch() {
+            this.currentPage = 1; // 搜索时重置到第一页
+            this.loadTableData();
+          },
+
+          resetSearch() {
+            this.searchForm = {
+              cankaohao: '',
+              recipient_name: '',
+              skuName: '',
+              ht_tracking_no: '',
+              warehouse_id: '',
+              transport_type: '',
+              erp_type: '',
+              is_qujian: '',
+              createtime: null,
+              fahuotime: null,
+              question_reason: ''
+            };
+            this.currentStatus = '100';
+            this.currentPage = 1;
+            this.loadTableData();
+          },
+
+          handlePageChange(page) {
+            this.currentPage = page;
+            this.loadTableData();
+          },
+
+          handleSizeChange(size) {
+            this.pageSize = size;
+            this.currentPage = 1;
+            this.loadTableData();
+          },
+
+          openPage(url) {
+            if (typeof layuimini !== 'undefined' && layuimini.openPage) {
+              layuimini.openPage(url);
+            } else {
+              window.location.href = '#/' + url;
+            }
+          },
+
+          exportOrders() {
+            const { createtime, fahuotime } = this.searchForm;
+
+            if (!createtime && !fahuotime) {
+              this.$message.warning('请选择创建时间或发货时间');
+              return;
+            }
+
+            const params = Object.assign({
+              status: this.currentStatus,
+              token: window.token
+            }, this.searchForm);
+
+            // 删除原始的日期字段
+            delete params.createtime;
+            delete params.fahuotime;
+
+            // 处理日期范围
+            if (Array.isArray(createtime) && createtime.length === 2) {
+              params.create_time = createtime[0] + ' 至 ' + createtime[1];
+            }
+            if (Array.isArray(fahuotime) && fahuotime.length === 2) {
+              params.send_time = fahuotime[0] + ' 至 ' + fahuotime[1];
+            }
+
+            const loading = layui.layer.load(1, { shade: [0.3, '#000'] });
+
+            $.ajax({
+              url: window.common.excelYjdf,
+              type: 'post',
+              data: JSON.stringify(params),
+              contentType: "application/json;charset=utf-8",
+              success: (res) => {
+                layui.layer.close(loading);
+
+                if (res.code !== 1) {
+                  layui.layer.msg(res.msg || '导出失败', { icon: 2 });
+                  return;
+                }
+
+                const data = Array.isArray(res.data) ? res.data : res.data.data;
+
+                if (!Array.isArray(data) || data.length === 0) {
+                  layui.layer.msg('没有可导出的数据', { icon: 2 });
+                  return;
+                }
+
+                try {
+                  const { excelExport } = window.pikazExcelJs;
+
+                  const tableData = data.map(item => ({
+                    create_time: String(item.create_time || ''),
+                    cankaohao: String(item.cankaohao || ''),
+                    username: String(item.username || ''),
+                    transport_type: String(item.transport_type || ''),
+                    receive_name: String(item.receive_name || ''),
+                    ht_tracking_no: String(item.ht_tracking_no || ''),
+                    total_fee: String(item.total_fee || ''),
+                    handle_fee: String(item.handle_fee || ''),
+                    paisong_fee: String(item.paisong_fee || ''),
+                    zitick_fee: String(item.zitick_fee || ''),
+                    pp_fee: String(item.pp_fee || ''),
+                    material_fee: String(item.material_fee || ''),
+                    total_weight: String(item.total_weight || ''),
+                    sku: String(item.sku || ''),
+                    sku_num: String(item.sku_num || ''),
+                    warehouse_name: String(item.warehouse_name || '')
+                  }));
+
+
+                  excelExport({
+                    filename: '订单列表_' + new Date().getTime(),
+                    sheet: [{
+                      sheetName: '订单列表',
+                      title: '订单导出数据',
+                      tHeader: [
+                        '订单创建时间', '订单号', '用户名', '发货线路', '收件人', '国际订单',
+                        '总费用(USD)', '订单处理费', '派送费', '自提费', '品牌费', '耗材费',
+                        '收费重量(g)', 'SKU', 'SKU数量', '发货仓库'
+                      ],
+                      keys: [
+                        'create_time', 'cankaohao', 'username', 'transport_type', 'receive_name', 'ht_tracking_no',
+                        'total_fee', 'handle_fee', 'paisong_fee', 'zitick_fee', 'pp_fee', 'material_fee',
+                        'total_weight', 'sku', 'sku_num', 'warehouse_name'
+                      ],
+                      table: tableData,
+                      globalStyle: {
+                        border: {
+                          top: { style: 'thin', color: { rgb: 'E0E0E0' } },
+                          bottom: { style: 'thin', color: { rgb: 'E0E0E0' } },
+                          left: { style: 'thin', color: { rgb: 'E0E0E0' } },
+                          right: { style: 'thin', color: { rgb: 'E0E0E0' } }
+                        },
+                        font: { name: '微软雅黑', sz: 11 },
+                        alignment: { horizontal: 'left', vertical: 'center' }
+                      }
+                    }],
+                    beforeExport: () => {
+                      layui.layer.msg('导出成功，共 ' + tableData.length + ' 条数据', { icon: 1 });
+                    },
+                    onError: (err) => {
+                      layui.layer.msg('导出失败: ' + err.message, { icon: 2 });
+                    }
+                  });
+                } catch (err) {
+                  layui.layer.msg('导出异常: ' + err.message, { icon: 2 });
+                }
+              },
+              error: () => {
+                layui.layer.close(loading);
+                layui.layer.msg('请求失败', { icon: 2 });
+              }
+            });
+          },
+
+          loadWarehouses() {
+            // 加载仓库列表
+            $.ajax({
+              type: 'post',
+              url: window.common.queryWarehouses,
+              data: { token: window.token, id: 1 },
+              success: (res) => {
+                if (res.code == 1) {
+                  this.warehouses = res.data || [];
+                }
+              }
+            });
+          },
+
+          loadTableData() {
+            this.tableLoading = true;
+
+            $.ajax({
+              type: 'post',
+              url: window.common.orderList,
+              data: this.getParams(),
+              success: (res) => {
+                this.tableLoading = false;
+                if (res.code == 1) {
+                  this.tableData = res.data?.data || [];
+                  this.totalCount = res.data?.count || 0;
+                } else {
+                  if (this.handleApiError(res)) return;
+                  this.$message.error(res.msg || '加载数据失败');
+                  this.tableData = [];
+                  this.totalCount = 0;
+                }
+              },
+              error: () => {
+                this.tableLoading = false;
+                this.$message.error('网络请求失败');
+                this.tableData = [];
+                this.totalCount = 0;
+              }
+            });
+          },
+
+          getParams() {
+            const params = {
+              status: this.currentStatus,
+              token: window.token,
+              page: this.currentPage,
+              limit: this.pageSize,
+              current_page: this.currentPage,
+              per_page_num: this.pageSize
+            };
+
+            // 处理搜索表单参数
+            Object.keys(this.searchForm).forEach(key => {
+              const value = this.searchForm[key];
+
+              // 处理日期范围
+              if ((key === 'createtime' || key === 'fahuotime') && Array.isArray(value) && value.length === 2) {
+                const [start, end] = value.map(item => this.formatDateValue(item));
+                params[key] = start + ' 至 ' + end;
+              } else if (value !== null && value !== '') {
+                params[key] = value;
+              }
+            });
+
+            return params;
+          },
+
+          isXlTab() {
+            return this.currentStatus === 'xl';
+          },
+
+          formatDateValue(value) {
+            if (!value) return '';
+            if (typeof value === 'string') return value;
+            if (value instanceof Date) {
+              const pad = (num) => String(num).padStart(2, '0');
+              return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}`;
+            }
+            return String(value);
+          },
+
+          handleApiError(res) {
+            if (res?.code === 401) {
+              const message = res.msg || '请登录后操作';
+              this.$message.error(message);
+              setTimeout(() => {
+                window.location.href = '/page/login.html';
+              }, 1000);
+              return true;
+            }
+            return false;
+          },
+
+          getMenuItems(row) {
+            const items = [
+              { label: '查看详情', command: 'detail' }
+            ];
+
+            if (row.status == 1) {
+              items.push(
+                { label: '编辑订单', command: 'edit' },
+                { label: '复制订单', command: 'copy' }
+              );
+            } else if (row.status == 14) {
+              items.push(
+                { label: '复制订单', command: 'copy' }
+              );
+            } else if (row.status == 6) {
+              items.push(
+                { label: '费用明细', command: 'feeDetail' },
+                { label: '查看面单', command: 'viewLabel' },
+                { label: '复制订单', command: 'copy' }
+              );
+            } else {
+              items.push(
+                { label: '复制订单', command: 'copy' }
+              );
+            }
+
+            return items;
+          },
+
+          handleCommand(command, row) {
+            this.handleAction(command, row);
+          },
+
+          handleAction(action, data) {
+            switch (action) {
+              case 'detail':
+                this.openPage('page/generation/order-create.html?type=detail&id=' + data.id);
+                break;
+              case 'edit':
+                this.openPage('page/generation/order-create.html?type=edit&id=' + data.id);
+                break;
+              case 'copy':
+                this.openPage('page/generation/order-create.html?type=copy&id=' + data.id);
+                break;
+              case 'feeDetail':
+                this.showFeeDetail(data);
+                break;
+              case 'viewLabel':
+                if (data.ht_pdf) {
+                  window.open('https://backend.atwindow.com/miandan/pse/' + data.ht_pdf, '_blank');
+                } else {
+                  this.$message.warning('暂无面单');
+                }
+                break;
+            }
+          },
+
+          showFeeDetail(data) {
+            const content = `
+        <div style="padding:20px;line-height:2;">
+          <div style="margin-bottom:10px;font-size:16px;font-weight:600;color:#1E9FFF;">订单费用明细</div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">总费用:</span><b style="color:#FF5722;">$${data.total_fee || 0}</b></div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">订单处理费:</span>$${data.handle_fee || 0}</div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">派送费:</span>$${data.paisong_fee || 0}</div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">自提出库费:</span>$${data.zitick_fee || 0}</div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">偏远附加费:</span>$${data.pp_fee || 0}</div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">材料费:</span>$${data.material_fee || 0}</div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #eee;">
+            <span style="color:#606266;width:120px;display:inline-block;">SKU数量:</span>${data.skuNum || 0}
+          </div>
+          <div><span style="color:#606266;width:120px;display:inline-block;">总重量:</span>${data.total_weight || 0} kg</div>
+        </div>
+      `;
+
+            this.$alert(content, '费用明细', {
+              dangerouslyUseHTMLString: true
+            });
+          },
+
+          getStatusText(status) {
+            const map = {
+              1: '待确认',
+              2: '已确认',
+              3: '待付款',
+              4: '待发货',
+              6: '海外仓已发货',
+              14: '问题订单',
+              15: '已退运费'
+            };
+            return map[status] || '未知';
+          },
+
+          getStatusType(status) {
+            const map = {
+              1: 'warning',
+              2: 'info',
+              3: 'warning',
+              4: 'warning',
+              6: 'success',
+              14: 'danger',
+              15: 'info'
+            };
+            return map[status] || '';
+          },
+
+          getErpType(type) {
+            const map = { 1: '系统', 2: '马帮', 3: '第三方ERP', 4: 'Tiktok', 5: 'Temu' };
+            return map[type] || '-';
+          },
+
+          formatMoney(val) {
+            return val ? '$' + parseFloat(val).toFixed(2) : '-';
+          },
+
+          getInventoryStatusText(status) {
+            const map = {
+              0: '正常',
+              1: '库存偏低',
+              2: '库存偏高',
+              3: '缺货'
+            };
+            return map[status] !== undefined ? map[status] : '-';
+          },
+
+          getInventoryStatusType(status) {
+            const map = {
+              0: 'success',    // 正常 - 绿色
+              1: 'warning',    // 库存偏低 - 橙色
+              2: 'info',       // 库存偏高 - 灰色
+              3: 'danger'      // 缺货 - 红色
+            };
+            return map[status] || '';
+          }
+        }
+      });
+    }
+
+    // 启动初始化
+    initVueApp();
+  </script>
+
+</body>
+
+</html>

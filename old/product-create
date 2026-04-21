@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>产品管理</title>
+  
+  <!-- Vue 2 + Element UI -->
+  <script src="/js/next/vue.js"></script>
+  <link rel="stylesheet" href="/js/next/index.css">
+  <script src="/js/next/index.js"></script>
+  
+  <style>
+    :root {
+      --primary: #1E9FFF;
+      --primary-light: #ECF5FF;
+      --primary-dark: #0D84E8;
+      --success: #5FB878;
+      --warning: #FFB800;
+      --danger: #FF5722;
+      --info: #909399;
+      --border: #EBEEF5;
+      --bg: #F2F3F5;
+      --text-1: #303133;
+      --text-2: #606266;
+      --text-3: #909399;
+      --text-4: #C0C4CC;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, 'PingFang SC', 'Microsoft YaHei';
+      background: var(--bg);
+      font-size: 14px;
+      color: var(--text-1);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    #app { padding: 16px; padding-bottom: 80px; }
+    
+    .back-link {
+      margin-bottom: 16px;
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .back-link:hover { opacity: 0.8; }
+    
+    /* 卡片 */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 16px;
+      border: 1px solid #f0f0f0;
+    }
+
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .card-body { padding: 32px; }
+    
+    /* Tab */
+    .tab-header {
+      display: flex;
+      gap: 32px;
+      padding: 20px 24px;
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #f0f0f0;
+    }
+    
+    .tab-item {
+      position: relative;
+      padding: 10px 4px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    
+    .tab-item:hover { color: var(--primary); }
+    
+    .tab-item.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .tab-item.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -20px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 3px 3px 0 0;
+    }
+    
+    /* 表单网格 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px 40px;
+      margin-bottom: 0;
+    }
+    
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px 40px;
+      margin-bottom: 0;
+    }
+    
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px 40px;
+      margin-bottom: 0;
+    }
+    
+    .form-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px 40px;
+      margin-bottom: 0;
+    }
+    
+    .form-full {
+      grid-column: 1 / -1;
+    }
+    
+    /* 图片上传 */
+    .image-upload-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    
+    .image-item {
+      position: relative;
+      width: 104px;
+      height: 104px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+    
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .image-item .el-icon-close {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    .image-item .main-badge {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(30,159,255,0.9);
+      color: #fff;
+      font-size: 12px;
+      text-align: center;
+      padding: 2px;
+    }
+    
+    .image-item .set-main-btn {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 11px;
+      text-align: center;
+      padding: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .image-item .set-main-btn:hover {
+      background: rgba(30,159,255,0.8);
+    }
+    
+    .upload-trigger {
+      width: 104px;
+      height: 104px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      background: #fafafa;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    
+    .upload-trigger:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    
+    .upload-trigger i {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    /* SKU列表 */
+    .sku-list {
+      margin: 0;
+    }
+    
+    .sku-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+    
+    .sku-item .el-input {
+      flex: 1;
+    }
+    
+    .add-sku-btn {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fafafa;
+      margin-top: 8px;
+    }
+    
+    .add-sku-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    
+    .add-sku-btn i {
+      font-size: 16px;
+      margin-right: 4px;
+    }
+    
+    /* 底部工具栏 */
+    .footer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 24px;
+      gap: 12px;
+      z-index: 999;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    }
+    
+    /* Element UI 表单项优化 */
+    .el-form-item {
+      margin-bottom: 24px;
+    }
+    
+    .el-form-item__label {
+      font-weight: 500;
+      color: var(--text-1);
+      padding-right: 16px;
+    }
+    
+    .el-input__inner,
+    .el-textarea__inner,
+    .el-select {
+      border-radius: 6px;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 1200px) {
+      .form-grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .form-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .form-grid-3 { grid-template-columns: 1fr; }
+      .form-grid-4 { grid-template-columns: 1fr; }
+      .card-body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- 返回链接 -->
+  <div class="back-link" @click="goBack">
+    <i class="el-icon-arrow-left"></i>
+    <span>返回产品列表</span>
+  </div>
+  
+  <!-- Tab切换 -->
+  <div class="tab-header">
+    <a v-if="isEdit" href="#" class="tab-item active">产品详情</a>
+    <a href="#/page/generation/product-create.html" class="tab-item">新建产品</a>
+    <a href="#/page/generation/product-create-batch.html" class="tab-item">批量新建</a>
+  </div>
+  
+  <!-- 基础信息 -->
+  <div class="card">
+    <div class="card-header">基础信息</div>
+    <div class="card-body">
+      <el-form :model="form" :rules="rules" ref="productForm" label-width="110px">
+        <div class="form-grid">
+          <el-form-item label="产品SKU" prop="en_sku">
+            <el-input v-model="form.en_sku" placeholder="请输入SKU（仅英文、数字、横杠）" :disabled="isEdit"></el-input>
+          </el-form-item>
+          
+          <el-form-item label="条形码">
+            <el-input v-model="form.barcode" placeholder="请输入条形码"></el-input>
+          </el-form-item>
+        </div>
+        
+        <div class="form-grid">
+          <el-form-item label="产品中文名" prop="cn_name">
+            <el-input v-model="form.cn_name" placeholder="请输入产品中文名" maxlength="50"></el-input>
+          </el-form-item>
+          
+          <el-form-item label="产品英文名" prop="en_name">
+            <el-input v-model="form.en_name" placeholder="最多35字符" maxlength="35"></el-input>
+          </el-form-item>
+        </div>
+        
+        <div class="form-grid">
+          <el-form-item label="中文品牌">
+            <el-input v-model="form.cn_brand" placeholder="请输入中文品牌" maxlength="50"></el-input>
+          </el-form-item>
+          
+          <el-form-item label="英文品牌" prop="en_brand">
+            <el-input v-model="form.en_brand" placeholder="请输入英文品牌" maxlength="50"></el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+    </div>
+  </div>
+  
+  <!-- 产品规格 -->
+  <div class="card">
+    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>产品规格</span>
+      <el-radio-group v-model="form.danwei" size="small">
+        <el-radio-button :label="1">公制 (kg/cm)</el-radio-button>
+        <el-radio-button :label="2">英制 (lb/in)</el-radio-button>
+      </el-radio-group>
+    </div>
+    <div class="card-body">
+      <el-form :model="form" :rules="rules" label-width="110px">
+        <div class="form-grid-4">
+          <el-form-item label="重量" prop="weight">
+            <el-input v-model.number="form.weight" placeholder="请输入重量">
+              <template slot="append">{{ form.danwei === 1 ? 'kg' : 'lb' }}</template>
+            </el-input>
+          </el-form-item>
+          
+          <el-form-item label="长度" prop="length">
+            <el-input v-model.number="form.length" placeholder="请输入长度">
+              <template slot="append">{{ form.danwei === 1 ? 'cm' : 'in' }}</template>
+            </el-input>
+          </el-form-item>
+          
+          <el-form-item label="宽度" prop="width">
+            <el-input v-model.number="form.width" placeholder="请输入宽度">
+              <template slot="append">{{ form.danwei === 1 ? 'cm' : 'in' }}</template>
+            </el-input>
+          </el-form-item>
+          
+          <el-form-item label="高度" prop="height">
+            <el-input v-model.number="form.height" placeholder="请输入高度">
+              <template slot="append">{{ form.danwei === 1 ? 'cm' : 'in' }}</template>
+            </el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+    </div>
+  </div>
+
+  <!-- 分类与状态 -->
+  <div class="card">
+    <div class="card-header">分类与状态</div>
+    <div class="card-body">
+      <el-form :model="form" :rules="rules" label-width="110px">
+        <div class="form-grid">
+          <el-form-item label="产品分类">
+            <el-select v-model="form.cat_id" placeholder="请选择产品分类" style="width:100%;">
+              <el-option 
+                v-for="cat in categories" 
+                :key="cat.id" 
+                :label="cat.cn_en_name || cat.name" 
+                :value="cat.id"></el-option>
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="是否带电池" prop="is_with_battery">
+            <el-select v-model="form.is_with_battery" placeholder="请选择" style="width:100%;">
+              <el-option label="不含电池" :value="0"></el-option>
+              <el-option label="含电池" :value="1"></el-option>
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="产品状态">
+            <el-select v-model="form.status" placeholder="请选择" style="width:100%;">
+              <el-option label="启用" :value="1"></el-option>
+              <el-option label="禁用" :value="0"></el-option>
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="库存预警值">
+            <el-input v-model.number="form.kucun_warn" placeholder="库存低于此值时预警"></el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+    </div>
+  </div>
+  
+  <!-- 产品图片 -->
+  <div class="card">
+    <div class="card-header">产品图片</div>
+    <div class="card-body">
+      <el-form label-width="110px">
+        <el-form-item label="产品图片" prop="images">
+          <div class="image-upload-list">
+            <div v-for="(img, index) in form.images" :key="index" class="image-item">
+              <img :src="img.full_url || (imgUrl + img.url)" />
+              <i class="el-icon-close" @click="removeImage(index)"></i>
+              <div v-if="img.is_main === 1" class="main-badge">主图</div>
+              <div v-else class="set-main-btn" @click="setMainImage(index)">设为主图</div>
+            </div>
+            
+            <el-upload
+              :action="uploadUrl"
+              :headers="uploadHeaders"
+              :show-file-list="false"
+              :on-success="handleUploadSuccess"
+              :before-upload="beforeUpload"
+              accept="image/*"
+              multiple>
+              <div class="upload-trigger">
+                <i class="el-icon-plus"></i>
+                <span style="font-size:12px;">上传图片</span>
+              </div>
+            </el-upload>
+          </div>
+          <div style="color:#909399;font-size:12px;margin-top:8px;">支持jpg、png、gif、webp格式，单个文件不超过5MB，第一张图片将作为主图显示</div>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+  
+  <!-- SKU变体 -->
+  <div class="card">
+    <div class="card-header">SKU变体（可选）</div>
+    <div class="card-body">
+      <el-form label-width="110px">
+        <div class="sku-list">
+          <el-form-item 
+            v-for="(sku, index) in form.subSkuList" 
+            :key="index" 
+            :label="'子SKU ' + (index + 1)">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <el-input 
+                v-model="sku.subSku" 
+                placeholder="请输入子SKU（仅数字、字母、横杠）"
+                :disabled="!!(isEdit && sku.subSkuId)"
+                style="flex:1;">
+              </el-input>
+              <el-button 
+                type="danger" 
+                icon="el-icon-delete" 
+                circle 
+                @click="removeSku(index)"></el-button>
+            </div>
+          </el-form-item>
+        </div>
+        
+        <el-form-item label=" " v-if="form.subSkuList.length === 0">
+          <div style="color:#909399;padding:20px;text-align:center;background:#fafafa;border-radius:8px;">
+            暂无子SKU，点击下方按钮添加
+          </div>
+        </el-form-item>
+      </el-form>
+      
+      <div class="add-sku-btn" @click="addSku">
+        <i class="el-icon-plus"></i> 添加子SKU
+      </div>
+    </div>
+  </div>
+  
+  <!-- 申报信息 -->
+  <div class="card">
+    <div class="card-header">申报信息</div>
+    <div class="card-body">
+      <el-form :model="form" :rules="rules" label-width="110px">
+        <div class="form-grid-3">
+          <el-form-item label="海关编码">
+            <el-input v-model="form.haiguan_code" placeholder="请输入HS海关编码"></el-input>
+          </el-form-item>
+          
+          <el-form-item label="原产地">
+            <el-input v-model="form.original_places" placeholder="例如：中国"></el-input>
+          </el-form-item>
+          
+          <el-form-item label="申报价值">
+            <el-input v-model.number="form.value" placeholder="请输入申报价值">
+              <template slot="prepend">$</template>
+            </el-input>
+          </el-form-item>
+          
+          <el-form-item label="销售价格">
+            <el-input v-model.number="form.price" placeholder="可选">
+              <template slot="prepend">$</template>
+            </el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+    </div>
+  </div>
+  
+  
+  
+  <!-- 产品描述 -->
+  <div class="card">
+    <div class="card-header">产品描述</div>
+    <div class="card-body">
+      <el-form :model="form" label-width="110px">
+        <el-form-item label="中文描述">
+          <el-input 
+            type="textarea" 
+            v-model="form.desc" 
+            placeholder="请输入产品的中文描述信息"
+            :rows="4"></el-input>
+        </el-form-item>
+        
+        <el-form-item label="英文描述">
+          <el-input 
+            type="textarea" 
+            v-model="form.en_desc" 
+            placeholder="请输入产品的英文描述信息"
+            :rows="4"></el-input>
+        </el-form-item>
+      </el-form>
+    </div>
+  </div>
+  
+  <!-- 底部工具栏 -->
+  <div class="footer-bar">
+    <el-button @click="goBack">取消</el-button>
+    <el-button type="primary" @click="submitForm" :loading="submitting">
+      {{ isEdit ? '保存修改' : '创建产品' }}
+    </el-button>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="/lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/check-token.js"></script>
+<script>
+// 初始化全局变量
+if (typeof token === 'undefined') {
+  window.token = localStorage.getItem('token') || '';
+}
+
+const imgUrl = 'https://backend.atwindow.com/';
+
+// 等待Vue和Element UI加载完成
+function initVueApp() {
+  if (typeof Vue === 'undefined' || typeof ELEMENT === 'undefined') {
+    setTimeout(initVueApp, 50);
+    return;
+  }
+
+  // Vue 应用
+  window.app = new Vue({
+    el: '#app',
+    data() {
+      // SKU验证规则
+      const validateSku = (rule, value, callback) => {
+        if (!value) {
+          callback(new Error('请输入SKU'));
+        } else if (/[\u4e00-\u9fa5]/.test(value)) {
+          callback(new Error('SKU不能包含中文'));
+        } else {
+          callback();
+        }
+      };
+      
+      return {
+        imgUrl: imgUrl,
+        isEdit: false,
+        productId: null,
+        submitting: false,
+        uploadUrl: imgUrl + 'api/product/uploadImage',
+        uploadHeaders: {
+          token: window.token
+        },
+        form: {
+          id: null,
+          en_sku: '',
+          cn_name: '',
+          en_name: '',
+          cn_brand: '',
+          en_brand: '',
+          cat_id: null,
+          weight: null,
+          length: null,
+          width: null,
+          height: null,
+          danwei: 1,
+          value: null,
+          price1: null,
+          price2: null,
+          price3: null,
+          haiguan_code: '',
+          original_places: '',
+          barcode: '',
+          en_desc: '',
+          desc: '',
+          is_with_battery: 0,
+          kucun_warn: null,
+          status: 1,
+          subSkuList: [],
+          images: [],
+          keep_image_ids: []
+        },
+        rules: {
+          en_sku: [
+            { required: true, validator: validateSku, trigger: 'blur' }
+          ],
+          cn_name: [
+            { required: true, message: '请输入产品中文名', trigger: 'blur' },
+            { max: 50, message: '最多50字符', trigger: 'blur' }
+          ],
+          en_name: [
+            { required: true, message: '请输入产品英文名', trigger: 'blur' },
+            { max: 35, message: '最多35字符', trigger: 'blur' }
+          ],
+          en_brand: [
+            { required: true, message: '请输入英文品牌', trigger: 'blur' },
+            { max: 50, message: '最多50字符', trigger: 'blur' }
+          ],
+          weight: [
+            { required: true, message: '请输入重量', trigger: 'blur' },
+            { type: 'number', message: '请输入数字', trigger: 'blur' }
+          ],
+          length: [
+            { required: true, message: '请输入长度', trigger: 'blur' },
+            { type: 'number', message: '请输入数字', trigger: 'blur' }
+          ],
+          width: [
+            { required: true, message: '请输入宽度', trigger: 'blur' },
+            { type: 'number', message: '请输入数字', trigger: 'blur' }
+          ],
+          height: [
+            { required: true, message: '请输入高度', trigger: 'blur' },
+            { type: 'number', message: '请输入数字', trigger: 'blur' }
+          ],
+          is_with_battery: [
+            { required: true, message: '请选择是否带电池', trigger: 'change' }
+          ]
+        },
+        categories: []
+      };
+    },
+    mounted() {
+      this.checkPageType();
+      this.loadCategories();
+    },
+    methods: {
+      // 检查页面类型（新增/编辑/查看）
+      checkPageType() {
+        const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+        const type = urlParams.get('type');
+        const id = urlParams.get('id');
+        
+        if (type === 'edit' || type === 'detail') {
+          this.isEdit = true;
+          this.productId = parseInt(id);
+          this.form.id = this.productId;
+          this.loadProductDetail();
+        }
+        
+        // 如果是查看模式，禁用所有表单
+        if (type === 'detail') {
+          this.$nextTick(() => {
+            const inputs = this.$el.querySelectorAll('input, select, textarea, button');
+            inputs.forEach(el => {
+              if (!el.classList.contains('el-icon-arrow-left')) {
+                el.disabled = true;
+              }
+            });
+          });
+        }
+      },
+      
+      // 加载产品分类
+      loadCategories() {
+        $.ajax({
+          type: 'post',
+          url: window.common.getProductCate || (imgUrl + 'api/product/category'),
+          data: { token: window.token },
+          success: (res) => {
+            if (res.code == 1) {
+              this.categories = res.data || [];
+            }
+          }
+        });
+      },
+      
+      // 加载产品详情
+      loadProductDetail() {
+        const loading = this.$loading({
+          lock: true,
+          text: '加载中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        
+        $.ajax({
+          type: 'post',
+          url: window.common.detailPro || (imgUrl + 'api/product/detail'),
+          data: { 
+            token: window.token,
+            id: this.productId 
+          },
+          success: (res) => {
+            if (res.code == 1) {
+              const data = res.data;
+              
+              // 填充基本信息
+              Object.keys(this.form).forEach(key => {
+                if (data[key] !== undefined && key !== 'subSkuList' && key !== 'images') {
+                  this.form[key] = data[key];
+                }
+              });
+              
+              // 处理SKU列表
+              if (data.sku && Array.isArray(data.sku)) {
+                this.form.subSkuList = data.sku
+                  .filter(s => s.is_main === 0)
+                  .map(s => ({
+                    subSkuId: s.id,
+                    subSku: s.sku
+                  }));
+              }
+              
+              // 处理图片列表
+              if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+                this.form.images = data.images.map(img => ({
+                  id: img.id,
+                  url: img.image_url,
+                  full_url: img.full_url,
+                  is_main: img.is_main,
+                  sort: img.sort
+                }));
+                
+                // 保存现有图片ID（过滤掉主图id=0，因为主图来自fa_product表）
+                this.form.keep_image_ids = data.images
+                  .filter(img => img.id > 0)
+                  .map(img => img.id);
+                
+                loading.close();
+              } else {
+                // 如果detail接口没有返回images，调用专门的图片接口
+                this.loadProductImages(loading);
+                return; // 让loadProductImages来关闭loading
+              }
+            } else {
+              loading.close();
+              this.$message.error(res.msg || '加载失败');
+            }
+          },
+          error: () => {
+            loading.close();
+            this.$message.error('网络请求失败');
+          }
+        });
+      },
+      
+      // 加载产品图片（fallback方法）
+      loadProductImages(loading) {
+        $.ajax({
+          type: 'get',
+          url: imgUrl + 'api/product/getImages',
+          data: { 
+            token: window.token,
+            product_id: this.productId 
+          },
+          success: (res) => {
+            if (loading) loading.close();
+            
+            // 接口返回格式：{ code: 1, data: { images: [...], count: 5 } }
+            if (res.code === 1 && res.data && res.data.images && Array.isArray(res.data.images) && res.data.images.length > 0) {
+              this.form.images = res.data.images.map(img => ({
+                id: img.id,
+                url: img.image_url,
+                full_url: img.full_url,
+                is_main: img.is_main,
+                sort: img.sort
+              }));
+              
+              // 保存所有图片ID（包括id=0的主图）
+              this.form.keep_image_ids = res.data.images.map(img => img.id);
+            } else {
+              // 如果getImages接口也失败，尝试使用img_url字段
+              if (this.form.img_url) {
+                this.form.images = [{
+                  id: 0,
+                  url: this.form.img_url,
+                  full_url: imgUrl + this.form.img_url,
+                  is_main: 1,
+                  sort: -1
+                }];
+                this.form.keep_image_ids = [0];
+              }
+            }
+          },
+          error: () => {
+            if (loading) loading.close();
+            // 静默失败，使用img_url作为最后的fallback
+            if (this.form.img_url) {
+              this.form.images = [{
+                id: 0,
+                url: this.form.img_url,
+                full_url: imgUrl + this.form.img_url,
+                is_main: 1,
+                sort: -1
+              }];
+              this.form.keep_image_ids = [0];
+            }
+          }
+        });
+      },
+      
+      // 添加子SKU
+      addSku() {
+        this.form.subSkuList.push({
+          subSkuId: null,
+          subSku: ''
+        });
+      },
+      
+      // 删除子SKU
+      removeSku(index) {
+        this.$confirm('确定删除此子SKU吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.form.subSkuList.splice(index, 1);
+          this.$message.success('删除成功');
+        }).catch(() => {});
+      },
+      
+      // 图片上传前校验
+      beforeUpload(file) {
+        const isImage = /^image\/(jpeg|jpg|png|gif|webp)$/.test(file.type);
+        const isLt5M = file.size / 1024 / 1024 < 5;
+
+        if (!isImage) {
+          this.$message.error('只能上传图片文件！');
+        }
+        if (!isLt5M) {
+          this.$message.error('图片大小不能超过 5MB！');
+        }
+        return isImage && isLt5M;
+      },
+      
+      // 图片上传成功
+      handleUploadSuccess(res) {
+        if (res.code === 1 && res.data && res.data.images) {
+          res.data.images.forEach(img => {
+            // 新上传的图片没有id，只有url
+            this.form.images.push({
+              url: img.url,
+              full_url: img.full_url,
+              is_main: this.form.images.length === 0 ? 1 : 0,
+              sort: this.form.images.length
+            });
+          });
+          this.$message.success('图片上传成功');
+        } else {
+          this.$message.error(res.msg || '图片上传失败');
+        }
+      },
+      
+      // 删除图片
+      removeImage(index) {
+        this.$confirm('确定删除此图片吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          const img = this.form.images[index];
+          
+          // 如果是已保存的图片（有id），从keep_image_ids中移除
+          if (img.id !== undefined) {
+            const keepIndex = this.form.keep_image_ids.indexOf(img.id);
+            if (keepIndex > -1) {
+              this.form.keep_image_ids.splice(keepIndex, 1);
+            }
+          }
+          
+          this.form.images.splice(index, 1);
+          
+          // 如果删除的是主图，将第一张设为主图
+          if (img.is_main === 1 && this.form.images.length > 0) {
+            this.form.images[0].is_main = 1;
+          }
+          
+          this.$message.success('删除成功');
+        }).catch(() => {});
+      },
+      
+      // 设置主图
+      setMainImage(index) {
+        // 创建新数组以触发Vue响应式更新
+        this.form.images = this.form.images.map((img, i) => ({
+          ...img,
+          is_main: i === index ? 1 : 0
+        }));
+        this.$message.success('已设为主图');
+      },
+      
+      // 提交表单
+      submitForm() {
+        this.$refs.productForm.validate((valid) => {
+          if (valid) {
+            // 验证至少有一张图片
+            if (this.form.images.length === 0) {
+              this.$message.warning('请至少上传一张产品图片');
+              return;
+            }
+            
+            this.saveProduct();
+          } else {
+            this.$message.error('请完善必填项');
+            return false;
+          }
+        });
+      },
+      
+      // 保存产品
+      saveProduct() {
+        this.submitting = true;
+        
+        const submitData = JSON.parse(JSON.stringify(this.form));
+        
+        // 如果是新增，删除id字段
+        if (!this.isEdit) {
+          delete submitData.id;
+        }
+        
+        // 清理空的子SKU
+        submitData.subSkuList = submitData.subSkuList.filter(s => s.subSku.trim());
+        
+        // 找出主图
+        const mainImage = submitData.images.find(img => img.is_main === 1) || submitData.images[0];
+        
+        // 分离新上传的图片和已有图片
+        const newImages = submitData.images.filter(img => img.id === undefined);
+        const existingImageIds = submitData.images
+          .filter(img => img.id !== undefined)
+          .map(img => img.id);
+        
+        // 保存时：keep_image_ids传递要保留的已有图片ID，images传递新上传的图片
+        submitData.keep_image_ids = existingImageIds;
+        submitData.images = newImages.map((img, index) => ({
+          url: img.url,
+          is_main: img.id === undefined && img.url === mainImage.url ? 1 : 0,
+          sort: index
+        }));
+        
+        // 如果主图是已有图片，需要在keep_image_ids中标记
+        if (mainImage.id !== undefined) {
+          submitData.main_image_id = mainImage.id;
+        }
+        
+        $.ajax({
+          type: 'post',
+          url: imgUrl + 'api/product/save',
+          data: JSON.stringify(submitData),
+          contentType: 'application/json;charset=utf-8',
+          headers: {
+            token: window.token
+          },
+          success: (res) => {
+            this.submitting = false;
+            if (res.code === 1) {
+              this.$message.success(res.msg || (this.isEdit ? '产品更新成功' : '产品创建成功'));
+              setTimeout(() => {
+                this.goBack();
+              }, 1000);
+            } else {
+              if (res.code === 401) {
+                this.$message.error(res.msg || '请登录后操作');
+                setTimeout(() => {
+                  window.location.href = '/page/login.html';
+                }, 1000);
+              } else {
+                this.$message.error(res.msg || '保存失败');
+              }
+            }
+          },
+          error: () => {
+            this.submitting = false;
+            this.$message.error('网络请求失败');
+          }
+        });
+      },
+      
+      // 返回列表
+      goBack() {
+        window.location.href = '#/page/generation/product-list.html';
+      }
+    }
+  });
+}
+
+// 启动初始化
+initVueApp();
+
+
+var pathnameArr= new Array();
+var pathname = window.location.href;
+pathnameArr = pathname.split("#"); //字符分割
+var x = pathnameArr[1].split("?");
+var xxx = init[x[0]];
+$('.s_one').attr('language',xxx['one']);
+$('.s_two').attr('language',xxx['two']);
+
+setTimeout(()=>{
+  setLanguage();
+}, 100)
+
+setLang();
+
+var lang = getCookie('lang');
+
+</script>
+
+</body>
+</html>

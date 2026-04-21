@@ -1,0 +1,267 @@
+<style>
+  .layui-col-space15>*{
+    padding: 0!important;
+  }
+  .layuimini-main .layui-card {
+    background-size: 100% 100%;
+    border-radius:9px;
+  }
+  .layui-col-xs12{
+    border-radius:10px;
+  }
+  .layui-card{
+    box-shadow: none;
+  }
+  .layui-card-header{
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 72px!important;
+  }
+  .one{
+    background: #F3F6FA;
+    border-radius: 12px;
+    margin: 20px 20px 20px 20px;
+    padding: 0 24px 20px 24px;
+  }
+  .layui-tab-content{
+    padding: 0;
+  }
+
+  .layui-layer-title{
+    background: #FFFFFF!important;
+    height: 57px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 57px;
+  }
+
+  .layui-form input{
+    border-radius: 8px!important;
+  }
+  .layui-input, .layui-select, .layui-textarea{
+    height: 42px;
+  }
+  .layui-col-space15{
+    margin: 0 !important;
+  }
+
+  .layui-layout-admin .layui-footer{
+    height: 62px!important;
+    margin-top: 20px!important;
+    background-color: #FFFFFF!important;
+  }
+  .footer .layui-btn{
+    width: 108px;
+    height: 38px;
+    background: #1890FF;
+    border-radius: 19px;
+    float: right;
+    margin-top: 12px;
+  }
+
+  .layui-form-label{
+    padding: 0!important;
+  }
+  .form-div{
+    padding-top: 20px;
+  }
+  .layui-form-item{
+    margin-bottom: 4px!important;
+    padding-left: 24px!important;
+  }
+  .tianjia_bg{
+    width: 86%;
+    height: 42px;
+    border-radius: 4px;
+    border: 1px dashed #D8E0E7;
+    margin-top: 16px;
+    text-align: center;
+    line-height: 42px;
+    color: #212529;
+    font-weight: 400;
+    font-size: 13px;
+  }
+  .tianjia_bg:hover{
+    width: 86%;
+    height: 42px;
+    border-radius: 4px;
+    border: 1px dashed #1890FF;
+    margin-top: 16px;
+    text-align: center;
+    line-height: 42px;
+    color: #1890FF;
+    font-weight: 400;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .juxing{
+    width: 5%;
+    height: 42px;
+    line-height: 42px;
+    background: #EBEBED;
+    border-radius: 0px 8px 8px 0px;
+    font-size: 13px;
+    color: #6C757D;
+    text-align: center!important;
+  }
+  .bz{
+    height: 228px;
+    background: #FFFFFF;
+    box-shadow: 0px 2px 10px 0px rgba(108,117,125,0.06);
+    border-radius: 10px;
+    margin: 24px 24px 0px 24px;
+  }
+  .bz1{
+      width: 150px;
+      height: 22px;
+      margin-left: 24px;
+      padding-top: 24px;
+  }
+  .bz1_2{
+    height: 22px;
+    font-size: 16px;
+    font-family: PingFangSC-Semibold, PingFang SC;
+    font-weight: 600;
+    color: #212529;
+    line-height: 22px;
+  }
+
+</style>
+
+
+
+<div class="layuimini-container layui-anim layui-anim-upbit">
+  <div class="bz">
+      <div class="bz1">
+          <span><img src="/images/new/bz_icon.svg"></span>
+          <span class="bz1_2">一件代发步骤</span>
+      </div>
+      <div class="bz2" style="width: 100%;height: 228px;">
+          <img src="/images/new/bz_all.png" style="width: 1032px;margin-left: 24px;padding-top: 32px;">
+      </div>
+  </div>
+  <form class="layui-form">
+    <div class="layuimini-main">
+
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-xs12 layui-col-md12">
+        <div class="layui-card top-panel">
+          <div class="layui-card-header"><span language="Serviceapplication"></span></div>
+          <div class="layui-card-body1">
+            <div class="layui-form-item" style="padding-top: 32px">
+              <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="Warehousesthatneedtobeopened"></span></label>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label" style="width: 20%">
+                <select name="warehouse_id" lay-verify="required"> </select>
+              </label>
+            </div>
+
+            <div class="layui-form-item" style="padding-top: 12px">
+              <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="Estimatedweeklyshipments"></span></label>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label" style="width: 15%">
+                <input type="text" name="num" lay-verify="required|number" autocomplete="off" class="layui-input" style="border-radius: 8px 0px 0px 8px!important;"/>
+              </label>
+              <label class="layui-form-label juxing"><span language="piece"></span></label>
+            </div>
+
+            <div class="layui-form-item" style="padding-top: 12px">
+              <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="Estimatedweeklyshippingweight"></span></label>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label" style="width: 15%">
+                <input type="text" name="weight" lay-verify="required|number" autocomplete="off" class="layui-input" style="border-radius: 8px 0px 0px 8px!important;"/>
+              </label>
+              <label class="layui-form-label juxing"><span language="kg"></span></label>
+            </div>
+
+            <div class="layui-form-item" style="padding-top: 12px">
+              <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="Itemtype"></span></label>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label" style="width: 20%">
+                <input type="text" name="goods_type" lay-verify="required" autocomplete="off" class="layui-input"/>
+              </label>
+            </div>
+
+            <div class="layui-form-item" style="padding-top: 12px">
+              <label class="layui-form-label" style="width: 20%"><span style="color:red;">*</span><span language="methodofsales"></span></label>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label" style="width: 20%">
+                <input type="text" name="sale_type" lay-verify="required" autocomplete="off" class="layui-input" placeholder="例如eBay、Amazon、独立 B2C平台等"/>
+              </label>
+            </div>
+
+            <div class="layui-form-item" style="padding-top: 12px;padding-bottom: 40px">
+              <label class="layui-form-label" style="width: 20%">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="submitBtn" style="border-radius: 19px;">
+                  <span language="Openwarehousing"></span>
+                </button>
+              </label>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </form>
+</div>
+<script src="/js/check-token.js"></script>
+<script>
+  //面包屑
+  layui.use([], function() {
+    form.render();
+    initWarehouseList();
+    initCountryList();
+
+    var lang = getCookie('lang');
+    if (lang === 'en'){
+      var msg1 = 'Your opening application has been submitted, please wait for the background staff to review and open, if you have any questions, please contact customer service or sales manager to check the progress!';
+    }else{
+      var msg1 = '您的开通申请已提交，请等待后台工作人员审核开通，如有疑问可联系客服或者销售经理查询进度！';
+    }
+    form.on('submit(submitBtn)', function(obj) {
+      var field = obj.field;
+      requestPost(common.applyService, field, function(res) {
+        if (res.code == 1) {
+          layer.msg(msg1, { icon: 1});
+          setTimeout(function(){
+            window.location = '/#/page/admin/info.html';
+          }, 3000);
+          // setTimeout(function() {
+          //   window.location.reload();
+          // }, 2000);
+        }
+      });
+      return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+  });
+</script>
+<script type="text/javascript">
+  var pathnameArr= new Array();
+  var pathname = window.location.href;
+  pathnameArr = pathname.split("#"); //字符分割
+  var x = pathnameArr[1].split("?");
+  var xxx = init[x[0]];
+  $('.s_one').attr('language',xxx['one']);
+  $('.s_two').attr('language',xxx['two']);
+
+  setTimeout(()=>{
+    setLanguage();
+  }, 100)
+
+  setLang();
+
+  var lang = getCookie('lang');
+
+  if (lang === 'en'){
+    $("input[name='sale_type']").attr('placeholder',"Such as eBay, Amazon, independent B2C platforms, etc.");
+  }else{
+    $("input[name='sale_type']").attr('placeholder','例如eBay、Amazon、独立 B2C平台等');
+  }
+</script>

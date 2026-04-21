@@ -1,0 +1,127 @@
+{
+  "nav": {
+    "heading": {
+      "business": "Business menu"
+    },
+    "dashboard": "Dashboard",
+    "printLabel": {
+      "_": "Print labels",
+      "create": "Create label",
+      "shippingList": "Order list",
+      "batchUpload": "Batch shipping",
+      "orders": "Order list (legacy)"
+    },
+    "dropShipping": {
+      "_": "Dropshipping",
+      "begin": "Enable service",
+      "products": "Product management",
+      "inbound": "Inbound list",
+      "orders": "Order list",
+      "relabel": "Relabeling"
+    },
+    "dropShippingReturns": {
+      "_": "Dropshipping returns",
+      "orders": "Order list",
+      "packages": "Return packages"
+    },
+    "dataCenter": {
+      "_": "Data center",
+      "sales": "Sales analysis",
+      "inventory": "Inventory data",
+      "returnInventory": "Return inventory"
+    },
+    "account": {
+      "_": "Account",
+      "personalization": "Personalization",
+      "auth": "Authorization",
+      "funds": "Funds",
+      "addresses": "Address management"
+    }
+  },
+  "search": {
+    "trigger": "Search",
+    "tryFromMenu": "Try these menu entries",
+    "noResultFor": "No result for"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Use your account and password to access the admin console",
+    "form": {
+      "account": {
+        "label": "Account",
+        "placeholder": "Enter your account"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password"
+      },
+      "submit": "Sign in"
+    },
+    "error": {
+      "invalidCredentials": "Sign in failed, please check your account or password",
+      "network": "Network error, please try again later"
+    }
+  },
+  "$vuetify": {
+    "badge": "Badge",
+    "noDataText": "No data available",
+    "close": "Close",
+    "open": "open",
+    "loading": "loading",
+    "carousel": {
+      "ariaLabel": {
+        "delimiter": "delimiter"
+      }
+    },
+    "colorPicker": {
+      "ariaLabel": {
+        "hueSlider": "Hue Slider",
+        "eyedropper": "Eye Dropper",
+        "hexInput": "Hex Input"
+      }
+    },
+    "dataFooter": {
+      "itemsPerPageText": "Items per page:",
+      "itemsPerPageAll": "All",
+      "pageText": "{0}-{1} of {2}",
+      "firstPage": "First Page",
+      "prevPage": "Previous Page",
+      "nextPage": "Next Page",
+      "lastPage": "Last Page"
+    },
+    "pagination": {
+      "ariaLabel": {
+        "root": "root",
+        "previous": "previous",
+        "first": "first",
+        "last": "last",
+        "next": "next",
+        "currentPage": "currentPage",
+        "page": "page"
+      }
+    },
+    "input": {
+      "clear": "clear",
+      "appendAction": "appendAction",
+      "prependAction": "prependAction",
+      "counterSize": "counterSize",
+      "otp": "otp"
+    },
+    "fileInput": {
+      "counterSize": "counterSize"
+    },
+    "rating": {
+      "ariaLabel": {
+        "item": "item"
+      }
+    },
+    "video": {
+      "seek": "Seek",
+      "play": "Play",
+      "pause": "Pause",
+      "showVolume": "Show Volume",
+      "enterFullscreen": "Enter Fullscreen",
+      "volume": "Volume"
+    }
+  }
+}
