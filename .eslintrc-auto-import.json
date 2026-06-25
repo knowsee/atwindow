@@ -374,6 +374,11 @@
     "resolveBackendFileUrl": true,
     "clearAppAbilityRules": true,
     "handleHttpUnauthorized": true,
-    "registerAppAbility": true
+    "registerAppAbility": true,
+    "getAppAbility": true,
+    "DOWNLOAD_TEMPLATES": true,
+    "applyUpdate": true,
+    "checkVersion": true,
+    "newVersionAvailable": true
   }
 }

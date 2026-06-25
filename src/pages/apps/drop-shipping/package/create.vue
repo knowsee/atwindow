@@ -1,8 +1,8 @@
 <script setup>
+import FormPageLoadingOverlay from '@/components/FormPageLoadingOverlay.vue'
 import { $api, $apiJson } from '@/utils/api'
 import { resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
 import { loadWarehouseOptions, normalizeRangeText, resolvePackageYjdcTimeRange } from '@/views/apps/drop-shipping/useDropShippingShared'
-import FormPageLoadingOverlay from '@/components/FormPageLoadingOverlay.vue'
 import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
 
 definePage({
@@ -14,9 +14,10 @@ definePage({
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n({ useScope: 'global' })
 const loading = ref(false)
 
-/** 创建页：等待仓库/国家/默认地址/SKU 等首屏接口 */
+/** Create page: wait for warehouse, country, default address, and SKU bootstrap APIs. */
 const initialLoading = ref(true)
 const submitting = ref(false)
 const productLoading = ref(false)
@@ -32,48 +33,32 @@ const senderInfo = ref({
   name: '',
   phone: '',
   address: '',
+  sendName: '',
 })
 
-const expressOptions = ref([
-  { title: '快递', value: 1 },
-  { title: '卡车', value: 2 },
-  { title: '海运', value: 3 },
-  { title: '空运', value: 4 },
+const expressOptions = computed(() => [
+  { title: t('pages.dropShippingPackageCreate.express.courier'), value: 1 },
+  { title: t('pages.dropShippingPackageCreate.express.truck'), value: 2 },
+  { title: t('pages.dropShippingPackageCreate.express.sea'), value: 3 },
+  { title: t('pages.dropShippingPackageCreate.express.air'), value: 4 },
 ])
 
 const skuOptions = ref([])
 
 const mode = computed(() => String(route.query.mode || 'create'))
 const isEdit = computed(() => mode.value === 'edit')
-const isDetail = computed(() => mode.value === 'detail')
 const editingId = computed(() => Number(route.query.id || 0) || null)
 
 const pageBlocking = computed(() => loading.value || initialLoading.value)
 
 const pageOverlayMessage = computed(() => {
   if (loading.value)
-    return '正在加载入库单详情...'
+    return t('pages.dropShippingPackageCreate.overlay.detail')
 
   if (initialLoading.value)
-    return '正在加载仓库、地址与货品数据...'
+    return t('pages.dropShippingPackageCreate.overlay.initial')
 
-  return '正在加载...'
-})
-
-const pageTitle = computed(() => {
-  if (isDetail.value)
-    return '正在查看详情'
-  if (isEdit.value)
-    return '编辑入库单'
-
-  return '创建入库单'
-})
-
-const pageSubtitle = computed(() => {
-  if (isDetail.value)
-    return '以下为只读信息，不可修改。'
-
-  return '填写仓库、物流与货品明细后提交入库申请。'
+  return t('pages.dropShippingPackageCreate.overlay.default')
 })
 
 const form = ref({
@@ -84,6 +69,14 @@ const form = ref({
   timeRange: '',
   products: [{ id: '', enSku: '', cnName: '', qty: 1 }],
 })
+
+const currentWarehouseName = computed(() => {
+  return warehouseOptions.value.find(o => o.value === form.value.warehouseId)?.title || '—'
+})
+
+const currentWarehouseInfo = computed(() =>
+  warehouseOptions.value.find(w => Number(w.value) === Number(form.value.warehouseId)) || null,
+)
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
@@ -117,7 +110,7 @@ function syncSkuMeta(row) {
   row.cnName = hit.cnName
 }
 
-/** 接口 `express_id` 常为 0 时，用 `box_type` 文案（如「快递」）映射运输方式 */
+/** When `express_id` is 0, map the shipping method from the `box_type` label. */
 function resolveExpressIdFromPackage(pkg) {
   const raw = pkg?.express_id ?? pkg?.expressId
   const num = Number(raw)
@@ -145,32 +138,51 @@ function skuSearchFilter(_, queryText, item) {
   return target.includes(query)
 }
 
-async function loadSkuOptions() {
+async function loadSkuOptions(wId = form.value.warehouseId) {
   productLoading.value = true
   try {
-    const res = await $api('/package/getSku', { method: 'POST' })
+    const reqBody = {}
+    if (wId) {
+      reqBody.warehouse_id = wId
+    }
+    const res = await $api('/package/getSku', { method: 'POST', body: reqBody })
     if (Number(res?.code) === 1 && Array.isArray(res?.data)) {
       skuOptions.value = res.data.map(item => ({
-        title: `${item.en_sku || ''} ${item.cn_name ? `(${item.cn_name})` : ''}`.trim(),
+        title: `${item.en_sku || ''} ${item.cn_name ? `(${item.cn_name})` : ''} (${t('pages.dropShippingPackageCreate.availableStock', { stock: item.available_stock || 0 })})`.trim(),
         value: item.en_sku || '',
         enSku: item.en_sku || '',
         cnName: item.cn_name || '',
+        availableStock: item.available_stock || 0,
       }))
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || 'SKU加载失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageCreate.messages.skuLoadFailed'), 'error')
   }
   finally {
     productLoading.value = false
   }
 }
 
+function resolveCountryValue(rawCountry) {
+  if (!rawCountry)
+    return ''
+
+  const opt = senderCountryOptions.value.find(
+    o => o.shortName === rawCountry || o.value === rawCountry,
+  )
+
+  
+  return opt ? opt.value : ''
+}
+
 function normalizeSenderInfo(raw) {
   const row = raw || {}
-  const country = row.country || row.send_country || row.sender_country || row.country_code || ''
+  const rawCountry = row.country || row.send_country || row.sender_country || row.country_code || ''
+  const country = resolveCountryValue(rawCountry)
   const name = row.name || row.sender_name || row.contact || row.linkman || ''
   const phone = row.phone || row.mobile || row.telephone || row.tel || ''
+  const sendName = row.send_name || row.name || row.sender_name || row.contact || row.linkman || ''
 
   const lineParts = [
     row.province,
@@ -184,9 +196,9 @@ function normalizeSenderInfo(raw) {
 
   const address = lineParts.length
     ? lineParts.join(' ')
-    : [country, row.address].filter(Boolean).join(' ').trim()
+    : [rawCountry, row.address].filter(Boolean).join(' ').trim()
 
-  return { country, name, phone, address }
+  return { country, name, phone, address, sendName }
 }
 
 async function loadSenderCountryOptions() {
@@ -196,11 +208,12 @@ async function loadSenderCountryOptions() {
       senderCountryOptions.value = res.data.map(item => ({
         title: `${item.short_name || ''} - ${item.en_name || ''} - ${item.cn_name || ''}`.trim(),
         value: item.cn_name,
+        shortName: item.short_name || '',
       })).filter(item => item.value)
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '国家加载失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageCreate.messages.countryLoadFailed'), 'error')
   }
 }
 
@@ -265,13 +278,17 @@ async function loadDetail(withLoading = true) {
 
       for (const row of form.value.products)
         syncSkuMeta(row)
+
+      const loadedRef = String(pkg.tracking_no || '').trim()
+      if (loadedRef && !/^\w+$/.test(loadedRef))
+        toast(t('pages.dropShippingPackageCreate.messages.invalidLoadedReference'), 'warning')
     }
     else {
-      toast(res?.msg || '加载详情失败', 'error')
+      toast(res?.msg || t('pages.dropShippingPackageCreate.messages.loadDetailFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '加载详情失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageCreate.messages.loadDetailFailed'), 'error')
   }
   finally {
     if (withLoading)
@@ -296,7 +313,7 @@ function buildPayload() {
 
   const boxTypeTitle = expressOptions.value.find(o => o.value === form.value.expressId)?.title
     || expressOptions.value[0]?.title
-    || '快递'
+    || t('pages.dropShippingPackageCreate.express.courier')
 
   const packageSku = form.value.products
     .map(item => ({
@@ -306,16 +323,17 @@ function buildPayload() {
     .filter(row => row['en_sku'] && Number(row['sku_num']) > 0)
 
   return {
-    'send-people-name': senderInfo.value.name.trim(),
+    'send-people-name': senderInfo.value.sendName.trim(),
     'send-people-id': '',
     'send-people-country': senderInfo.value.country || '',
     'send-people-address': senderInfo.value.address.trim(),
     'send-people-telephone': senderInfo.value.phone.trim(),
+    'send_name': senderInfo.value.sendName.trim(),
     'warehouse_id': String(form.value.warehouseId ?? ''),
     'box_type': boxTypeTitle,
     'pdf_type': '1',
     type: '',
-    id: isEdit.value && editingId.value && !isDetail.value ? String(editingId.value) : '',
+    id: isEdit.value && editingId.value ? String(editingId.value) : '',
     'tracking_no': form.value.trackingNo.trim(),
     'package_sku': packageSku,
     yjdcstime: toYmdPart(start),
@@ -325,12 +343,20 @@ function buildPayload() {
 
 async function submitForm() {
   const { valid } = await formRef.value.validate()
-  if (!valid || isDetail.value)
+  if (!valid)
     return
+
+  // Validate the reference again before submitting.
+  const rawRef = String(form.value.trackingNo || '').trim()
+  if (!rawRef || !/^\w+$/.test(rawRef)) {
+    toast(t('pages.dropShippingPackageCreate.messages.referenceInvalid'), 'error')
+    
+    return
+  }
 
   const payload = buildPayload()
   if (!payload['package_sku'].length) {
-    toast('请至少填写一条有效货品明细', 'warning')
+    toast(t('pages.dropShippingPackageCreate.messages.productRequired'), 'warning')
 
     return
   }
@@ -343,29 +369,30 @@ async function submitForm() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '保存成功', 'success')
+      toast(res?.msg || t('pages.dropShippingPackageCreate.messages.saveSuccess'), 'success')
       setTimeout(goList, 500)
     }
     else {
-      toast(res?.msg || '保存失败', 'error')
+      toast(res?.msg || t('pages.dropShippingPackageCreate.messages.saveFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '保存失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageCreate.messages.saveFailed'), 'error')
   }
   finally {
     submitting.value = false
   }
 }
 
-watch(() => form.value.warehouseId, v => {
+watch(() => form.value.warehouseId, async v => {
   if (!warehousePersistReady.value)
     return
   setPreferredWarehouseId(v)
+  await loadSkuOptions(v)
 })
 
 onMounted(async () => {
-  const shouldPreload = !!editingId.value && (isEdit.value || isDetail.value)
+  const shouldPreload = !!editingId.value && isEdit.value
   if (shouldPreload)
     loading.value = true
 
@@ -374,7 +401,7 @@ onMounted(async () => {
     await loadSenderCountryOptions()
     if (!editingId.value)
       form.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: true })
-    if (!isEdit.value && !isDetail.value)
+    if (!isEdit.value)
       await loadPackAddress()
     await loadSkuOptions()
     await loadDetail(!shouldPreload)
@@ -405,11 +432,14 @@ onMounted(async () => {
 
     <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-6">
       <div>
+        <div class="text-overline text-primary mb-1">
+          {{ $t('pages.dropShippingPackageCreate.hero.eyebrow') }}
+        </div>
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          {{ pageTitle }}
+          {{ isEdit ? $t('pages.dropShippingPackageCreate.hero.editTitle') : $t('pages.dropShippingPackageCreate.hero.createTitle') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-          {{ pageSubtitle }}
+          {{ $t('pages.dropShippingPackageCreate.hero.subtitle') }}
         </p>
       </div>
       <VBtn
@@ -417,7 +447,7 @@ onMounted(async () => {
         prepend-icon="tabler-arrow-left"
         @click="goList"
       >
-        返回列表
+        {{ $t('common.actions.backToList') }}
       </VBtn>
     </div>
 
@@ -426,260 +456,376 @@ onMounted(async () => {
       :message="pageOverlayMessage"
     >
       <VForm ref="formRef">
-        <PrintLabelSectionCard
-          title="基础信息"
-          subtitle="入库单头信息"
-          class="mb-4"
-        >
-          <template #append>
-            <div
-              v-if="senderLoading && !pageBlocking"
-              class="d-flex align-center text-medium-emphasis text-caption"
-            >
-              <VProgressCircular
-                indeterminate
-                size="14"
-                width="2"
-                class="me-1"
-              />
-              正在加载基础数据...
-            </div>
-          </template>
-          <VRow>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="form.warehouseId"
-                :items="warehouseOptions"
-                item-title="title"
-                item-value="value"
-                label="入库仓库"
-                :rules="[v => !!v || '请选择仓库']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="form.expressId"
-                :items="expressOptions"
-                item-title="title"
-                item-value="value"
-                label="运输方式"
-                :rules="[v => !!v || '请选择运输方式']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.boxNum"
-                type="number"
-                label="箱数"
-                :rules="[v => Number(v) > 0 || '请输入有效箱数']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <AppTextField
-                v-model="form.trackingNo"
-                label="运单号"
-                :rules="[v => !!String(v || '').trim() || '请输入运单号']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <AppDateTimePicker
-                v-model="form.timeRange"
-                label="预计到仓时间"
-                :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="senderInfo.country"
-                :items="senderCountryOptions"
-                item-title="title"
-                item-value="value"
-                label="发货国家"
-                :rules="[v => !!v || '请选择发货国家']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="senderInfo.name"
-                label="发货联系人"
-                :rules="[v => !!String(v || '').trim() || '请输入发货联系人']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="senderInfo.phone"
-                label="发货电话"
-                :rules="[v => !!String(v || '').trim() || '请输入发货电话']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="8"
-            >
-              <AppTextField
-                v-model="senderInfo.address"
-                label="发货地址"
-                :rules="[v => !!String(v || '').trim() || '请输入发货地址']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-          </VRow>
-        </PrintLabelSectionCard>
-
-        <PrintLabelSectionCard
-          title="货品信息"
-          subtitle="至少保留一条货品明细"
-        >
-          <template #append>
-            <VBtn
-              color="primary"
-              variant="tonal"
-              size="small"
-              prepend-icon="tabler-plus"
-              :disabled="isDetail || pageBlocking"
-              @click="addProduct"
-            >
-              添加货品
-            </VBtn>
-          </template>
-          <VTable
-            density="comfortable"
-            class="package-product-table"
+        <VRow>
+          <VCol
+            cols="12"
+            lg="8"
           >
-            <thead>
-              <tr>
-                <th class="text-left">
-                  SKU
-                </th>
-                <th class="text-left">
-                  英文名称
-                </th>
-                <th class="text-left">
-                  中文名称
-                </th>
-                <th class="text-left">
-                  数量
-                </th>
-                <th class="text-center">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(row, idx) in form.products"
-                :key="idx"
-              >
-                <td class="package-product-table__cell-sku">
-                  <AppAutocomplete
-                    v-model="row.id"
-                    :items="skuOptions"
+            <PrintLabelSectionCard
+              :title="$t('pages.dropShippingPackageCreate.sections.base')"
+              :subtitle="$t('pages.dropShippingPackageCreate.sections.baseSubtitle')"
+              class="mb-4"
+            >
+              <VRow>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.warehouseId"
+                    :items="warehouseOptions"
                     item-title="title"
                     item-value="value"
-                    placeholder="请选择 SKU（支持搜索）"
-                    density="compact"
-                    hide-details
-                    :custom-filter="skuSearchFilter"
-                    auto-select-first
-                    :loading="productLoading"
-                    :disabled="isDetail || pageBlocking"
-                    @update:model-value="syncSkuMeta(row)"
+                    :label="$t('pages.dropShippingPackageCreate.fields.warehouse')"
+                    :rules="[v => !!v || $t('pages.dropShippingPackageCreate.messages.warehouseRequired')]"
+                    :disabled="pageBlocking"
                   />
-                </td>
-                <td class="package-product-table__cell-text">
-                  <AppTextField
-                    v-model="row.enSku"
-                    density="compact"
-                    hide-details
-                    readonly
-                    :disabled="isDetail || pageBlocking"
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.expressId"
+                    :items="expressOptions"
+                    item-title="title"
+                    item-value="value"
+                    :label="$t('pages.dropShippingPackageCreate.fields.express')"
+                    :rules="[v => !!v || $t('pages.dropShippingPackageCreate.messages.expressRequired')]"
+                    :disabled="pageBlocking"
                   />
-                </td>
-                <td class="package-product-table__cell-text">
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
                   <AppTextField
-                    v-model="row.cnName"
-                    density="compact"
-                    hide-details
-                    readonly
-                    :disabled="isDetail || pageBlocking"
-                  />
-                </td>
-                <td class="package-product-table__cell-qty">
-                  <AppTextField
-                    v-model="row.qty"
+                    v-model="form.boxNum"
                     type="number"
-                    density="compact"
-                    hide-details
-                    :disabled="isDetail || pageBlocking"
+                    :label="$t('pages.dropShippingPackageCreate.fields.boxes')"
+                    :rules="[v => Number(v) > 0 || $t('pages.dropShippingPackageCreate.messages.boxesRequired')]"
+                    :disabled="pageBlocking"
                   />
-                </td>
-                <td class="text-center package-product-table__cell-action">
-                  <IconBtn
-                    color="error"
-                    :disabled="isDetail || pageBlocking || form.products.length <= 1"
-                    @click="removeProduct(idx)"
-                  >
-                    <VIcon icon="tabler-trash" />
-                  </IconBtn>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
-          <div class="text-caption text-medium-emphasis mt-2">
-            共 {{ form.products.length }} 条货品，至少保留 1 条。
-          </div>
-        </PrintLabelSectionCard>
-      </VForm>
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="form.trackingNo"
+                    :label="$t('pages.dropShippingPackageCreate.fields.reference')"
+                    :rules="[
+                      v => !!String(v || '').trim() || $t('pages.dropShippingPackageCreate.messages.referenceRequired'),
+                      v => /^[A-Za-z0-9_]+$/.test(String(v || '').trim()) || $t('pages.dropShippingPackageCreate.messages.referenceRule'),
+                    ]"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppDateTimePicker
+                    v-model="form.timeRange"
+                    :label="$t('pages.dropShippingPackageCreate.fields.eta')"
+                    :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+              </VRow>
 
-      <VCard
-        v-if="!isDetail"
-        class="mt-6 rounded-lg border"
-        variant="flat"
-      >
-        <VCardText class="d-flex justify-end flex-wrap gap-3 py-5 px-6">
-          <VBtn
-            color="primary"
-            prepend-icon="tabler-device-floppy"
-            :loading="submitting"
-            :disabled="pageBlocking"
-            @click="submitForm"
+              <Transition name="wh-addr">
+                <VSheet
+                  v-if="currentWarehouseInfo && (currentWarehouseInfo.address || currentWarehouseInfo.telephone || currentWarehouseInfo.country)"
+                  rounded="lg"
+                  border
+                  class="warehouse-addr-box mt-4 pa-4"
+                >
+                  <div class="d-flex align-center gap-2 mb-2">
+                    <VIcon
+                      icon="tabler-building-warehouse"
+                      size="15"
+                      color="primary"
+                    />
+                    <span class="text-caption font-weight-semibold text-uppercase tracking-widest text-primary">{{ $t('pages.dropShippingPackageCreate.sections.warehouseAddress') }}</span>
+                  </div>
+                  <VRow dense>
+                    <VCol
+                      v-if="currentWarehouseInfo.sendName"
+                      cols="12"
+                      class="text-body-2"
+                    >
+                      <VIcon
+                        icon="tabler-user"
+                        size="14"
+                        class="me-1 text-medium-emphasis"
+                      />
+                      {{ currentWarehouseInfo.sendName }}
+                    </VCol>
+                    <VCol
+                      v-if="currentWarehouseInfo.address"
+                      cols="12"
+                      class="text-body-2"
+                    >
+                      <VIcon
+                        icon="tabler-map-pin"
+                        size="14"
+                        class="me-1 text-medium-emphasis"
+                      />
+                      {{ currentWarehouseInfo.address }}
+                    </VCol>
+                    <VCol
+                      v-if="currentWarehouseInfo.city || currentWarehouseInfo.state || currentWarehouseInfo.code || currentWarehouseInfo.country"
+                      cols="12"
+                      class="text-body-2 text-medium-emphasis"
+                    >
+                      <VIcon
+                        icon="tabler-world"
+                        size="14"
+                        class="me-1 text-medium-emphasis"
+                      />
+                      {{ [currentWarehouseInfo.city, currentWarehouseInfo.state, currentWarehouseInfo.code, currentWarehouseInfo.country].filter(Boolean).join(' · ') }}
+                    </VCol>
+                    <VCol
+                      v-if="currentWarehouseInfo.telephone"
+                      cols="12"
+                      class="text-body-2"
+                    >
+                      <VIcon
+                        icon="tabler-phone"
+                        size="14"
+                        class="me-1 text-medium-emphasis"
+                      />
+                      {{ currentWarehouseInfo.telephone }}
+                    </VCol>
+                  </VRow>
+                </VSheet>
+              </Transition>
+            </PrintLabelSectionCard>
+            <PrintLabelSectionCard
+              :title="$t('pages.dropShippingPackageCreate.sections.sender')"
+              :subtitle="$t('pages.dropShippingPackageCreate.sections.senderSubtitle')"
+              class="mb-4"
+            >
+              <template #append>
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-refresh"
+                  class="text-none"
+                  :disabled="pageBlocking"
+                  @click="loadPackAddress"
+                >
+                  {{ $t('pages.dropShippingPackageCreate.actions.reloadAddress') }}
+                </VBtn>
+              </template>
+
+              <VRow>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppAutocomplete
+                    v-model="senderInfo.country"
+                    :items="senderCountryOptions"
+                    item-title="title"
+                    item-value="value"
+                    :label="$t('pages.dropShippingPackageCreate.fields.country')"
+                    :rules="[v => !!v || $t('pages.dropShippingPackageCreate.messages.countryRequired')]"
+                    :disabled="pageBlocking"
+                    clearable
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppTextField
+                    v-model="senderInfo.sendName"
+                    :label="$t('pages.dropShippingPackageCreate.fields.sender')"
+                    :rules="[v => !!String(v || '').trim() || $t('pages.dropShippingPackageCreate.messages.senderRequired')]"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppTextField
+                    v-model="senderInfo.phone"
+                    :label="$t('pages.dropShippingPackageCreate.fields.phone')"
+                    :rules="[v => !!String(v || '').trim() || $t('pages.dropShippingPackageCreate.messages.phoneRequired')]"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <AppTextField
+                    v-model="senderInfo.address"
+                    :label="$t('pages.dropShippingPackageCreate.fields.address')"
+                    :rules="[v => !!String(v || '').trim() || $t('pages.dropShippingPackageCreate.messages.addressRequired')]"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+              </VRow>
+            </PrintLabelSectionCard>
+
+            <PrintLabelSectionCard
+              :title="$t('pages.dropShippingPackageCreate.sections.products')"
+              :subtitle="$t('pages.dropShippingPackageCreate.sections.productsSubtitle')"
+              class="mb-4"
+            >
+              <template #append>
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  prepend-icon="tabler-plus"
+                  :disabled="pageBlocking"
+                  @click="addProduct"
+                >
+                  {{ $t('pages.dropShippingPackageCreate.actions.addProduct') }}
+                </VBtn>
+              </template>
+              <VTable
+                density="comfortable"
+                class="package-product-table"
+              >
+                <thead>
+                  <tr>
+                    <th class="text-left">
+                      {{ $t('pages.dropShippingPackageCreate.fields.sku') }}
+                    </th>
+                    <th class="text-right package-product-table__cell-qty">
+                      {{ $t('pages.dropShippingPackageCreate.fields.qty') }}
+                    </th>
+                    <th class="package-product-table__cell-action" />
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(row, idx) in form.products"
+                    :key="idx"
+                  >
+                    <td class="package-product-table__cell-sku py-2">
+                      <AppAutocomplete
+                        v-model="row.id"
+                        :items="skuOptions"
+                        item-title="title"
+                        item-value="value"
+                        :placeholder="$t('pages.dropShippingPackageCreate.skuPlaceholder')"
+                        density="compact"
+                        hide-details
+                        :custom-filter="skuSearchFilter"
+                        auto-select-first
+                        :loading="productLoading"
+                        :disabled="pageBlocking"
+                        @update:model-value="syncSkuMeta(row)"
+                      />
+                      <div
+                        v-if="row.cnName"
+                        class="text-caption text-medium-emphasis ms-1 mt-1"
+                      >
+                        {{ row.cnName }}
+                      </div>
+                    </td>
+                    <td class="package-product-table__cell-qty">
+                      <AppTextField
+                        v-model="row.qty"
+                        type="number"
+                        density="compact"
+                        hide-details
+                        :disabled="pageBlocking"
+                      />
+                    </td>
+                    <td class="text-center package-product-table__cell-action">
+                      <IconBtn
+                        color="error"
+                        :disabled="pageBlocking || form.products.length <= 1"
+                        @click="removeProduct(idx)"
+                      >
+                        <VIcon icon="tabler-trash" />
+                      </IconBtn>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+              <div class="text-caption text-medium-emphasis mt-2">
+                {{ $t('pages.dropShippingPackageCreate.productCount', { count: form.products.length }) }}
+              </div>
+            </PrintLabelSectionCard>
+          </VCol>
+
+          <VCol
+            cols="12"
+            lg="4"
           >
-            提交入库单
-          </VBtn>
-        </VCardText>
-      </VCard>
+            <div class="create-sidebar">
+              <VCard
+                class="rounded-lg border"
+                elevation="0"
+                color="surface"
+              >
+                <VCardItem class="px-5 pt-5 pb-3">
+                  <VCardTitle class="text-subtitle-1 font-weight-semibold d-flex align-center gap-2">
+                    <VIcon
+                      icon="tabler-box"
+                      size="20"
+                      color="primary"
+                    />
+                    {{ $t('pages.dropShippingPackageCreate.sections.summary') }}
+                  </VCardTitle>
+                </VCardItem>
+                <VDivider class="mx-5 mb-4" />
+                <VCardText class="px-5 pb-4 pt-0">
+                  <div class="d-flex flex-column gap-4">
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingPackageCreate.fields.warehouse') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ currentWarehouseName || '—' }}</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingPackageCreate.fields.express') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ expressOptions.find(o => o.value === form.expressId)?.title || '—' }}</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingPackageCreate.fields.boxes') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ form.boxNum || '—' }}</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingPackageCreate.fields.products') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ $t('pages.dropShippingPackageCreate.summaryItems', { count: form.products.filter(r => r.id || r.enSku).length }) }}</span>
+                    </div>
+                  </div>
+                </VCardText>
+                
+                <VDivider class="mx-5" />
+                <VCardText class="px-5 py-4 d-flex flex-column gap-3">
+                  <VBtn
+                    block
+                    color="primary"
+                    prepend-icon="tabler-device-floppy"
+                    class="text-none rounded-lg"
+                    size="large"
+                    :loading="submitting"
+                    :disabled="pageBlocking"
+                    @click="submitForm"
+                  >
+                    {{ isEdit ? $t('pages.dropShippingPackageCreate.actions.saveEdit') : $t('pages.dropShippingPackageCreate.actions.submit') }}
+                  </VBtn>
+                  <VBtn
+                    block
+                    variant="text"
+                    :disabled="pageBlocking"
+                    @click="goList"
+                  >
+                    {{ $t('pages.dropShippingPackageCreate.actions.cancel') }}
+                  </VBtn>
+                </VCardText>
+              </VCard>
+            </div>
+          </VCol>
+        </VRow>
+      </VForm>
     </FormPageLoadingOverlay>
   </VContainer>
 </template>
@@ -702,24 +848,45 @@ onMounted(async () => {
   padding-block: 0.625rem !important;
 }
 
-.package-product-table__cell-sku {
-  min-width: 22rem;
-}
-
-.package-product-table__cell-text {
-  min-width: 14rem;
-}
-
 .package-product-table__cell-qty {
-  min-width: 9rem;
+  width: 8rem;
+  text-align: right;
 }
 
 .package-product-table__cell-action {
-  min-width: 4.75rem;
+  width: 4rem;
+  text-align: center;
 }
 
 .package-product-table :deep(.v-field--disabled),
 .package-product-table :deep(.v-field[readonly]) {
   background: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+@media (min-width: 1280px) {
+  .create-sidebar {
+    position: sticky;
+    top: 5rem;
+  }
+}
+
+.warehouse-addr-box {
+  background: rgba(var(--v-theme-primary), 0.03);
+  border-color: rgba(var(--v-theme-primary), 0.2) !important;
+}
+
+.tracking-widest {
+  letter-spacing: 0.06em;
+}
+
+.wh-addr-enter-active,
+.wh-addr-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.wh-addr-enter-from,
+.wh-addr-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

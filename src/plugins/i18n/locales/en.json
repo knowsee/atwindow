@@ -35,7 +35,8 @@
       "personalization": "Personalization",
       "auth": "Authorization",
       "funds": "Funds",
-      "addresses": "Address management"
+      "addresses": "Address management",
+      "tiktok": "TikTok Service"
     }
   },
   "search": {
@@ -60,6 +61,2208 @@
     "error": {
       "invalidCredentials": "Sign in failed, please check your account or password",
       "network": "Network error, please try again later"
+    }
+  },
+  "common": {
+    "actions": {
+      "addAddress": "Add address",
+      "backToList": "Back to list",
+      "calculateRate": "Calculate rate",
+      "clear": "Clear",
+      "edit": "Edit",
+      "order": "Order",
+      "preview": "Preview",
+      "selectFromAddressBook": "Select from address book"
+    },
+    "options": {
+      "notRequired": "Not required"
+    },
+    "warehouseFallback": "Warehouse {id}"
+  },
+  "domain": {
+    "dropShipping": {
+      "packageStatuses": {
+        "all": "All",
+        "notArrived": "Not arrived",
+        "arrived": "Arrived",
+        "arrivedNotReported": "Arrived, not reported"
+      }
+    }
+  },
+  "layout": {
+    "footer": {
+      "company": "Atwindow Overseas Warehouse",
+      "product": "WMS",
+      "tagline": "A leading overseas warehouse platform"
+    },
+    "userMenu": {
+      "changePassword": "Change password",
+      "logout": "Log out"
+    }
+  },
+  "components": {
+    "queryPanel": {
+      "title": "Search filters",
+      "search": "Search",
+      "reset": "Reset",
+      "expandAdvanced": "Show advanced search",
+      "collapseAdvanced": "Hide advanced search",
+      "quickFilterAria": "Quick filters"
+    },
+    "upload": {
+      "label": "Upload",
+      "tips": "JPG/PNG/WebP,\nup to {max}MB",
+      "uploaded": "Uploaded",
+      "failed": "Upload failed",
+      "maxSize": "File cannot exceed {max}MB"
+    },
+    "printLabelProducts": {
+      "title": "Item information",
+      "subtitle": "Fill in SKU, English/Chinese item names, quantity, and declaration value row by row. Keep at least one row.",
+      "add": "Add item",
+      "headers": {
+        "sku": "SKU",
+        "enName": "English name",
+        "cnName": "Chinese name",
+        "qty": "Qty",
+        "weightPerItem": "Weight each ({unit})",
+        "declaredValue": "Declared value ({currency})",
+        "actions": "Actions"
+      },
+      "requiredSuffix": " *",
+      "placeholders": {
+        "sku": "SKU",
+        "enName": "English item name",
+        "cnName": "Chinese item name"
+      }
+    },
+    "addressForm": {
+      "required": "Required",
+      "context": {
+        "sender": "Sender address",
+        "receiver": "Receiver address"
+      },
+      "title": {
+        "create": "Add address",
+        "edit": "Edit address"
+      },
+      "fields": {
+        "name": "Name",
+        "address1": "Address line 1",
+        "address2": "Address line 2",
+        "street": "Street / house no.",
+        "city": "City",
+        "province": "Province / state",
+        "postcode": "Postal code",
+        "country": "Country / region",
+        "telephone": "Phone",
+        "company": "Company",
+        "email": "Email"
+      },
+      "hints": {
+        "optional": "Optional",
+        "street": "Optional (house number or street supplement)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "Create"
+      }
+    },
+    "addressBookPicker": {
+      "close": "Close",
+      "countryLocked": "The current channel is restricted to a country. Only addresses in that region are shown.",
+      "searchLabel": "Name keyword",
+      "searchPlaceholder": "Enter a name, then press Enter or search",
+      "reset": "Reset",
+      "search": "Search",
+      "select": "Select",
+      "emptyTitle": "No address records",
+      "emptyHint": "Try clearing the name keyword, or maintain contacts in the WMS address book first.",
+      "pagination": "{total} total · {pageSize} per page"
+    },
+    "loadingOverlay": {
+      "defaultMessage": "Loading..."
+    }
+  },
+  "pages": {
+    "dashboard": {
+      "notice": {
+        "defaultTitle": "Notice",
+        "loading": "Loading notice...",
+        "close": "Close",
+        "readAndHide": "Read and do not show again"
+      },
+      "hero": {
+        "overline": "Operations center",
+        "title": "Business dashboard",
+        "subtitle": "A global view of fulfillment and finance. Switch warehouses below to inspect dropshipping, inventory, and 7-day SKU movement.",
+        "overviewTime": "Overview {time}",
+        "refresh": "Refresh"
+      },
+      "sections": {
+        "global": "Global overview",
+        "sevenDay": "7-day order statistics",
+        "finance": "Finance snapshot",
+        "recentLogs": "Recent transactions",
+        "recentInbound": "Recent inbound activity",
+        "warehouseInsight": "Warehouse insight",
+        "topSku": "Top SKU sales in 7 days",
+        "lowStock": "Low stock watch",
+        "dropshipOrders": "Dropshipping orders"
+      },
+      "kpis": {
+        "packages": {
+          "title": "Inbound packages",
+          "subtitle": "Total warehouse flow",
+          "hint": "Pending inbound {pending} · arrived {arrived}"
+        },
+        "balance": {
+          "title": "Account balance",
+          "hint": "Monthly inflow {inflow} · outflow {outflow}"
+        },
+        "sevenDay": {
+          "title": "7-day orders (labels + dropshipping)",
+          "subtitle": "Orders",
+          "hint": "Status distribution is shown in the 7-day order statistics below"
+        },
+        "dropship": {
+          "title": "Dropshipping orders",
+          "today": "Today {count}"
+        },
+        "sku": {
+          "title": "SKU types",
+          "stockQty": "Stock quantity {count}"
+        },
+        "lowStock": {
+          "title": "Low stock SKU",
+          "subtitle": "Within warning line"
+        }
+      },
+      "sevenDay": {
+        "fallbackSubtitle": "By status · createtime in the last 7 days",
+        "dropshipTab": "Dropshipping",
+        "waybillTab": "Labels",
+        "emptyWaybill": "No label orders in the last 7 days",
+        "emptyDropship": "No dropshipping orders in the last 7 days",
+        "period": "Period: {start} ~ {end}",
+        "donutTotal": "Orders",
+        "status": {
+          "pendingConfirm": "Pending confirmation",
+          "confirmed": "Confirmed",
+          "processing": "Processing",
+          "pendingPay": "Pending payment",
+          "pendingShip": "Pending shipment",
+          "shipped": "Shipped",
+          "problem": "Problem orders",
+          "problemShort": "Problem"
+        }
+      },
+      "finance": {
+        "subtitle": "Balance and recent fund changes",
+        "availableUsd": "USD · available now",
+        "monthInflow": "Monthly inflow",
+        "monthInflowHint": "Total recharge and other credits",
+        "monthOutflow": "Monthly outflow",
+        "monthOutflowHint": "Total order deductions and expenses",
+        "balance": "Balance {amount}",
+        "emptyLogs": "No transactions"
+      },
+      "recentInbound": {
+        "subtitle": "Package tracking summary",
+        "headers": {
+          "trackingNo": "Tracking no.",
+          "time": "Time"
+        },
+        "empty": "No inbound records"
+      },
+      "warehouse": {
+        "generatedAt": "Warehouse data {time}",
+        "topSkuSubtitle": "Aggregated movement by current warehouse",
+        "topSkuSeries": "Sales",
+        "topSkuEmpty": "No sales data",
+        "lowStockSubtitle": "Stock below or equal to warning value",
+        "warning": " / warning ",
+        "lowStockEmpty": "No low stock records",
+        "dropshipSubtitle": "Latest 20 records",
+        "statusFallback": "Status {status}",
+        "noWarehouse": "No available warehouse found. Please confirm warehouse information has been maintained in the system."
+      },
+      "dropshipRecent": {
+        "headers": {
+          "reference": "Reference no.",
+          "trackingNo": "Tracking no.",
+          "fee": "Fee",
+          "shipTime": "Shipping time",
+          "createTime": "Created time"
+        },
+        "empty": "No recent dropshipping orders"
+      },
+      "messages": {
+        "overviewFailed": "Failed to load overview",
+        "warehouseFailed": "Failed to load warehouse data",
+        "refreshed": "Data refreshed"
+      }
+    },
+    "printLabelBatchUpload": {
+      "hero": {
+        "title": "Batch shipping",
+        "subtitle": "Upload a .xls, .xlsx, or .csv file to import shipments in bulk. The system will create a Shipping batch asynchronously."
+      },
+      "upload": {
+        "title": "Upload file",
+        "subtitle": "Supports .xls, .xlsx, and .csv. Download the template first. After submission, check progress and labels in Order list > Batch shipping status.",
+        "choose": "Choose file (.xls / .xlsx / .csv)",
+        "empty": "No file selected",
+        "templateDownload": "Template download:",
+        "templateName": "Batch shipping template.xlsx"
+      },
+      "actions": {
+        "backToOrders": "Back to order list",
+        "submitImport": "Submit import"
+      },
+      "messages": {
+        "fileRequired": "Select a file first",
+        "fileTypeInvalid": "Only .xls, .xlsx, and .csv files are supported",
+        "batchCreated": "Batch {sn} (ID {id}) created. Background parsing is in progress.",
+        "uploadSuccess": "Batch upload submitted successfully",
+        "uploadFailed": "Batch upload failed"
+      }
+    },
+    "printLabelShippingList": {
+      "title": "Order list",
+      "subtitle": "Fill in filters and click Search. Pagination changes refresh automatically.",
+      "actions": {
+        "batchStatus": "Batch shipping status",
+        "create": "Create label",
+        "batchDetail": "Batch details",
+        "cancelShipment": "Cancel shipment"
+      },
+      "filters": {
+        "refNo": "Reference no.",
+        "fuzzy": "Fuzzy match",
+        "channel": "Channel",
+        "status": "Status",
+        "createdDate": "Created date",
+        "dateRange": "Select date range",
+        "trackingNo": "Tracking no.",
+        "allChannels": "All channels",
+        "unnamedChannel": "Unnamed channel"
+      },
+      "headers": {
+        "id": "ID",
+        "createdAt": "Created at",
+        "orderNo": "Order no.",
+        "refNo": "Reference no.",
+        "trackingNo": "Tracking no.",
+        "channelWithCode": "Channel (code)",
+        "fee": "Fee",
+        "status": "Status",
+        "failReason": "Failure reason",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "all": "All",
+        "pending": "Pending",
+        "requesting": "Requesting",
+        "success": "Success",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "cancelling": "Cancelling"
+      },
+      "tooltips": {
+        "view": "View",
+        "label": "Label"
+      },
+      "pagination": {
+        "total": "Total {total}",
+        "perPage": "Per page",
+        "detailTotal": "This page {count} · Total {total}"
+      },
+      "messages": {
+        "loadFailed": "Failed to load order list",
+        "networkFailed": "Network request failed",
+        "noLabelFile": "No label file available",
+        "invalidOrderId": "Invalid order ID",
+        "invalidOrderIdentifier": "Invalid order identifier",
+        "cancelConfirm": "Cancel this shipment?",
+        "cancelSubmitted": "Cancellation submitted",
+        "cancelFailed": "Cancellation failed",
+        "cancelling": "Cancelling..."
+      },
+      "batchDialog": {
+        "title": "Batch shipping status",
+        "subtitle": "Batch import list, details, and bulk label ZIP downloads",
+        "detailTitle": "Batch order details",
+        "filterTitle": "Filters",
+        "detailFilterTitle": "Filter",
+        "close": "Close",
+        "closeDetail": "Close details",
+        "filters": {
+          "batchNo": "Batch no.",
+          "exact": "Exact match",
+          "status": "Batch shipping status"
+        },
+        "headers": {
+          "batchNo": "Batch no.",
+          "total": "Total",
+          "success": "Success",
+          "failed": "Failed",
+          "status": "Status",
+          "createdAt": "Created at",
+          "actions": "Actions",
+          "orderNo": "Order no.",
+          "refNo": "Reference no.",
+          "trackingNo": "Tracking no.",
+          "failReason": "Failure reason"
+        },
+        "statuses": {
+          "all": "All",
+          "processing": "Processing",
+          "completed": "Completed",
+          "failed": "Failed",
+          "unknown": "Status {status}"
+        },
+        "actions": {
+          "detail": "Details",
+          "label": "Label"
+        },
+        "aria": {
+          "batchActions": "Batch actions {batch}",
+          "sourceFile": "Source file",
+          "labelZip": "Label ZIP"
+        },
+        "tooltips": {
+          "detail": "View orders in this batch",
+          "sourceFile": "Open uploaded source spreadsheet",
+          "downloadZip": "Download label ZIP archive",
+          "openLabel": "Open label in a new window"
+        },
+        "empty": {
+          "loading": "Loading...",
+          "noData": "No data",
+          "hint": "Upload a batch file first, or adjust the batch no. / status filters and search again.",
+          "noOrderData": "No order data"
+        },
+        "messages": {
+          "loadBatchesFailed": "Failed to load batch list",
+          "networkFailed": "Network request failed",
+          "noSourceFile": "No source file path available",
+          "loadBatchOrdersFailed": "Failed to load batch orders",
+          "invalidBatchId": "Invalid batch ID",
+          "noLabelFile": "No label file available",
+          "getDownloadLinkFailed": "Failed to get download link",
+          "noDownloadUrl": "The API did not return a download URL",
+          "downloadOpened": "Download link opened",
+          "batchNotFound": "Matching batch not found"
+        }
+      }
+    },
+    "printLabelOrders": {
+      "title": "Order list (legacy)",
+      "subtitle": "Fill in filters and click Search. Pagination changes refresh automatically.",
+      "legacyNotice": "This list contains historical data only and has been renamed Order list (legacy). From now on, new orders are shown and handled in Order list. Contact support to cancel past orders.",
+      "actions": {
+        "create": "Create label",
+        "downloadLabel": "Download label"
+      },
+      "filters": {
+        "status": "Status",
+        "channel": "Channel",
+        "recipient": "Recipient",
+        "recipientPlaceholder": "Name",
+        "createdAt": "Created at",
+        "dateRange": "Select date range",
+        "refNoMultiline": "Reference no. (multiple lines)",
+        "refNoPerLine": "One reference no. per line",
+        "allChannels": "All channels",
+        "unnamedChannel": "Unnamed channel"
+      },
+      "statusFilters": {
+        "all": "All statuses"
+      },
+      "statuses": {
+        "paidWaiting": "Paid, waiting for label",
+        "completed": "Label created",
+        "cancelled": "Cancelled",
+        "cancelling": "Cancelling",
+        "failed": "Label creation failed",
+        "orderedWaitingFee": "Ordered, waiting for label fee deduction",
+        "exception": "Exception",
+        "unknown": "Status({status})"
+      },
+      "headers": {
+        "createdAt": "Created at",
+        "orderNo": "Order no.",
+        "refNo": "Reference no.",
+        "line": "Line",
+        "trackingNo": "Tracking no.",
+        "skuQty": "SKU / Qty",
+        "totalWeight": "Total weight",
+        "shippingFee": "Shipping fee",
+        "errorInfo": "Exception info",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "tooltips": {
+        "detail": "Details",
+        "downloadLabel": "Download label"
+      },
+      "aria": {
+        "copyTracking": "Copy tracking number"
+      },
+      "pagination": {
+        "total": "Total {total}"
+      },
+      "empty": {
+        "loading": "Loading...",
+        "noOrderData": "No order data",
+        "noPackageInfo": "No package information"
+      },
+      "messages": {
+        "noTracking": "No tracking number",
+        "trackingCopied": "Tracking number copied",
+        "copyFailed": "Copy failed",
+        "missingOrderIdentifier": "Missing order identifier",
+        "detailLoadFailed": "Failed to load details",
+        "networkFailed": "Network request failed",
+        "noLabelFile": "No label file available",
+        "loadFailed": "Failed to load order list"
+      },
+      "detail": {
+        "title": "Shipment details",
+        "orderNo": "Order no.: {orderNo}",
+        "basicInfo": "Basic information",
+        "refNo": "Reference no.",
+        "createdAt": "Created at: {time}",
+        "status": "Status",
+        "line": "Line",
+        "shippingFee": "Shipping fee",
+        "trackingNo": "Tracking no.",
+        "sender": "Sender",
+        "recipient": "Recipient",
+        "packageInfo": "Package information",
+        "packageNo": "Package #{index}",
+        "packageMetrics": "Weight {weight} · Size {length} × {width} × {height}",
+        "packageDeclaration": "Declared {value}"
+      }
+    },
+    "printLabelOrderNewDetail": {
+      "title": "Shipment details",
+      "readonly": "Read-only",
+      "subtitle": "View tracking activity, sender and recipient information, and financial settlement details.",
+      "actions": {
+        "backToList": "Back to list",
+        "printLabel": "Print label"
+      },
+      "alerts": {
+        "cancellingTitle": "Intercepting / cancelling",
+        "cancellingBody": "This order is currently in the cancellation process. Please wait 15-30 days for the channel to confirm the refund."
+      },
+      "labels": {
+        "trackingNumber": "Tracking number",
+        "statusDescription": "Status description",
+        "channelName": "Channel name",
+        "customerRef": "Customer reference",
+        "orderSn": "Internal order no.",
+        "deductionStatus": "Deduction status",
+        "failReason": "Failure reason",
+        "addresses": "Addresses",
+        "sender": "Sender",
+        "recipient": "Recipient",
+        "timeline": "Timeline",
+        "orderCreated": "Order created",
+        "dataUpdated": "Data updated",
+        "labelPrinted": "Label generated/printed",
+        "orderCancelled": "Order cancelled",
+        "fees": "Fee details",
+        "customerFee": "Customer shipping fee",
+        "packageContents": "Package contents",
+        "skuCode": "SKU code",
+        "skuCnName": "CN name",
+        "skuEnName": "EN name",
+        "skuQty": "Qty",
+        "skuValue": "Declared value",
+        "skuWeight": "Weight"
+      },
+      "statuses": {
+        "unknown": "Unknown status",
+        "pending": "Pending",
+        "requesting": "Requesting",
+        "success": "Success",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "statusWithValue": "Status {status}",
+        "deducted": "Deducted",
+        "notDeducted": "Not deducted"
+      },
+      "copyLabels": {
+        "content": "Content",
+        "trackingNumber": "Tracking number",
+        "orderSn": "Internal order no."
+      },
+      "messages": {
+        "missingOrderIdentifier": "Missing order identifier",
+        "detailLoadFailed": "Failed to load details",
+        "networkFailed": "Network request failed",
+        "copySuccess": "{label} copied",
+        "copyFailed": "Failed to copy {label}"
+      }
+    },
+    "dropShippingBegin": {
+      "stepsTitle": "Dropshipping steps",
+      "stepsSubtitle": "Submit an enablement request first. After approval, inbound and order features will be available.",
+      "steps": {
+        "register": {
+          "title": "Register account",
+          "desc": "Complete account registration and enter the dropshipping module"
+        },
+        "apply": {
+          "title": "Submit request",
+          "desc": "Select a warehouse and provide estimated business volume"
+        },
+        "review": {
+          "title": "Review and enable",
+          "desc": "Operations staff will review the request and enable service permissions"
+        },
+        "inbound": {
+          "title": "Create inbound",
+          "desc": "Submit an inbound order and arrange goods into the warehouse"
+        },
+        "order": {
+          "title": "Create order",
+          "desc": "Create and ship orders after the service is enabled"
+        }
+      },
+      "application": {
+        "title": "Service request",
+        "subtitle": "Provide the target warehouse and business volume so the platform can review and support you.",
+        "loadingWarehouses": "Loading warehouse list...",
+        "notice": "After submission, the request enters manual review. Contact sales or support to check progress."
+      },
+      "fields": {
+        "warehouse": "Warehouse to enable",
+        "warehousePlaceholder": "Select the warehouse that needs service enablement",
+        "weeklyShipments": "Estimated weekly shipments",
+        "weeklyShipmentsPlaceholder": "Enter quantity",
+        "weeklyWeight": "Estimated weekly shipment weight",
+        "weeklyWeightPlaceholder": "Enter weight",
+        "goodsType": "Goods type",
+        "goodsTypePlaceholder": "For example: apparel, home goods, electronics, daily goods",
+        "saleType": "Sales channel",
+        "saleTypePlaceholder": "For example: eBay, Amazon, standalone B2C platform"
+      },
+      "validation": {
+        "warehouseRequired": "Select a warehouse",
+        "shipmentsRequired": "Enter a valid quantity",
+        "weightRequired": "Enter a valid weight",
+        "goodsTypeRequired": "Enter the goods type",
+        "saleTypeRequired": "Enter the sales channel"
+      },
+      "units": {
+        "pieces": "pcs"
+      },
+      "actions": {
+        "submit": "Submit enablement request"
+      },
+      "messages": {
+        "warehouseLoadFailed": "Failed to load warehouses",
+        "applySuccess": "Your enablement request has been submitted. Please wait for operations staff to review and enable it. Contact support or your sales manager if you have questions about progress.",
+        "submitFailed": "Submission failed",
+        "networkFailed": "Network request failed"
+      }
+    },
+    "productBatch": {
+      "title": "Batch create products",
+      "subtitle": "Upload an Excel template file to import product data in bulk.",
+      "upload": {
+        "title": "Upload file",
+        "subtitle": "Only .xls and .xlsx files are supported. Download the template first.",
+        "choose": "Choose Excel file",
+        "empty": "No file selected",
+        "templateDownload": "Template download:",
+        "templateName": "Product batch import template.xls"
+      },
+      "actions": {
+        "backToList": "Back to list",
+        "submitImport": "Submit import"
+      },
+      "messages": {
+        "fileRequired": "Select an Excel file first",
+        "fileTypeInvalid": "Only .xls and .xlsx files are supported",
+        "submitSuccess": "Batch create submitted successfully",
+        "submitFailed": "Batch create failed"
+      }
+    },
+    "dropShippingPackageList": {
+      "title": "Inbound list",
+      "subtitle": "Filter, batch print box labels, and batch delete. Switch status quickly below the search panel.",
+      "actions": {
+        "batchCreate": "Batch create",
+        "create": "Create inbound order",
+        "batchPrintBox": "Batch print box labels",
+        "batchDelete": "Batch delete",
+        "cancelSelection": "Cancel selection",
+        "delete": "Delete"
+      },
+      "filters": {
+        "skuPlaceholder": "Enter SKU code",
+        "trackingNo": "Tracking no.",
+        "trackingNoPlaceholder": "Enter tracking no.",
+        "createdAt": "Created at"
+      },
+      "headers": {
+        "package": "Inbound order",
+        "warehouse": "Warehouse",
+        "sku": "SKU",
+        "qty": "Declared / received",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "selection": {
+        "selected": "Selected {count}"
+      },
+      "tooltips": {
+        "detail": "View details",
+        "printBox": "Print box label"
+      },
+      "pagination": {
+        "total": "Total {total} records"
+      },
+      "messages": {
+        "loadFailed": "Failed to load inbound list",
+        "networkFailed": "Network request failed",
+        "deleteSuccess": "Deleted successfully",
+        "deleteFailed": "Delete failed",
+        "selectDeleteRequired": "Select rows to delete first",
+        "batchDeleteSuccess": "Batch delete succeeded",
+        "batchDeleteFailed": "Batch delete failed",
+        "printTaskCreated": "Print task generated",
+        "printFailed": "Print failed",
+        "selectPrintRequired": "Select rows to print first",
+        "batchPrintFailed": "Batch print failed"
+      }
+    },
+    "dropShippingPackageBatch": {
+      "title": "Batch create inbound orders",
+      "subtitle": "Optionally choose a warehouse, upload Excel, and the system will create inbound orders in bulk. The label PDF can open automatically after success.",
+      "settings": {
+        "title": "Inbound settings",
+        "subtitle": "If no warehouse is selected, the system default rules are used.",
+        "warehouse": "Warehouse (optional)",
+        "warehouseAddress": "Warehouse receiving address"
+      },
+      "upload": {
+        "title": "Upload file",
+        "subtitle": "Only .xls / .xlsx files are supported. Columns should match the inbound batch template from operations.",
+        "pickExcel": "Click to select Excel",
+        "noFile": "No file selected",
+        "templateDownload": "Template download:",
+        "templateName": "Batch inbound list template.{ext}"
+      },
+      "actions": {
+        "backToList": "Back to list",
+        "submit": "Submit import"
+      },
+      "messages": {
+        "selectExcel": "Select an Excel file first",
+        "invalidExcel": "Only .xls / .xlsx files are supported",
+        "success": "Batch create succeeded",
+        "failed": "Batch create failed",
+        "uploadFailed": "Upload failed"
+      }
+    },
+    "dropShippingOrderList": {
+      "title": "Order list",
+      "subtitle": "Enter filters and search. Switch status below the search button. Expand Advanced Search for warehouse, transport, and time filters.",
+      "actions": {
+        "batchCreate": "Batch create",
+        "create": "Create order",
+        "export": "Export orders"
+      },
+      "status": {
+        "all": "All orders",
+        "pendingConfirm": "Pending confirmation",
+        "confirmed": "Confirmed",
+        "pendingPayment": "Pending payment",
+        "pendingShipment": "Pending shipment",
+        "overseasShipped": "Overseas warehouse shipped",
+        "overseasSent": "Overseas warehouse sent",
+        "problem": "Problem order",
+        "refundedShipping": "Shipping refunded",
+        "unknown": "Status ({status})"
+      },
+      "transport": {
+        "all": "All transport methods",
+        "pickup": "Pickup",
+        "uspsNoPreOnline": "USPS (not pre-online)",
+        "uspsT5": "USPS (T5)",
+        "uni": "UNI ("
+      },
+      "source": {
+        "all": "All sources",
+        "system": "System",
+        "mabang": "Mabang",
+        "thirdPartyErp": "Third-party ERP"
+      },
+      "remote": {
+        "all": "All",
+        "remote": "Remote area",
+        "nonRemote": "Non-remote"
+      },
+      "filters": {
+        "allWarehouses": "All warehouses",
+        "orderNo": "Order no.",
+        "orderNoPlaceholder": "Order no. or reference no.",
+        "recipient": "Recipient",
+        "recipientPlaceholder": "Recipient name",
+        "skuPlaceholder": "SKU code",
+        "trackingNo": "International tracking no.",
+        "trackingNoPlaceholder": "International tracking / tracking no.",
+        "warehouse": "Warehouse",
+        "transport": "Transport method",
+        "source": "Source",
+        "remoteArea": "Remote area",
+        "createdAt": "Created at",
+        "shippedAt": "Shipped at",
+        "questionReason": "Issue reason",
+        "questionReasonPlaceholder": "Enter issue reason"
+      },
+      "headers": {
+        "orderNo": "Order no.",
+        "referenceNo": "Reference no.",
+        "recipient": "Recipient",
+        "warehouse": "Warehouse",
+        "sku": "SKU",
+        "trackingNo": "Tracking no.",
+        "fee": "Fee",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "tooltips": {
+        "detail": "Details",
+        "copy": "Copy"
+      },
+      "pagination": {
+        "total": "Total {total}"
+      },
+      "messages": {
+        "loadFailed": "Failed to load order list",
+        "networkFailed": "Network request failed",
+        "statusRequired": "Status is required. Select a status first",
+        "exportSubmitted": "Export task submitted",
+        "exportFailed": "Export failed"
+      }
+    },
+    "dropShippingOrderBatch": {
+      "title": "Batch create orders",
+      "subtitle": "Select a channel and warehouse, upload Excel (and an optional pickup ZIP), then submit orders in bulk.",
+      "transport": {
+        "autoTrial": "Automatic logistics channel selection (trial)",
+        "pickup": "Pickup",
+        "uspsT5": "USPS (T5)"
+      },
+      "settings": {
+        "title": "Channel and warehouse",
+        "subtitle": "Same as single-order creation and applied to all orders in this Excel batch.",
+        "transport": "Channel",
+        "warehouse": "Warehouse"
+      },
+      "upload": {
+        "title": "Upload file",
+        "subtitle": "Order Excel is required. For pickup, you may also upload a label ZIP. Only .xls / .xlsx and .zip are supported.",
+        "pickExcel": "Click to select order Excel",
+        "pickZip": "Click to select pickup label ZIP (optional)",
+        "noFile": "No file selected",
+        "templateDownload": "Template download:",
+        "templateName": "Batch dropshipping template.{ext}",
+        "templateNote": "Excel columns should match the batch template from operations."
+      },
+      "actions": {
+        "backToList": "Back to list",
+        "submit": "Submit batch create"
+      },
+      "messages": {
+        "selectTransport": "Select a channel",
+        "selectWarehouse": "Select a warehouse",
+        "selectExcel": "Select an Excel file first",
+        "invalidExcel": "Only .xls / .xlsx files are supported",
+        "success": "Batch create succeeded",
+        "failed": "Batch create failed"
+      }
+    },
+    "dropShippingOrderCreate": {
+      "eyebrow": "Dropshipping · Order",
+      "title": {
+        "create": "Create order",
+        "edit": "Edit order",
+        "copy": "Copy order"
+      },
+      "subtitle": "Enter recipient information, channel, and product details before submitting the order.",
+      "loading": {
+        "detail": "Loading order details...",
+        "initial": "Loading warehouses, countries, and products...",
+        "default": "Loading..."
+      },
+      "transport": {
+        "autoTrial": "Automatic logistics channel selection (trial)",
+        "pickup": "Pickup",
+        "uspsT5": "USPS (T5)"
+      },
+      "sections": {
+        "recipient": {
+          "title": "Recipient information",
+          "subtitle": "Used to generate the label",
+          "empty": "Select an existing recipient address from the address book, or click Add address to create one in the dialog. It will be shown here as read-only after confirmation.",
+          "name": "Name:",
+          "address1": "Address line 1:",
+          "address2": "Address line 2:",
+          "city": "City:",
+          "province": "State/Province:",
+          "postcode": "Postcode:",
+          "country": "Country/Region:",
+          "phone": "Phone:"
+        },
+        "logistics": {
+          "title": "Logistics information",
+          "subtitle": "Channel, warehouse, and packaging material",
+          "transport": "Channel",
+          "warehouse": "Warehouse",
+          "carton": "Packaging material",
+          "pickupAttachment": "Upload attachment (pickup label)"
+        },
+        "order": {
+          "title": "Order information",
+          "subtitle": "Reference no., remarks, and product details",
+          "referenceNo": "Reference no.",
+          "remark": "Remark (optional)",
+          "addProduct": "Add product",
+          "cnName": "Chinese name",
+          "qty": "Quantity",
+          "actions": "Actions",
+          "skuPlaceholder": "Select SKU",
+          "productCount": "{count} product rows. Keep at least 1 row."
+        },
+        "summary": {
+          "title": "Submit summary",
+          "warehouse": "Sender warehouse",
+          "transport": "Logistics channel",
+          "carton": "Packaging material",
+          "validProducts": "Valid products",
+          "validProductsCount": "{count} pcs",
+          "estimatedFee": "Estimated shipping fee",
+          "estimateNote": "For reference only. Final amount is based on order issuance."
+        }
+      },
+      "addressDialog": {
+        "title": "Select recipient address",
+        "subtitle": "Filter by name on the server. Click Select or double-click a row to fill the form."
+      },
+      "actions": {
+        "backToList": "Back to list",
+        "chooseAddress": "Select from address book",
+        "addAddress": "Add address",
+        "estimate": "Estimate shipping",
+        "submitCreate": "Confirm and submit order",
+        "submitCopy": "Submit copied order",
+        "submitEdit": "Save changes"
+      },
+      "messages": {
+        "addressSaved": "Address saved",
+        "saveFailed": "Save failed",
+        "loadAddressFailed": "Failed to load addresses",
+        "addressSelected": "Recipient address filled",
+        "invalidLoadedReference": "The loaded reference number contains invalid characters. The original value is kept. Do not edit it manually.",
+        "loadDetailFailed": "Failed to load order details",
+        "selectWarehouse": "Select sender warehouse",
+        "selectAddress": "Select a recipient address from the address book first",
+        "selectTransport": "Select a channel",
+        "estimateUnsupported": "The current selection does not support estimation",
+        "validProductsRequired": "Enter valid product details first",
+        "estimatedFee": "Estimated shipping fee: {fee}",
+        "estimateFailed": "Estimate failed",
+        "invalidReferenceBlocked": "Reference no. may only contain letters, numbers, and underscores. Submission blocked.",
+        "atLeastOneProduct": "Enter at least one valid product row",
+        "submitSuccess": "Saved successfully",
+        "submitFailed": "Save failed",
+        "attachmentUploaded": "Attachment uploaded",
+        "attachmentUploadFailed": "Attachment upload failed"
+      },
+      "rules": {
+        "transportRequired": "Select a channel",
+        "warehouseRequired": "Select a warehouse",
+        "referenceRequired": "Enter reference no.",
+        "referenceInvalid": "Reference no. may only contain letters, numbers, and underscores"
+      },
+      "sku": {
+        "availableStock": "Available stock: {stock}"
+      }
+    },
+    "dropShippingOrderDetail": {
+      "title": "Order details",
+      "readonly": "Read-only",
+      "subtitle": "View system order number, recipient address, logistics tracking, and billing settlement.",
+      "actions": {
+        "backToList": "Back to list",
+        "copyOrder": "Copy order"
+      },
+      "labels": {
+        "orderSn": "Order SN",
+        "referenceNo": "Reference no.",
+        "temuOrderNo": "Temu order no. (if any)",
+        "warehouse": "Shipping warehouse",
+        "trackingNo": "Tracking no.",
+        "logisticsTitle": "Recipient and logistics information",
+        "logistics": "Logistics and requirements",
+        "route": "Shipping route",
+        "totalQty": "Total pieces",
+        "totalWeight": "Total weight",
+        "declaredWeight": "Declared weight",
+        "recipient": "Recipient",
+        "itemsTitle": "Product details (SKUs)",
+        "itemsSummary": "{types} types · {qty} pcs",
+        "cnName": "Chinese name",
+        "qty": "Quantity",
+        "unmatchedProduct": "No matching system product",
+        "emptyItems": "No product data",
+        "totalQtyLabel": "Total quantity",
+        "remark": "Remark",
+        "questionReason": "Problem order reason",
+        "feesTitle": "Fees and settlement",
+        "shippingFee": "Shipping fee",
+        "deliveryFee": "Delivery fee",
+        "handleFee": "Order handling fee",
+        "materialFee": "Material fee",
+        "packingFee": "Packing operation fee",
+        "pickupFee": "Pickup outbound fee",
+        "brandFee": "Brand fee",
+        "productLabelFee": "Product label fee",
+        "totalFee": "Total fee",
+        "emptyFees": "No detailed fee information",
+        "timelineTitle": "Timeline",
+        "erpSource": "ERP source"
+      },
+      "timeline": {
+        "created": "Order created",
+        "paid": "Payment completed",
+        "confirmed": "Node confirmed",
+        "printed": "Label generated & printed",
+        "resent": "Reshipment handled",
+        "shipped": "Overseas warehouse shipped",
+        "problem": "Marked as problem order"
+      },
+      "erp": {
+        "system": "System",
+        "mabang": "Mabang",
+        "lingxing": "Lingxing",
+        "tiktok": "TikTok",
+        "temu": "Temu",
+        "thirdParty": "Third party"
+      },
+      "copy": {
+        "orderSn": "Order SN",
+        "trackingNo": "Tracking no.",
+        "success": "{label} copied",
+        "failed": "Failed to copy {label}"
+      },
+      "messages": {
+        "missingId": "Missing order ID",
+        "loadFailed": "Failed to load order",
+        "loadGenericFailed": "Loading failed"
+      }
+    },
+    "dropShippingOrderLabelList": {
+      "title": "Relabel orders",
+      "actions": {
+        "create": "Create order",
+        "openMainLabel": "Open main label file",
+        "openBoxLabel": "Open box label file"
+      },
+      "headers": {
+        "orderNo": "Order no.",
+        "warehouse": "Warehouse",
+        "name": "Name",
+        "sku": "SKU",
+        "qty": "Pieces",
+        "fee": "Fee",
+        "status": "Status",
+        "remark": "Remark",
+        "adminRemark": "Admin remark",
+        "createdAt": "Created at",
+        "actions": "Actions"
+      },
+      "status": {
+        "notRelabeled": "Not relabeled",
+        "relabeled": "Relabeled",
+        "cancelled": "Cancelled",
+        "pendingPayment": "Pending payment"
+      },
+      "summary": {
+        "skuQty": "Filtered SKU pieces total: {count}",
+        "totalFee": "Filtered fee total: {fee}"
+      },
+      "filters": {
+        "createdAt": "Created at",
+        "adminRemark": "Admin remark",
+        "adminRemarkPlaceholder": "Admin remark keyword",
+        "remark": "Remark",
+        "remarkPlaceholder": "Remark keyword"
+      },
+      "tooltips": {
+        "detail": "Details",
+        "edit": "Edit"
+      },
+      "pagination": {
+        "total": "Total {total}"
+      },
+      "messages": {
+        "loadFailed": "Failed to load relabel list",
+        "networkFailed": "Network request failed",
+        "noFile": "No file"
+      }
+    },
+    "dropShippingOrderLabelCreate": {
+      "eyebrow": "Dropshipping · Relabel",
+      "title": {
+        "create": "Create relabel order",
+        "edit": "Edit relabel order"
+      },
+      "subtitle": "Enter recipient address, warehouse, and product information. Upload label and box label files before submitting.",
+      "loading": {
+        "detail": "Loading order details...",
+        "initial": "Loading warehouses, countries, and SKUs...",
+        "default": "Loading..."
+      },
+      "options": {
+        "relabel": "Relabel",
+        "noRelabel": "No relabel",
+        "required": "Required",
+        "pickup": "Pickup (choose this if you provide your own label)"
+      },
+      "sections": {
+        "shipping": {
+          "title": "Transport and warehouse",
+          "subtitle": "Order type and warehouse",
+          "transport": "Transport method",
+          "warehouse": "Shipping warehouse"
+        },
+        "product": {
+          "title": "Product and labels",
+          "subtitle": "SKU, quantity, label code, and files",
+          "sku": "SKU",
+          "qty": "Quantity",
+          "labelCode": "Label code",
+          "uploadLabel": "Upload label",
+          "pickupRequired": "(required for pickup)",
+          "optional": "(optional)",
+          "uploadBox": "Upload box label"
+        },
+        "valueAdd": {
+          "title": "Value-added services",
+          "subtitle": "Packaging, signature, and transport method",
+          "orderType": "Order type",
+          "carton": "Packaging material",
+          "remark": "Remark",
+          "optionalHint": "Optional"
+        },
+        "summary": {
+          "title": "Submit summary",
+          "productSku": "Product SKU",
+          "qty": "Quantity"
+        }
+      },
+      "actions": {
+        "submitCreate": "Confirm and submit relabel order",
+        "submitEdit": "Save changes",
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "loadOrderFailed": "Failed to load order",
+        "selectWarehouse": "Select a warehouse",
+        "completeProduct": "Complete SKU, quantity, and label code",
+        "selectTransport": "Select a transport method",
+        "uploadBoxRequired": "Upload the box label file",
+        "pickupLabelRequired": "Pickup transport requires uploading a shipping label file",
+        "submitSuccess": "Submitted successfully",
+        "submitFailed": "Submit failed",
+        "labelUploaded": "Label file uploaded",
+        "boxUploaded": "Box label file uploaded",
+        "uploadFailed": "Upload failed"
+      },
+      "rules": {
+        "transportRequired": "Select a transport method",
+        "warehouseRequired": "Select a warehouse",
+        "skuRequired": "Select or enter SKU",
+        "qtyRequired": "Enter quantity",
+        "labelCodeRequired": "Enter label code"
+      },
+      "sku": {
+        "availableStock": "Available stock: {stock}"
+      }
+    },
+    "dropShippingOrderLabelDetail": {
+      "title": "Relabel order details",
+      "loading": "Loading relabel order details...",
+      "actions": {
+        "copyThis": "Copy this order",
+        "viewAttachment": "View attachment",
+        "viewBoxLabel": "View box label"
+      },
+      "labels": {
+        "warehouseInline": "Warehouse:",
+        "recipientTitle": "Recipient information",
+        "shippingSubtitle": "Transport method, warehouse, and order type",
+        "signature": "Signature service",
+        "labelFile": "Label / shipping label",
+        "boxLabel": "Box label",
+        "summaryTitle": "Order summary"
+      },
+      "messages": {
+        "missingId": "Missing order ID",
+        "loadFailed": "Failed to load relabel order",
+        "loadGenericFailed": "Loading failed"
+      }
+    },
+    "dropShippingReturnOrderList": {
+      "title": "Return order list",
+      "subtitle": "Dropshipping return orders. Use quick status filters below the search actions.",
+      "actions": {
+        "batchCreate": "Batch create",
+        "create": "Create return order"
+      },
+      "filters": {
+        "skuNamePlaceholder": "SKU name"
+      },
+      "labels": {
+        "remote": "(remote)"
+      },
+      "messages": {
+        "loadFailed": "Failed to load return orders",
+        "networkFailed": "Network request failed"
+      }
+    },
+    "dropShippingReturnOrderCreate": {
+      "eyebrow": "Dropshipping · Returns",
+      "title": {
+        "create": "Create return order",
+        "edit": "Edit return order",
+        "copy": "Copy return order"
+      },
+      "subtitle": "Submit a return order after entering recipient details, route, item condition, and product details.",
+      "loading": {
+        "detail": "Loading return order details..."
+      },
+      "quality": {
+        "good": "Good",
+        "bad": "Defective"
+      },
+      "sections": {
+        "logistics": {
+          "pickupAttachment": "Upload attachment (main file)"
+        },
+        "order": {
+          "title": "Return order information",
+          "subtitle": "Reference number, condition, remarks, and product details",
+          "quality": "Condition",
+          "qualityWarehouse": "Condition / warehouse",
+          "productCount": "{count} products in total. Keep at least 1 product."
+        },
+        "summary": {
+          "returnWarehouse": "Return warehouse",
+          "validProducts": "Valid products",
+          "validProductsCount": "{count} items",
+          "estimatedFee": "Estimated return shipping fee"
+        }
+      },
+      "actions": {
+        "submitCreate": "Confirm and submit return order"
+      },
+      "messages": {
+        "addressSavedAndFilled": "Address saved and filled into the form",
+        "invalidLoadedReference": "The loaded reference number contains invalid characters. The original value is kept; do not edit it manually.",
+        "loadDetailFailed": "Failed to load return order details",
+        "productDetailsRequired": "Please fill in product details first",
+        "estimatedFee": "Estimated fee: {fee}",
+        "invalidReferenceBlocked": "Reference number can contain only letters, numbers, and underscores. Submission was blocked.",
+        "atLeastOneProduct": "Please fill in at least one valid product detail"
+      }
+    },
+    "dropShippingReturnOrderBatch": {
+      "title": "Batch create return orders",
+      "subtitle": "Select a shipping channel and warehouse, then upload Excel plus an optional pickup ZIP to create return orders in batch.",
+      "settings": {
+        "title": "Channel and warehouse",
+        "subtitle": "Same as a single return order. These settings apply to the orders in this Excel file.",
+        "transport": "Shipping channel",
+        "warehouse": "Warehouse"
+      },
+      "upload": {
+        "title": "Upload files",
+        "subtitle": "Return Excel is required. Pickup orders may also include a label ZIP. Supports only .xls / .xlsx and .zip.",
+        "pickExcel": "Choose return Excel",
+        "pickZip": "Choose pickup label ZIP (optional)",
+        "noFile": "No file selected",
+        "templateDownload": "Template download:",
+        "templateName": "Return order batch template.{ext}",
+        "templateNote": "Excel columns should follow the batch template provided by operations."
+      },
+      "actions": {
+        "submit": "Submit batch return creation"
+      },
+      "messages": {
+        "selectTransport": "Please select a shipping channel",
+        "selectWarehouse": "Please select a warehouse",
+        "selectExcel": "Please select an Excel file first",
+        "invalidExcel": "Only .xls / .xlsx files are supported",
+        "success": "Batch creation succeeded",
+        "failed": "Batch creation failed"
+      }
+    },
+    "dropShippingReturnOrderDetail": {
+      "title": "Return order details",
+      "loading": "Loading return order details...",
+      "actions": {
+        "copyOrder": "Copy return order"
+      },
+      "messages": {
+        "missingId": "Missing return order ID",
+        "loadFailed": "Failed to load return order",
+        "loadGenericFailed": "Loading failed"
+      }
+    },
+    "dropShippingReturnPackageList": {
+      "title": "Return packages",
+      "subtitle": "API /package/returnKucun, grouped by tracking number.",
+      "quality": {
+        "all": "All conditions"
+      },
+      "headers": {
+        "declared": "Declared",
+        "counted": "Counted",
+        "quality": "Condition",
+        "weightKg": "Weight (kg)"
+      },
+      "messages": {
+        "loadFailed": "Failed to load return packages",
+        "networkFailed": "Network request failed"
+      }
+    },
+    "dataCenterSalesAnalysis": {
+      "title": "Sales analysis",
+      "subtitle": "Matches the sales view in the order list: summarize inventory and sales by SKU / warehouse. Inventory assessment is more accurate after filtering by warehouse.",
+      "actions": {
+        "exportExcel": "Export Excel"
+      },
+      "filters": {
+        "skuCode": "SKU code",
+        "skuCodePlaceholder": "Enter SKU code"
+      },
+      "headers": {
+        "index": "No.",
+        "productCnName": "Product Chinese name",
+        "stockQty": "Stock qty",
+        "salesQty": "Sales qty",
+        "inventoryRatio": "Inventory ratio",
+        "inventoryStatus": "Inventory assessment"
+      },
+      "status": {
+        "normal": "Normal",
+        "low": "Low stock",
+        "high": "High stock",
+        "out": "Out of stock"
+      },
+      "tooltips": {
+        "ratioLine1": "Inventory ratio = stock qty ÷ sales qty",
+        "ratioLine2": "Statistics range: from the 1st of last month to the 1st of this month",
+        "statusNormal": "Normal: 0.3 ≤ ratio ≤ 3.0",
+        "statusLow": "Low stock: ratio below 0.3 and stock above 0",
+        "statusHigh": "High stock: ratio above 3.0 or no outbound sales",
+        "statusOut": "Out of stock: stock ≤ 0 and outbound sales exist",
+        "statusNote": "Note: query after filtering by warehouse"
+      },
+      "messages": {
+        "exportLoadFailed": "Failed to fetch export data",
+        "exportNoData": "No data to export under current filters",
+        "exportSuccess": "Exported {count} rows (up to {max} rows per export)",
+        "exportFailed": "Export failed",
+        "loadFailed": "Failed to load sales data",
+        "networkFailed": "Network request failed"
+      }
+    },
+    "dataCenterInventoryData": {
+      "title": "Inventory data",
+      "subtitle": "View on-hand quantity, warning thresholds, and zone inventory by SKU / warehouse. Supports paginated queries after filtering.",
+      "filters": {
+        "productCnName": "Product Chinese name",
+        "productCnNamePlaceholder": "Search Chinese name",
+        "skuPlaceholder": "English SKU",
+        "recordId": "Record ID",
+        "recordIdPlaceholder": "Exact ID"
+      },
+      "headers": {
+        "stock": "Stock",
+        "warningValue": "Warning value",
+        "zone1": "Zone 1",
+        "zone2": "Zone 2",
+        "zone3": "Zone 3",
+        "updatedAt": "Updated at",
+        "warehouseId": "Warehouse ID",
+        "zone1Qty": "Zone 1 qty",
+        "zone2Qty": "Zone 2 qty",
+        "zone3Qty": "Zone 3 qty",
+        "imageUrl": "Image URL"
+      },
+      "tooltips": {
+        "zone1": "Inventory quantity in warehouse zone 1",
+        "zone2": "Inventory quantity in warehouse zone 2",
+        "zone3": "Inventory quantity in warehouse zone 3"
+      },
+      "messages": {
+        "loadFailed": "Failed to load inventory data",
+        "lowStock": "Below warning"
+      }
+    },
+    "dataCenterReturnInventory": {
+      "title": "Return inventory",
+      "filters": {
+        "skuPlaceholder": "Enter SKU"
+      },
+      "headers": {
+        "arrived31To60": "31-60 days in warehouse",
+        "arrived61To90": "61-90 days in warehouse",
+        "arrivedOver90": "Over 90 days in warehouse",
+        "storageBillingTime": "Storage billing time"
+      },
+      "messages": {
+        "loadFailed": "Failed to load return inventory"
+      }
+    },
+    "accountPersonalization": {
+      "title": "Automatic channel configuration",
+      "subtitle": "Automatic channel strategy with three-level fallback.",
+      "loading": "Loading configuration...",
+      "optionalDisabled": "Not configured (off)",
+      "alert": "When imported orders choose automatic channel selection, the system tries primary, secondary, then fallback channels until an order is created successfully.",
+      "steps": {
+        "primary": "1. Primary shipping method",
+        "secondary": "2. Secondary shipping method",
+        "fallback": "3. Fallback shipping method"
+      },
+      "fields": {
+        "switch": "Feature switch (on / off)",
+        "primary": "Primary shipping method",
+        "secondary": "Secondary shipping method",
+        "fallback": "Fallback shipping method"
+      },
+      "status": {
+        "enabled": "Current: enabled",
+        "disabled": "Current: disabled"
+      },
+      "placeholders": {
+        "primary": "Select primary shipping method (required)",
+        "secondary": "Select secondary shipping method (optional)",
+        "fallback": "Select fallback shipping method (optional)"
+      },
+      "hints": {
+        "primary": "The system tries this channel first.",
+        "secondary": "If the primary channel fails, the system retries this channel.",
+        "fallback": "Used after the first two levels fail as the final safeguard."
+      },
+      "actions": {
+        "save": "Save configuration"
+      },
+      "messages": {
+        "loadFailed": "Failed to load configuration",
+        "networkFailed": "Network request failed",
+        "primaryRequired": "Please select the primary shipping method",
+        "saveSuccess": "Saved successfully",
+        "saveFailed": "Save failed"
+      }
+    },
+    "accountAuthManagement": {
+      "developerTitle": "Developer integration information",
+      "appKey": "App Key (application identifier)",
+      "appSecret": "App Secret (application secret)",
+      "title": "Authorization management",
+      "subtitle": "Migrated erp-open page: ERP/platform authorizations, new authorization, and TEMU authorization details.",
+      "platforms": {
+        "mabang": "Mabang ERP",
+        "thirdParty": "Third-party ERP (Lingxing, Saihu, etc.)",
+        "tiktok": "TikTok",
+        "temu": "TEMU"
+      },
+      "actions": {
+        "copy": "Copy",
+        "add": "Add authorization",
+        "openLegacy": "Open legacy",
+        "cancel": "Cancel",
+        "authorize": "Go to authorization",
+        "copied": "Copied"
+      },
+      "headers": {
+        "platform": "Platform/ERP",
+        "seller": "Store/account name",
+        "authTime": "Authorization time",
+        "status": "Status"
+      },
+      "status": {
+        "normal": "Normal",
+        "expired": "Expired"
+      },
+      "dialog": {
+        "addTitle": "Add authorization",
+        "platformLabel": "Select platform",
+        "platformPlaceholder": "Select the platform to authorize",
+        "platformRequired": "Please select a platform",
+        "temuTitle": "TEMU authorization information",
+        "temuAlert": "Copy the following information and fill it in on the TEMU platform to complete binding.",
+        "ownerId": "Owner ID",
+        "authCode": "Authorization code",
+        "authKey": "Authorization key"
+      },
+      "messages": {
+        "copySuccess": "Copied successfully",
+        "copyFailed": "Copy failed. Please copy manually",
+        "copyUnsupported": "This browser does not support automatic copy. Please copy manually",
+        "loadFailed": "Failed to load list",
+        "networkFailed": "Network request failed",
+        "operationFailed": "Operation failed",
+        "operationSuccess": "Operation succeeded",
+        "authorizeInNewWindow": "Complete authorization in the new window, then refresh the list",
+        "requestFailed": "Request failed. Please check the network"
+      },
+      "empty": "No authorization data",
+      "loading": "Loading..."
+    },
+    "accountFundOverview": {
+      "title": "Finance management",
+      "accountBalance": "Account balance",
+      "depositUsd": "Label deposit (USD)",
+      "types": {
+        "all": "All",
+        "income": "Income",
+        "expense": "Expense"
+      },
+      "currencies": {
+        "rmb": "RMB",
+        "usd": "USD",
+        "eur": "EUR"
+      },
+      "actions": {
+        "recharge": "Recharge",
+        "export": "Export bill details",
+        "submitRecharge": "Submit recharge request",
+        "scanPay": "Scan to pay"
+      },
+      "filters": {
+        "type": "Type",
+        "keyword": "Order no. / tracking no.",
+        "remark": "Remark keyword",
+        "time": "Transaction time"
+      },
+      "placeholders": {
+        "keyword": "Enter keyword",
+        "remark": "Enter remark",
+        "time": "Select time range",
+        "transferProof": "Enter bank transfer order number",
+        "amount": "Enter amount"
+      },
+      "headers": {
+        "createTime": "Created time",
+        "orderNo": "Order no.",
+        "trackingNo": "Tracking no.",
+        "tradeType": "Transaction type",
+        "incomeExpense": "Income/expense",
+        "amountUsd": "Transaction amount (USD)",
+        "amountEur": "Transaction amount (EUR)",
+        "remark": "Remark"
+      },
+      "recharge": {
+        "title": "Account recharge",
+        "tabs": {
+          "rmb": "Manual recharge (¥)",
+          "usd": "Manual recharge ($)",
+          "eur": "Manual recharge (€)",
+          "auto": "Automatic recharge"
+        },
+        "bank": {
+          "transferAccount": "Transfer account: China Zheshang Bank",
+          "accountName": "Account name: Pan Weiwen (PAN WEIWEN)",
+          "accountNo": "Account no.: 6223095840810042306",
+          "zelle": "Zelle account",
+          "contactService": "Contact customer service for the account",
+          "airwallex": "Airwallex account"
+        },
+        "fields": {
+          "currency": "Recharge currency",
+          "amount": "Recharge amount",
+          "arrival": "Actual arrival",
+          "proof": "Transfer proof",
+          "paymentMethod": "Payment method",
+          "customAmount": "Other amount",
+          "usdArrival": "USD arrival"
+        },
+        "payment": {
+          "alipay": "Alipay",
+          "wechat": "WeChat"
+        },
+        "autoAlert": "Automatic recharge up to 5000 RMB, instant and convenient.",
+        "payableAmount": "Amount payable:",
+        "yuan": "RMB"
+      },
+      "wxPay": {
+        "title": "WeChat Pay",
+        "submitted": "Submitted successfully, waiting for payment...",
+        "instruction": "Confirm the amount and scan with WeChat to pay the order promptly",
+        "qrAlt": "WeChat payment QR code",
+        "noQr": "No QR code image was returned. Contact customer service to handle payment.",
+        "account": "Account: {value}",
+        "orderNo": "Order no.: {value}",
+        "amount": "Amount: {value} RMB"
+      },
+      "messages": {
+        "copied": "Copied to clipboard",
+        "copyFailed": "Copy failed. Please copy manually",
+        "copyUnsupported": "Automatic copy is not supported in this environment",
+        "loadFailed": "Failed to load finance list",
+        "rateFailed": "Failed to get exchange rate",
+        "rateUpdateFailed": "Failed to update exchange rate",
+        "incompleteRecharge": "Please complete the recharge information",
+        "amountRequired": "Please select or enter a recharge amount",
+        "submitFailed": "Failed to submit recharge",
+        "payPageOpened": "Payment page opened. Please complete payment",
+        "submitSuccess": "Recharge request submitted successfully",
+        "wxQrFailed": "Failed to get WeChat payment QR code",
+        "wxPaid": "WeChat payment succeeded. Balance updated",
+        "exportConditionRequired": "Select export criteria (type or time range)",
+        "exportSubmitted": "Export task submitted",
+        "exportFailed": "Export failed"
+      }
+    },
+    "accountAddressManagement": {
+      "title": "Address management",
+      "subtitle": "Switch between sender and receiver addresses to view the corresponding address book records.",
+      "tabs": {
+        "sender": "Sender address",
+        "receiver": "Receiver address"
+      },
+      "headers": {
+        "name": "Name",
+        "telephone": "Phone",
+        "company": "Company",
+        "actions": "Actions"
+      },
+      "actions": {
+        "add": "Add address",
+        "edit": "Edit"
+      },
+      "messages": {
+        "countryLoadFailed": "Failed to load country list",
+        "listLoadFailed": "Failed to load address list",
+        "networkFailed": "Network request failed",
+        "editSuccess": "Edited successfully",
+        "createSuccess": "Created successfully",
+        "saveFailed": "Save failed"
+      }
+    },
+    "accountSettings": {
+      "tabs": {
+        "account": "Account information",
+        "security": "Change password"
+      },
+      "account": {
+        "title": "Account information",
+        "fields": {
+          "username": "Username",
+          "userCode": "User code",
+          "realName": "Real name",
+          "email": "Email",
+          "mobile": "Mobile",
+          "loginIp": "Login IP"
+        },
+        "messages": {
+          "loadFailed": "Failed to load user information",
+          "networkFailed": "Network request failed"
+        }
+      },
+      "security": {
+        "title": "Change password",
+        "fields": {
+          "currentPassword": "Current password",
+          "newPassword": "New password",
+          "confirmPassword": "Confirm new password"
+        },
+        "requirementsTitle": "Password requirements",
+        "requirements": {
+          "length": "At least 8 characters; longer is better",
+          "lowercase": "Must contain lowercase letters",
+          "complexity": "Must contain at least one number, symbol, or space"
+        },
+        "actions": {
+          "save": "Save",
+          "clear": "Clear"
+        },
+        "messages": {
+          "currentRequired": "Please enter the current password",
+          "newRequired": "Please enter the new password",
+          "mismatch": "The two new passwords do not match",
+          "tooShort": "The new password must be at least 8 characters",
+          "updated": "Password updated",
+          "failed": "Change failed",
+          "requestFailed": "Request failed. Please confirm the password change API is configured"
+        }
+      }
+    },
+    "productList": {
+      "title": "Product list",
+      "batchCreate": "Batch create",
+      "create": "Create product",
+      "exportExcel": "Export Excel",
+      "filters": {
+        "sku": "SKU",
+        "skuPlaceholder": "Enter SKU",
+        "name": "Product name",
+        "namePlaceholder": "Enter product name",
+        "category": "Product category",
+        "allCategories": "All categories"
+      },
+      "headers": {
+        "sku": "SKU",
+        "name": "Product name",
+        "brand": "English brand",
+        "weight": "Weight (KG)",
+        "lwh": "L*W*H (CM)",
+        "origin": "Origin",
+        "category": "Category",
+        "stock": "Total stock",
+        "image": "Image",
+        "status": "Status",
+        "actions": "Actions",
+        "imageUrl": "Image URL"
+      },
+      "actions": {
+        "batchPrint": "Batch print ({count})",
+        "view": "View",
+        "edit": "Edit",
+        "print": "Print",
+        "delete": "Delete"
+      },
+      "previewTitle": "Image preview",
+      "noImage": "No image",
+      "total": "Total {total}",
+      "messages": {
+        "categoryLoadFailed": "Failed to load product categories",
+        "listLoadFailed": "Failed to load product list",
+        "exportFetchFailed": "Failed to fetch export data",
+        "exportNoData": "No data to export for the current filters",
+        "exportSuccess": "Exported {count} rows (up to {max} per export)",
+        "exportFailed": "Export failed",
+        "statusToggleFailed": "Failed to toggle status",
+        "statusUpdated": "Status updated",
+        "deleteSuccess": "Deleted successfully",
+        "deleteFailed": "Delete failed",
+        "printFailed": "Print failed",
+        "batchPrintEmpty": "Select rows before batch printing",
+        "batchPrintFailed": "Batch print failed",
+        "deleteConfirm": "This cannot be undone. Continue?"
+      }
+    },
+    "productCreate": {
+      "titles": {
+        "create": "Create product",
+        "edit": "Edit product",
+        "detail": "Product details"
+      },
+      "subtitles": {
+        "create": "Fill in product information and save to create it",
+        "edit": "Update product information and save changes",
+        "detail": "View basic product data, specifications, images, and sub SKUs"
+      },
+      "overlay": "Loading...",
+      "sections": {
+        "basic": "Basic information",
+        "basicSubtitle": "Maintain product names, brand, and SKU.",
+        "spec": "Specifications",
+        "specSubtitle": "Weight, dimensions, and basic product attributes.",
+        "attributes": "Product attributes",
+        "attributesSubtitle": "Customs declaration and pricing information.",
+        "images": "Images and sub SKUs",
+        "imagesSubtitle": "Upload a clear main image. Sub SKUs are used for variants.",
+        "description": "Descriptions",
+        "descriptionSubtitle": "Add Chinese and English descriptions."
+      },
+      "fields": {
+        "sku": "Product SKU",
+        "barcode": "Barcode",
+        "cnName": "Chinese product name",
+        "enName": "English product name",
+        "cnBrand": "Chinese brand",
+        "enBrand": "English brand",
+        "weight": "Weight",
+        "length": "Length",
+        "width": "Width",
+        "height": "Height",
+        "unit": "Unit",
+        "category": "Product category",
+        "battery": "Battery",
+        "status": "Product status",
+        "hsCode": "HS code",
+        "origin": "Origin",
+        "declaredValue": "Declared value",
+        "price1": "Sale price 1",
+        "price2": "Sale price 2",
+        "price3": "Sale price 3",
+        "cnDesc": "Chinese description",
+        "enDesc": "English description"
+      },
+      "placeholders": {
+        "sku": "Enter SKU (letters/numbers)",
+        "barcode": "Enter barcode",
+        "cnName": "Enter Chinese name",
+        "enName": "Enter English name",
+        "cnBrand": "Enter Chinese brand",
+        "enBrand": "Enter English brand",
+        "hsCode": "Enter HS code",
+        "origin": "Example: China",
+        "subSku": "Enter sub SKU"
+      },
+      "options": {
+        "metric": "Metric (kg/cm)",
+        "imperial": "Imperial (lb/in)",
+        "batteryNo": "No battery",
+        "batteryYes": "Contains battery",
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "images": {
+        "upload": "Upload",
+        "tips": "JPG/PNG/WebP, up to 5MB",
+        "main": "Main",
+        "image": "Image"
+      },
+      "actions": {
+        "addSubSku": "Add sub SKU",
+        "save": "Save product",
+        "back": "Back"
+      },
+      "subSkuLabel": "Sub SKU {index}",
+      "categoryFallback": "Category #{id}",
+      "messages": {
+        "missingId": "Missing product ID, unable to load details",
+        "loadDetailFailed": "Failed to load product details",
+        "uploadFailed": "Image upload failed",
+        "imageType": "Only jpg/png/gif/webp images are supported",
+        "imageSize": "Image size cannot exceed 5MB",
+        "skuRequired": "{label} is required",
+        "skuInvalid": "{label} only supports letters, numbers, hyphens, and underscores",
+        "skuTooLong": "{label} cannot exceed {max} characters",
+        "cnNameRequired": "Enter the Chinese product name",
+        "enNameRequired": "Enter the English product name",
+        "enBrandRequired": "Enter the English brand",
+        "sizeRequired": "Complete weight and dimensions",
+        "imageRequired": "Upload at least one product image",
+        "saveSuccess": "Saved successfully",
+        "saveFailed": "Save failed"
+      }
+    },
+    "dropShippingPackageCreate": {
+      "hero": {
+        "eyebrow": "Dropshipping · Inbound",
+        "createTitle": "Create inbound order",
+        "editTitle": "Edit inbound order",
+        "subtitle": "Enter warehouse, logistics, and item details to submit an inbound request."
+      },
+      "overlay": {
+        "detail": "Loading inbound order details...",
+        "initial": "Loading warehouse, address, and product data...",
+        "default": "Loading..."
+      },
+      "express": {
+        "courier": "Courier",
+        "truck": "Truck",
+        "sea": "Sea freight",
+        "air": "Air freight"
+      },
+      "sections": {
+        "base": "Basic and logistics information",
+        "baseSubtitle": "Select warehouse, shipping method, and arrival time",
+        "warehouseAddress": "Warehouse receiving address",
+        "sender": "Sender information",
+        "senderSubtitle": "Used for returns and label printing",
+        "products": "Product details",
+        "productsSubtitle": "Enter inbound product SKUs and quantities",
+        "summary": "Submission summary"
+      },
+      "fields": {
+        "warehouse": "Inbound warehouse",
+        "express": "Shipping method",
+        "boxes": "Boxes",
+        "reference": "Reference number",
+        "eta": "Estimated arrival",
+        "country": "Country",
+        "sender": "Sender",
+        "phone": "Phone",
+        "address": "Address",
+        "sku": "SKU / Product",
+        "qty": "Qty",
+        "products": "Product details"
+      },
+      "actions": {
+        "reloadAddress": "Reload default address",
+        "addProduct": "Add product",
+        "saveEdit": "Save changes",
+        "submit": "Submit inbound order",
+        "cancel": "Cancel"
+      },
+      "skuPlaceholder": "Select SKU (search supported)",
+      "availableStock": "Available stock: {stock}",
+      "productCount": "{count} product rows. Keep at least 1 row.",
+      "summaryItems": "{count} items",
+      "messages": {
+        "skuLoadFailed": "Failed to load SKUs",
+        "countryLoadFailed": "Failed to load countries",
+        "invalidLoadedReference": "The loaded reference contains invalid characters. The original value is kept. Do not edit it manually.",
+        "loadDetailFailed": "Failed to load details",
+        "referenceInvalid": "Reference number only allows letters, numbers, and underscores. Submission blocked.",
+        "productRequired": "Enter at least one valid product row",
+        "saveSuccess": "Saved successfully",
+        "saveFailed": "Save failed",
+        "warehouseRequired": "Select a warehouse",
+        "expressRequired": "Select a shipping method",
+        "boxesRequired": "Enter a valid box count",
+        "referenceRequired": "Enter a reference number",
+        "referenceRule": "Reference number only allows letters, numbers, and underscores",
+        "countryRequired": "Select sender country",
+        "senderRequired": "Enter sender name",
+        "phoneRequired": "Enter sender phone",
+        "addressRequired": "Enter sender address"
+      }
+    },
+    "dropShippingPackageDetail": {
+      "hero": {
+        "eyebrow": "Dropshipping · Inbound",
+        "title": "Inbound order details",
+        "readonly": "Read-only",
+        "subtitle": "View inbound logistics, sender address, and product details."
+      },
+      "actions": {
+        "pdf": "Box label PDF",
+        "downloadPdf": "Download box label PDF"
+      },
+      "sections": {
+        "tracking": "Tracking No",
+        "warehouse": "Inbound warehouse",
+        "createdAt": "Created at",
+        "inboundDate": "Inbound date",
+        "remark": "Remark",
+        "logisticsAddress": "Logistics and address information",
+        "logistics": "Logistics information",
+        "eta": "Estimated arrival",
+        "warehouseAddress": "Warehouse receiving address",
+        "sender": "Sender information",
+        "products": "Product details (SKUs)",
+        "summary": "Inbound summary"
+      },
+      "table": {
+        "sku": "SKU",
+        "declaredQty": "Declared qty",
+        "actualQty": "Actual qty",
+        "totalQty": "Total quantity",
+        "to": "to"
+      },
+      "empty": {
+        "logisticsTime": "No logistics time information",
+        "warehouseAddress": "No warehouse address information",
+        "products": "No product data"
+      },
+      "chips": {
+        "productSummary": "{kinds} kinds · {qty} pcs",
+        "kindCount": "{count} kinds",
+        "pieceCount": "{count} pcs"
+      },
+      "messages": {
+        "missingId": "Missing inbound order ID",
+        "loadInboundFailed": "Failed to load inbound order",
+        "loadFailed": "Load failed"
+      }
+    },
+    "tiktokService": {
+      "title": "TikTok Shop Service",
+      "subtitle": "Manage TikTok Shop bindings, warehouse mappings, and order fetch logs",
+      "authShop": "Authorize shop",
+      "usSite": "US site (US)",
+      "ukSite": "UK site (UK)",
+      "tabs": {
+        "shops": "Shops and warehouses",
+        "logs": "Order fetch logs"
+      },
+      "token": {
+        "expired": "Expired",
+        "normal": "Normal",
+        "access": "Access Token: {status}",
+        "refresh": "Refresh Token: {status}",
+        "accessExpire": "Access Token expires: {time}",
+        "refreshExpire": "Refresh Token expires: {time}",
+        "updatedAt": "Last updated: {time}"
+      },
+      "shops": {
+        "empty": "No TikTok Shop stores bound yet",
+        "goAuth": "Go to authorization management",
+        "bindWarehouse": "Bind warehouse",
+        "noBinding": "No warehouse bindings yet. Click Bind warehouse in the upper right to add one.",
+        "tkWarehouse": "TK warehouse",
+        "wmsWarehouse": "WMS warehouse",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "logs": {
+        "queryByOrder": "Query by order number",
+        "refresh": "Refresh",
+        "shop": "Shop",
+        "allShops": "All shops",
+        "type": "Type",
+        "description": "Shows fetch tasks, order details, and inventory checks in reverse chronological order so you can trace processing by fetch_id.",
+        "total": "Total {total}",
+        "noData": "No log data",
+        "event": "Event",
+        "logType": "Log type",
+        "orderInfo": "Order information",
+        "summary": "Summary",
+        "time": "Time",
+        "status": "Status: {status}",
+        "orderedAt": "Ordered: {time}",
+        "updatedAt": "Updated: {time}",
+        "errorCode": "Error code: {code}",
+        "createdAt": "Created at",
+        "mainFetch": "Main fetch task",
+        "relatedFetch": "Related fetch #{id}",
+        "allStatus": "All statuses",
+        "fetchSummary": "Fetched {count} orders for {status}",
+        "itemSummary": "Order details were logged. Use the order status to continue tracing follow-up processing.",
+        "inventoryOk": "Inventory check passed",
+        "noPackage": "No package information matched this order",
+        "errorSummary": "An exception occurred during fetch",
+        "historyTitle": "Fetch history for order {order}",
+        "syncStatus": "Sync status",
+        "recordTime": "Record time",
+        "noRecords": "No fetch records"
+      },
+      "selfCheck": {
+        "button": "TikTok order self-check",
+        "title": "TikTok order self-check",
+        "shopLabel": "Shop",
+        "shopPlaceholder": "Select a shop",
+        "shopOption": "{name} (Shop ID: {shopId})",
+        "orderIdLabel": "TikTok order number",
+        "orderIdPlaceholder": "Enter tk_order_id",
+        "run": "Run self-check",
+        "fetchable": "Fetchable: this order meets fetch conditions",
+        "notFetchable": "Not fetchable: this order does not currently meet fetch conditions",
+        "orderIdValue": "tk_order_id: {id}",
+        "passed": "Passed",
+        "failed": "Failed",
+        "currentStatus": "Current status: {status}",
+        "expectedStatus": "Expected status: {status}",
+        "checkKeys": {
+          "order_exists": "Order existence check",
+          "shipping_type_supported": "Shipping type support check",
+          "status_eligible": "Order status eligibility check",
+          "warehouse_id_present": "Order warehouse field check",
+          "warehouse_bound": "Warehouse binding check",
+          "package_ready": "Package readiness check",
+          "sku_valid": "SKU validity check",
+          "inventory_ok": "Inventory sufficiency check",
+          "not_processed": "Duplicate processing check"
+        },
+        "missingTitle": "Insufficient inventory details",
+        "sku": "SKU",
+        "required": "Required",
+        "available": "Available",
+        "reason": "Reason"
+      },
+      "dialogs": {
+        "addBinding": "Add warehouse binding",
+        "editBinding": "Edit warehouse binding",
+        "tkWarehousePlaceholder": "Select TikTok warehouse",
+        "wmsWarehousePlaceholder": "Select WMS warehouse",
+        "confirmBind": "Confirm binding",
+        "saveEdit": "Save changes",
+        "queryTitle": "Query by TikTok order number",
+        "orderId": "TikTok order number",
+        "orderPlaceholder": "Enter TK order ID",
+        "query": "Query",
+        "close": "Close"
+      },
+      "options": {
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "all": "All",
+        "fetch": "Fetch task",
+        "fetchOption": "Fetch task (fetch)",
+        "item": "Order detail",
+        "itemOption": "Order detail (item)",
+        "error": "Fetch failed",
+        "errorOption": "Failure record (error)",
+        "noPackage": "No package",
+        "noPackageOption": "No package (no_package)",
+        "inventoryOk": "Inventory OK",
+        "inventoryOkOption": "Inventory OK (inventory_ok)",
+        "inventoryFail": "Insufficient inventory",
+        "inventoryFailOption": "Insufficient inventory (inventory_fail)"
+      },
+      "messages": {
+        "shopsFailed": "Failed to get shop list",
+        "bindingsFailed": "Failed to get warehouse bindings",
+        "tkWarehousesFailed": "Failed to get TK warehouse list",
+        "networkFailed": "Network request failed",
+        "requestFailed": "Request failed",
+        "bindSuccess": "Bound successfully",
+        "updateSuccess": "Updated successfully",
+        "operationFailed": "Operation failed",
+        "requestError": "Request error",
+        "logsNoUser": "User ID was not found, unable to query order fetch logs",
+        "logsFailed": "Failed to get logs",
+        "queryFailed": "Query failed",
+        "selfCheckOrderRequired": "Please enter a TikTok order number",
+        "selfCheckShopRequired": "Please select a shop",
+        "selfCheckFailed": "Self-check failed, please try again later",
+        "tkWarehouseRequired": "Select TK warehouse",
+        "wmsWarehouseRequired": "Select WMS warehouse"
+      }
+    },
+    "printLabelCreate": {
+      "hero": {
+        "title": "Create shipment",
+        "subtitle": "After selecting a channel, choose sender and recipient addresses from the address book or add/edit them in the dialog. Enter package and item details to calculate rates. Compare mode lets you quote multiple channels."
+      },
+      "globalNotice": {
+        "insurance": "To protect your shipment and purchase insurance, please contact customer service for assistance."
+      },
+      "overlay": {
+        "ordering": "Creating label..."
+      },
+      "channel": {
+        "title": "Channel selection",
+        "subtitle": "The selected channel affects currency, declaration rules, and country restrictions.",
+        "compareMode": "Compare mode",
+        "compareModeAlert": "Compare mode is on: you can select multiple channels.",
+        "alertTitle": "Channel notice",
+        "defaultAlertTitle": "Order notice"
+      },
+      "basic": {
+        "title": "Basic information",
+        "subtitle": "The reference number and units are used for rate calculation and order submission.",
+        "referenceLabel": "Reference number",
+        "referencePlaceholder": "Letters, numbers, and underscores only. 15+ characters recommended",
+        "referenceHint": "Only letters, numbers, and underscores are allowed. Invalid characters are removed after blur or IME composition ends.",
+        "unitLabel": "Weight/size units",
+        "unitAria": "Weight and size units",
+        "metricUnit": "Metric (g / cm)",
+        "imperialUnit": "Imperial (lb / in)"
+      },
+      "address": {
+        "senderTitle": "Sender information",
+        "receiverTitle": "Recipient information",
+        "senderEmpty": "Select an existing sender address from the address book, or add a new one in the dialog. Once confirmed, it is read-only here. Use Edit or select another address to change it.",
+        "senderBeianOnly": "The selected channels include one that requires a registered sender address. Please select a registered sender address from the address book. Manual add or edit is not allowed.",
+        "receiverEmpty": "Select an existing recipient address from the address book, or add a new one in the dialog. Once confirmed, it is read-only here. Use Edit or select another address to change it.",
+        "senderCountryLock": "This channel limits the sender country to: {country}",
+        "receiverCountryLock": "This channel limits the recipient country to: {country}",
+        "fields": {
+          "name": "Name:",
+          "address1": "Address line 1:",
+          "address2": "Address line 2:",
+          "street": "Street:",
+          "city": "City:",
+          "province": "State/Province:",
+          "postCode": "Postcode:",
+          "country": "Country/Region:",
+          "telephone": "Phone:",
+          "company": "Company:"
+        }
+      },
+      "package": {
+        "title": "Package information",
+        "subtitle": "Enter actual weight and outer package dimensions for billing and volumetric checks.",
+        "weight": "Weight ({unit})",
+        "length": "Length ({unit})",
+        "width": "Width ({unit})",
+        "height": "Height ({unit})"
+      },
+      "rate": {
+        "title": "Rate result",
+        "subtitle": "Calculate after completing the form. Compare mode lists multi-channel quotes from low to high.",
+        "emptyCompare": "Complete the form and click Calculate rate to view multi-channel comparison results",
+        "emptySingle": "Complete the form and click Calculate rate to view the quote",
+        "loading": "Querying rates, please wait...",
+        "quoteReturned": "A quote was returned. Confirm the fee details below or select a route.",
+        "chooseRoute": "Select a route before ordering",
+        "noRoutes": "No selectable routes were returned for this quote",
+        "unnamedRoute": "Unnamed route",
+        "compareSummary": "{count} channel quotes returned, sorted from low to high",
+        "resultChip": "Rate result",
+        "bestDeal": "Best deal",
+        "noQuote": "No quote returned",
+        "routeCount": "{count} selectable routes",
+        "standardQuote": "Standard route quote",
+        "standardRoute": "Standard route"
+      },
+      "dialogs": {
+        "senderAddressTitle": "Select sender address",
+        "receiverAddressTitle": "Select recipient address",
+        "addressBookSubtitle": "Filter by name on the server. Click Select or double-click a row to fill the form."
+      },
+      "submit": {
+        "now": "Order now"
+      },
+      "messages": {
+        "referenceRequired": "Enter a reference number",
+        "referenceInvalidSubmit": "Reference number only allows letters, numbers, and underscores. Submission blocked.",
+        "referenceInvalid": "Reference number only allows letters, numbers, and underscores",
+        "rateTitleFallback": "Rate result",
+        "keepCompareChannel": "Keep at least one channel in compare mode",
+        "selectChannel": "Select a channel",
+        "senderRequired": "Complete required sender information: name, address line 1, city, state/province, postcode, and phone",
+        "receiverRequired": "Complete required recipient information: name, address line 1, city, state/province, postcode, and phone",
+        "addressMustBeLocked": "Confirm sender and recipient addresses by selecting from the address book or adding an address before rating or ordering",
+        "senderBeianRequired": "The selected channels include one that requires a registered sender address. Please select a registered sender address from the address book first.",
+        "senderBeianAddressOnly": "The selected channels include one that requires a registered sender address. The sender address can only be selected from the address book.",
+        "senderAddressResetForChannelChange": "Channel requirements changed. The previously selected sender address was cleared. Please choose a sender address that matches the new requirements.",
+        "packageRequired": "Enter package weight and dimensions: length, width, and height",
+        "productRequired": "Add at least one item",
+        "productLine": "Item row {line}",
+        "productSkuRequired": "{line}: enter SKU",
+        "productEnNameRequired": "{line}: enter English name",
+        "productCnNameRequired": "{line}: enter Chinese name",
+        "productQtyPositive": "{line}: quantity must be greater than 0",
+        "productWeightPositive": "{line}: weight must be greater than 0",
+        "productValueRequired": "{line}: enter a valid declared value",
+        "selectRateChannel": "Select at least one channel for rate calculation",
+        "rateFailed": "Rate calculation failed. Check the form and try again.",
+        "compareNoData": "Comparison request succeeded, but no displayable channel quotes were returned",
+        "compareSuccess": "Comparison rates retrieved",
+        "routeMissingAfterRate": "This channel requires route selection, but no selectable routes were returned. Check the address and package information.",
+        "rateSuccess": "Rate retrieved",
+        "networkRetry": "Network request failed. Please try again.",
+        "addressListFailed": "Failed to load address list",
+        "networkFailed": "Network request failed",
+        "addressFilled": "Address filled",
+        "requiredField": "Required",
+        "saveFailed": "Save failed",
+        "saveSuccess": "Saved successfully",
+        "keepOneProduct": "Keep at least one item row",
+        "providerInvalid": "Channel configuration is invalid, unable to order",
+        "orderSuccess": "Order created. Label generation is in progress. Please check the order list.",
+        "unauthorized": "Login expired. Please sign in again.",
+        "orderFailed": "Order failed",
+        "compareModeSubmitBlocked": "Compare mode is for rate calculation only. Turn it off and select one channel to order.",
+        "rateBeforeOrder": "Calculate rates and select a route before ordering with this channel",
+        "noRouteForOrder": "This channel returned no selectable routes and cannot be ordered now",
+        "selectRouteBeforeOrder": "Select a route before submitting the order",
+        "compareOrderConfirm": "Confirm ordering with channel \"{channel}\"?\nRoute: {route} · Fee: {fee} {currency}",
+        "submitConfirm": "Confirm ordering with channel \"{channel}\" (QID: {qid})?{route}",
+        "selectedRoute": "\nSelected route: {route} / {fee} {currency}"
+      }
     }
   },
   "$vuetify": {

@@ -11,6 +11,7 @@ definePage({
 })
 
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const {
   channels,
@@ -43,6 +44,7 @@ const {
   addrFormDialog,
   addrFormTarget,
   addrFormIsEdit,
+  addrFormEditingId,
   addrForm,
   addrFormSubmitting,
   addrFormCountriesLoading,
@@ -65,7 +67,7 @@ const {
   selectedCnNameRequired,
   senderCountryLock,
   receiverCountryLock,
-  senderNeedBeianAddr,
+  anySelectedNeedBeianAddr,
   selectedChannelAlert,
   hasRateResult,
   selectedRoute,
@@ -120,7 +122,7 @@ function goList() {
 /** 参考号过滤：不在 composable 里 watch v-model，否则会打断中文 IME；在组合结束/失焦时再清理非法字符 */
 function sanitizeCankaohaoField() {
   const raw = String(cankaohao.value ?? '')
-  const s = raw.replace(/[^A-Za-z0-9_]/g, '')
+  const s = raw.replace(/\W/g, '')
   if (s !== raw)
     cankaohao.value = s
 }
@@ -134,6 +136,26 @@ function onCankaohaoBlur() {
     sanitizeCankaohaoField()
   })
 }
+
+function isValidCankaohao(v) {
+  const s = String(v || '').trim()
+  
+  return !!s && /^\w+$/.test(s)
+}
+
+async function onSubmit() {
+  // 本地校验参考号
+  if (!isValidCankaohao(cankaohao.value)) {
+    // 如果为空或包含非法字符，阻止提交并提示
+    if (!String(cankaohao.value || '').trim())
+      return snack.value = { show: true, text: t('pages.printLabelCreate.messages.referenceRequired'), color: 'warning' }
+
+    return snack.value = { show: true, text: t('pages.printLabelCreate.messages.referenceInvalidSubmit'), color: 'error' }
+  }
+
+  // 通过校验则调用原有提交逻辑
+  return doSubmit()
+}
 </script>
 
 <template>
@@ -145,10 +167,10 @@ function onCankaohaoBlur() {
       <div class="print-label-create__hero mb-6 d-flex align-center justify-space-between flex-wrap gap-3">
         <div>
           <h1 class="text-h4 font-weight-medium text-high-emphasis">
-            新建运单
+            {{ $t('pages.printLabelCreate.hero.title') }}
           </h1>
           <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-            选择渠道后，发件/收件地址请从地址簿选择或在浮窗中新增、编辑；填写包裹与货品信息后试算运费；比价模式可多选渠道对比报价。
+            {{ $t('pages.printLabelCreate.hero.subtitle') }}
           </p>
         </div>
         <VBtn
@@ -156,7 +178,7 @@ function onCankaohaoBlur() {
           prepend-icon="tabler-arrow-left"
           @click="goList"
         >
-          返回列表
+          {{ $t('common.actions.backToList') }}
         </VBtn>
       </div>
 
@@ -184,19 +206,30 @@ function onCankaohaoBlur() {
               color="primary"
               size="28"
             />
-            <span class="text-body-1">出单中...</span>
+            <span class="text-body-1">{{ $t('pages.printLabelCreate.overlay.ordering') }}</span>
           </div>
         </VCard>
       </VOverlay>
 
+      <!-- 全局提示 -->
+      <VAlert
+        type="info"
+        variant="tonal"
+        density="compact"
+        icon="tabler-shield-check"
+        class="mb-4"
+      >
+        {{ $t('pages.printLabelCreate.globalNotice.insurance') }}
+      </VAlert>
+
       <!-- 渠道 -->
       <PrintLabelSectionCard
-        title="渠道选择"
-        subtitle="选择后将影响币种、申报规则与国家限制。"
+        :title="$t('pages.printLabelCreate.channel.title')"
+        :subtitle="$t('pages.printLabelCreate.channel.subtitle')"
       >
         <template #append>
           <div class="d-flex align-center gap-2 flex-shrink-0">
-            <span class="text-caption text-medium-emphasis">比价模式</span>
+            <span class="text-caption text-medium-emphasis">{{ $t('pages.printLabelCreate.channel.compareMode') }}</span>
             <VSwitch
               v-model="compareMode"
               hide-details
@@ -214,7 +247,7 @@ function onCankaohaoBlur() {
           density="compact"
           class="mb-4"
         >
-          比价模式已开启：可复选渠道。
+          {{ $t('pages.printLabelCreate.channel.compareModeAlert') }}
         </VAlert>
         <div class="channel-grid">
           <VCard
@@ -270,7 +303,7 @@ function onCankaohaoBlur() {
       <!-- 渠道提醒 -->
       <PrintLabelSectionCard
         v-if="selectedChannelAlert?.content"
-        title="渠道提醒"
+        :title="$t('pages.printLabelCreate.channel.alertTitle')"
       >
         <VAlert
           :type="selectedChannelAlert.type === 'warning' ? 'warning' : selectedChannelAlert.type === 'error' ? 'error' : 'info'"
@@ -279,7 +312,7 @@ function onCankaohaoBlur() {
           class="print-label-alert"
         >
           <div class="font-weight-medium mb-2">
-            {{ selectedChannelAlert.title || '下单提醒' }}
+            {{ selectedChannelAlert.title || $t('pages.printLabelCreate.channel.defaultAlertTitle') }}
           </div>
           <div class="text-body-2 whitespace-pre-wrap">
             {{ selectedChannelAlert.content }}
@@ -289,16 +322,16 @@ function onCankaohaoBlur() {
 
       <!-- 基础信息 -->
       <PrintLabelSectionCard
-        title="基础信息"
-        subtitle="参考号与计量单位将参与试算与下单。"
+        :title="$t('pages.printLabelCreate.basic.title')"
+        :subtitle="$t('pages.printLabelCreate.basic.subtitle')"
       >
         <div class="print-label-basic d-flex flex-column flex-md-row gap-4 gap-md-6">
           <div class="print-label-basic__ref flex-grow-1 min-w-0">
             <AppTextField
               v-model="cankaohao"
-              label="参考号"
-              placeholder="仅英文、数字、下划线，建议15位以上"
-              hint="仅允许英文字母、数字与下划线；失焦或选字结束后会自动去掉其它字符（避免输入法过程中乱码）"
+              :label="$t('pages.printLabelCreate.basic.referenceLabel')"
+              :placeholder="$t('pages.printLabelCreate.basic.referencePlaceholder')"
+              :hint="$t('pages.printLabelCreate.basic.referenceHint')"
               persistent-hint
               autocomplete="off"
               autocorrect="off"
@@ -311,12 +344,12 @@ function onCankaohaoBlur() {
             <!-- 与 AppTextField 内 VLabel 同款；不用 VCol，避免栅格 gutter 与卡片标题左缘错开 -->
             <VLabel
               class="mb-1 text-body-2 text-wrap print-label-basic__unit-label"
-              text="重量/尺寸单位"
+              :text="$t('pages.printLabelCreate.basic.unitLabel')"
             />
             <div
               class="unit-segment"
               role="radiogroup"
-              aria-label="重量与尺寸单位"
+              :aria-label="$t('pages.printLabelCreate.basic.unitAria')"
             >
               <button
                 type="button"
@@ -326,7 +359,7 @@ function onCankaohaoBlur() {
                 :aria-checked="danwei === 0"
                 @click="danwei = 0"
               >
-                公制 (g / cm)
+                {{ $t('pages.printLabelCreate.basic.metricUnit') }}
               </button>
               <button
                 type="button"
@@ -336,7 +369,7 @@ function onCankaohaoBlur() {
                 :aria-checked="danwei === 1"
                 @click="danwei = 1"
               >
-                英制 (lb / in)
+                {{ $t('pages.printLabelCreate.basic.imperialUnit') }}
               </button>
             </div>
           </div>
@@ -344,7 +377,7 @@ function onCankaohaoBlur() {
       </PrintLabelSectionCard>
 
       <!-- 发件人 -->
-      <PrintLabelSectionCard title="发件人信息">
+      <PrintLabelSectionCard :title="$t('pages.printLabelCreate.address.senderTitle')">
         <template #append>
           <div class="d-flex flex-wrap gap-2 justify-end">
             <VBtn
@@ -353,27 +386,38 @@ function onCankaohaoBlur() {
               prepend-icon="tabler-address-book"
               @click="openAddrDialog('sender')"
             >
-              从地址簿选择
+              {{ $t('common.actions.selectFromAddressBook') }}
             </VBtn>
             <VBtn
+              v-if="!anySelectedNeedBeianAddr"
               variant="tonal"
               size="small"
               prepend-icon="tabler-plus"
               @click="openAddrFormDialog('sender', false)"
             >
-              添加地址
+              {{ $t('common.actions.addAddress') }}
             </VBtn>
             <VBtn
-              v-if="senderAddressLocked"
+              v-if="senderAddressLocked && !anySelectedNeedBeianAddr"
               variant="tonal"
               size="small"
               prepend-icon="tabler-pencil"
               @click="openAddrFormDialog('sender', true)"
             >
-              编辑
+              {{ $t('common.actions.edit') }}
             </VBtn>
           </div>
         </template>
+
+        <VAlert
+          v-if="anySelectedNeedBeianAddr"
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+        >
+          {{ $t('pages.printLabelCreate.address.senderBeianOnly') }}
+        </VAlert>
 
         <VAlert
           v-if="!senderAddressLocked"
@@ -382,7 +426,7 @@ function onCankaohaoBlur() {
           density="compact"
           class="mb-0"
         >
-          请从地址簿选择已有发件地址，或点击「添加地址」在浮窗中新建；确认后此处为只读展示，修改请点「编辑」或通过地址簿重新选择。
+          {{ $t('pages.printLabelCreate.address.senderEmpty') }}
         </VAlert>
         <VSheet
           v-else
@@ -394,31 +438,31 @@ function onCankaohaoBlur() {
             v-if="senderCountryLock"
             class="text-caption text-warning mb-2"
           >
-            当前渠道已限定发件国家：{{ senderCountryLock }}
+            {{ $t('pages.printLabelCreate.address.senderCountryLock', { country: senderCountryLock }) }}
           </div>
           <div class="text-body-2 print-label-addr-readonly d-flex flex-column gap-2">
-            <div><span class="text-medium-emphasis">姓名：</span>{{ sender.name || '—' }}</div>
-            <div><span class="text-medium-emphasis">地址第 1 行：</span>{{ sender.address || '—' }}</div>
-            <div><span class="text-medium-emphasis">地址第 2 行：</span>{{ sender.address2 || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.name') }}</span>{{ sender.name || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.address1') }}</span>{{ sender.address || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.address2') }}</span>{{ sender.address2 || '—' }}</div>
             <div v-if="sender.streetno">
-              <span class="text-medium-emphasis">街道：</span>{{ sender.streetno }}
+              <span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.street') }}</span>{{ sender.streetno }}
             </div>
             <div class="d-flex flex-wrap gap-4">
-              <span><span class="text-medium-emphasis">城市：</span>{{ sender.city || '—' }}</span>
-              <span><span class="text-medium-emphasis">省/州：</span>{{ sender.province || '—' }}</span>
-              <span><span class="text-medium-emphasis">邮编：</span>{{ sender.postCode || '—' }}</span>
+              <span><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.city') }}</span>{{ sender.city || '—' }}</span>
+              <span><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.province') }}</span>{{ sender.province || '—' }}</span>
+              <span><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.postCode') }}</span>{{ sender.postCode || '—' }}</span>
             </div>
-            <div><span class="text-medium-emphasis">国家/地区：</span>{{ countryLabel(senderCountryList, sender.country) }}</div>
-            <div><span class="text-medium-emphasis">电话：</span>{{ sender.telephone || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.country') }}</span>{{ countryLabel(senderCountryList, sender.country) }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.telephone') }}</span>{{ sender.telephone || '—' }}</div>
             <div v-if="sender.company">
-              <span class="text-medium-emphasis">公司：</span>{{ sender.company }}
+              <span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.company') }}</span>{{ sender.company }}
             </div>
           </div>
         </VSheet>
       </PrintLabelSectionCard>
 
       <!-- 收件人 -->
-      <PrintLabelSectionCard title="收件人信息">
+      <PrintLabelSectionCard :title="$t('pages.printLabelCreate.address.receiverTitle')">
         <template #append>
           <div class="d-flex flex-wrap gap-2 justify-end">
             <VBtn
@@ -427,7 +471,7 @@ function onCankaohaoBlur() {
               prepend-icon="tabler-address-book"
               @click="openAddrDialog('receiver')"
             >
-              从地址簿选择
+              {{ $t('common.actions.selectFromAddressBook') }}
             </VBtn>
             <VBtn
               variant="tonal"
@@ -435,7 +479,7 @@ function onCankaohaoBlur() {
               prepend-icon="tabler-plus"
               @click="openAddrFormDialog('receiver', false)"
             >
-              添加地址
+              {{ $t('common.actions.addAddress') }}
             </VBtn>
             <VBtn
               v-if="receiverAddressLocked"
@@ -444,7 +488,7 @@ function onCankaohaoBlur() {
               prepend-icon="tabler-pencil"
               @click="openAddrFormDialog('receiver', true)"
             >
-              编辑
+              {{ $t('common.actions.edit') }}
             </VBtn>
           </div>
         </template>
@@ -456,7 +500,7 @@ function onCankaohaoBlur() {
           density="compact"
           class="mb-0"
         >
-          请从地址簿选择已有收件地址，或点击「添加地址」在浮窗中新建；确认后此处为只读展示，修改请点「编辑」或通过地址簿重新选择。
+          {{ $t('pages.printLabelCreate.address.receiverEmpty') }}
         </VAlert>
         <VSheet
           v-else
@@ -468,24 +512,24 @@ function onCankaohaoBlur() {
             v-if="receiverCountryLock"
             class="text-caption text-warning mb-2"
           >
-            当前渠道已限定收件国家：{{ receiverCountryLock }}
+            {{ $t('pages.printLabelCreate.address.receiverCountryLock', { country: receiverCountryLock }) }}
           </div>
           <div class="text-body-2 print-label-addr-readonly d-flex flex-column gap-2">
-            <div><span class="text-medium-emphasis">姓名：</span>{{ receiver.name || '—' }}</div>
-            <div><span class="text-medium-emphasis">地址第 1 行：</span>{{ receiver.address || '—' }}</div>
-            <div><span class="text-medium-emphasis">地址第 2 行：</span>{{ receiver.address2 || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.name') }}</span>{{ receiver.name || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.address1') }}</span>{{ receiver.address || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.address2') }}</span>{{ receiver.address2 || '—' }}</div>
             <div v-if="receiver.streetno">
-              <span class="text-medium-emphasis">街道：</span>{{ receiver.streetno }}
+              <span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.street') }}</span>{{ receiver.streetno }}
             </div>
             <div class="d-flex flex-wrap gap-4">
-              <span><span class="text-medium-emphasis">城市：</span>{{ receiver.city || '—' }}</span>
-              <span><span class="text-medium-emphasis">省/州：</span>{{ receiver.province || '—' }}</span>
-              <span><span class="text-medium-emphasis">邮编：</span>{{ receiver.postCode || '—' }}</span>
+              <span><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.city') }}</span>{{ receiver.city || '—' }}</span>
+              <span><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.province') }}</span>{{ receiver.province || '—' }}</span>
+              <span><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.postCode') }}</span>{{ receiver.postCode || '—' }}</span>
             </div>
-            <div><span class="text-medium-emphasis">国家/地区：</span>{{ countryLabel(receiverCountryList, receiver.country) }}</div>
-            <div><span class="text-medium-emphasis">电话：</span>{{ receiver.telephone || '—' }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.country') }}</span>{{ countryLabel(receiverCountryList, receiver.country) }}</div>
+            <div><span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.telephone') }}</span>{{ receiver.telephone || '—' }}</div>
             <div v-if="receiver.company">
-              <span class="text-medium-emphasis">公司：</span>{{ receiver.company }}
+              <span class="text-medium-emphasis">{{ $t('pages.printLabelCreate.address.fields.company') }}</span>{{ receiver.company }}
             </div>
           </div>
         </VSheet>
@@ -493,8 +537,8 @@ function onCankaohaoBlur() {
 
       <!-- 包裹 -->
       <PrintLabelSectionCard
-        title="包裹信息"
-        subtitle="按实重与外包装尺寸填写，用于计费与材积核对。"
+        :title="$t('pages.printLabelCreate.package.title')"
+        :subtitle="$t('pages.printLabelCreate.package.subtitle')"
       >
         <VRow>
           <VCol
@@ -504,7 +548,7 @@ function onCankaohaoBlur() {
           >
             <AppTextField
               v-model="pkg.weight"
-              :label="`重量（${unitLabel.w}）`"
+              :label="$t('pages.printLabelCreate.package.weight', { unit: unitLabel.w })"
               type="number"
             />
           </VCol>
@@ -515,7 +559,7 @@ function onCankaohaoBlur() {
           >
             <AppTextField
               v-model="pkg.length"
-              :label="`长（${unitLabel.l}）`"
+              :label="$t('pages.printLabelCreate.package.length', { unit: unitLabel.l })"
               type="number"
             />
           </VCol>
@@ -526,7 +570,7 @@ function onCankaohaoBlur() {
           >
             <AppTextField
               v-model="pkg.width"
-              :label="`宽（${unitLabel.l}）`"
+              :label="$t('pages.printLabelCreate.package.width', { unit: unitLabel.l })"
               type="number"
             />
           </VCol>
@@ -537,7 +581,7 @@ function onCankaohaoBlur() {
           >
             <AppTextField
               v-model="pkg.height"
-              :label="`高（${unitLabel.l}）`"
+              :label="$t('pages.printLabelCreate.package.height', { unit: unitLabel.l })"
               type="number"
             />
           </VCol>
@@ -558,8 +602,8 @@ function onCankaohaoBlur() {
       <!-- 报价 -->
       <PrintLabelSectionCard
         id="rate-section"
-        title="报价结果"
-        subtitle="填写表单后试算；比价模式将按价格排序展示多渠道结果。"
+        :title="$t('pages.printLabelCreate.rate.title')"
+        :subtitle="$t('pages.printLabelCreate.rate.subtitle')"
       >
         <template #append>
           <VBtn
@@ -569,7 +613,7 @@ function onCankaohaoBlur() {
             prepend-icon="tabler-calculator"
             @click="doRate"
           >
-            试算运费
+            {{ $t('common.actions.calculateRate') }}
           </VBtn>
         </template>
 
@@ -583,10 +627,10 @@ function onCankaohaoBlur() {
             class="mb-2 opacity-50"
           />
           <div v-if="compareMode">
-            填写表单后点击「试算运费」查看多渠道比价结果
+            {{ $t('pages.printLabelCreate.rate.emptyCompare') }}
           </div>
           <div v-else>
-            填写表单后点击「试算运费」查看报价
+            {{ $t('pages.printLabelCreate.rate.emptySingle') }}
           </div>
         </div>
         <div
@@ -598,7 +642,7 @@ function onCankaohaoBlur() {
             color="primary"
             class="mb-2"
           />
-          <div>正在查询报价，请稍候...</div>
+          <div>{{ $t('pages.printLabelCreate.rate.loading') }}</div>
         </div>
 
         <!-- 单渠道结果 -->
@@ -624,14 +668,14 @@ function onCankaohaoBlur() {
                   v-else-if="!selectedNeedRouteSelect && primaryQuoteAmount == null"
                   class="text-body-2 text-medium-emphasis"
                 >
-                  已返回报价，请在下方确认费用明细或选择线路
+                  {{ $t('pages.printLabelCreate.rate.quoteReturned') }}
                 </div>
               </div>
             </VCardText>
           </VCard>
           <div v-if="selectedNeedRouteSelect">
             <div class="text-body-2 font-weight-medium mb-2">
-              请选择线路后再下单
+              {{ $t('pages.printLabelCreate.rate.chooseRoute') }}
             </div>
             <VAlert
               v-if="!routeOptions.length"
@@ -639,30 +683,31 @@ function onCankaohaoBlur() {
               variant="tonal"
               density="compact"
             >
-              当前报价未返回可选线路
+              {{ $t('pages.printLabelCreate.rate.noRoutes') }}
             </VAlert>
-            <VRadioGroup
+            <div
               v-else
-              v-model="selectedRouteKey"
-              hide-details
               class="d-flex flex-column gap-2"
+              role="radiogroup"
             >
               <VCard
                 v-for="rt in routeOptions"
                 :key="rt.key"
                 variant="outlined"
+                class="cursor-pointer route-option"
                 :class="selectedRouteKey === rt.key ? 'route-option--selected' : ''"
+                role="radio"
+                :aria-checked="selectedRouteKey === rt.key"
                 @click="selectedRouteKey = rt.key"
               >
-                <VCardText class="d-flex align-center gap-3 py-3">
-                  <VRadio
-                    :value="rt.key"
-                    hide-details
-                    class="flex-shrink-0"
+                <VCardText class="d-flex align-center gap-3 py-3 px-4">
+                  <span
+                    class="route-radio flex-shrink-0"
+                    :class="selectedRouteKey === rt.key ? 'route-radio--active' : ''"
                   />
                   <div class="flex-grow-1 min-w-0">
-                    <div class="text-body-2 font-weight-medium">
-                      {{ rt.rateName || '未命名线路' }}
+                    <div class="text-body-2 font-weight-semibold text-high-emphasis">
+                      {{ rt.rateName || $t('pages.printLabelCreate.rate.unnamedRoute') }}
                     </div>
                     <div
                       v-if="rt.entryport"
@@ -671,12 +716,12 @@ function onCankaohaoBlur() {
                       {{ rt.entryport }}
                     </div>
                   </div>
-                  <div class="text-success font-weight-bold flex-shrink-0">
+                  <div class="text-success font-weight-bold text-body-1 flex-shrink-0">
                     {{ rt.totalFee }} {{ selectedCurrency }}
                   </div>
                 </VCardText>
               </VCard>
-            </VRadioGroup>
+            </div>
           </div>
         </template>
 
@@ -684,14 +729,14 @@ function onCankaohaoBlur() {
         <template v-else-if="compareMode && rateCompareList.length">
           <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
             <div class="text-body-2 font-weight-medium">
-              共 {{ rateCompareList.length }} 条渠道报价（按价格从低到高）
+              {{ $t('pages.printLabelCreate.rate.compareSummary', { count: rateCompareList.length }) }}
             </div>
             <VChip
               color="primary"
               size="small"
               variant="tonal"
             >
-              试算结果
+              {{ $t('pages.printLabelCreate.rate.resultChip') }}
             </VChip>
           </div>
           <VCard
@@ -735,7 +780,7 @@ function onCankaohaoBlur() {
                 {{ item.channelName }}
               </VCardTitle>
               <VCardSubtitle class="text-caption">
-                {{ item.failed ? '试算未返回报价' : (item.isList ? `提供 ${item.routes?.length || 0} 条可选线路` : '标准线路报价') }}
+                {{ item.failed ? $t('pages.printLabelCreate.rate.noQuote') : (item.isList ? $t('pages.printLabelCreate.rate.routeCount', { count: item.routes?.length || 0 }) : $t('pages.printLabelCreate.rate.standardQuote')) }}
               </VCardSubtitle>
               <template #append>
                 <VChip
@@ -743,7 +788,7 @@ function onCankaohaoBlur() {
                   color="success"
                   size="small"
                 >
-                  最优惠
+                  {{ $t('pages.printLabelCreate.rate.bestDeal') }}
                 </VChip>
               </template>
             </VCardItem>
@@ -762,7 +807,7 @@ function onCankaohaoBlur() {
                 <div class="compare-quote-row">
                   <div class="min-w-0">
                     <div class="font-weight-medium">
-                      {{ item.singleRateName || '标准线路' }}
+                      {{ item.singleRateName || $t('pages.printLabelCreate.rate.standardRoute') }}
                     </div>
                     <div
                       v-if="item.singleNotes"
@@ -778,7 +823,7 @@ function onCankaohaoBlur() {
                       size="small"
                       @click="orderFromCompare(item, null)"
                     >
-                      下单
+                      {{ $t('common.actions.order') }}
                     </VBtn>
                   </div>
                 </div>
@@ -807,7 +852,7 @@ function onCankaohaoBlur() {
                       size="small"
                       @click="orderFromCompare(item, route)"
                     >
-                      下单
+                      {{ $t('common.actions.order') }}
                     </VBtn>
                   </div>
                 </div>
@@ -829,9 +874,9 @@ function onCankaohaoBlur() {
             :loading="submitting"
             :disabled="rateLoading"
             prepend-icon="tabler-send"
-            @click="doSubmit"
+            @click="onSubmit"
           >
-            立即下单
+            {{ $t('pages.printLabelCreate.submit.now') }}
           </VBtn>
         </VCardText>
       </VCard>
@@ -841,8 +886,8 @@ function onCankaohaoBlur() {
         v-model:search-name="addrSearchName"
         v-model:current-page="addrCurrentPage"
         content-class="print-label-addr-dialog-wrap"
-        :title="addrDialogTarget === 'sender' ? '选择发件人地址' : '选择收件人地址'"
-        subtitle="按姓名向服务器筛选；单击「选择」或双击整行填入表单。"
+        :title="addrDialogTarget === 'sender' ? $t('pages.printLabelCreate.dialogs.senderAddressTitle') : $t('pages.printLabelCreate.dialogs.receiverAddressTitle')"
+        :subtitle="$t('pages.printLabelCreate.dialogs.addressBookSubtitle')"
         :country-lock="addrDialogTarget === 'sender' ? (senderCountryLock || '') : (receiverCountryLock || '')"
         :items="addrList"
         :total="addrTotal"
@@ -1066,9 +1111,46 @@ function onCankaohaoBlur() {
   flex-shrink: 0;
 }
 
+.route-option {
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.route-option:hover:not(.route-option--selected) {
+  border-color: rgba(var(--v-theme-primary), 0.45) !important;
+  background: rgba(var(--v-theme-primary), 0.02);
+}
+
 .route-option--selected {
   border-color: rgb(var(--v-theme-primary)) !important;
   background: rgba(var(--v-theme-primary), 0.06);
+}
+
+/* CSS-drawn radio indicator — avoids VRadio/VRadioGroup internal layout side-effects */
+.route-radio {
+  display: inline-block;
+  flex-shrink: 0;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--v-border-color), var(--v-high-emphasis-opacity));
+  position: relative;
+  transition: border-color 0.18s ease;
+}
+
+.route-radio--active {
+  border-color: rgb(var(--v-theme-primary));
+}
+
+.route-radio--active::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  transform: translate(-50%, -50%);
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background-color: rgb(var(--v-theme-primary));
 }
 
 /* 渠道 Logo：原生 img + object-fit，避免 VImg 在固定高度下宽高为 0 */

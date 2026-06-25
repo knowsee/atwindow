@@ -21,6 +21,7 @@ const formDialog = ref(false)
 const isEdit = ref(false)
 const editingId = ref('')
 const snack = ref({ show: false, text: '', color: 'info' })
+const { t } = useI18n({ useScope: 'global' })
 
 const form = ref({
   name: '',
@@ -36,14 +37,14 @@ const form = ref({
   company: '',
 })
 
-const tabItems = [
-  { title: '发件地址', value: 1 },
-  { title: '收件地址', value: 2 },
-]
+const tabItems = computed(() => [
+  { title: t('pages.accountAddressManagement.tabs.sender'), value: 1 },
+  { title: t('pages.accountAddressManagement.tabs.receiver'), value: 2 },
+])
 
-const headers = [
+const headers = computed(() => [
   { title: 'ID', key: 'id', width: 90 },
-  { title: '姓名', key: 'name', minWidth: 120 },
+  { title: t('pages.accountAddressManagement.headers.name'), key: 'name', minWidth: 120 },
   { title: 'Address line 1', key: 'address', minWidth: 160 },
   { title: 'Address line 2', key: 'address2', minWidth: 120 },
   { title: 'City', key: 'city', minWidth: 96 },
@@ -51,10 +52,10 @@ const headers = [
   { title: 'Postal code', key: 'postcode', minWidth: 96 },
   { title: 'Country', key: 'country', minWidth: 96 },
   { title: 'Street', key: 'streetno', minWidth: 88 },
-  { title: '电话', key: 'telephone', minWidth: 140 },
-  { title: '公司', key: 'company', minWidth: 140 },
-  { title: '操作', key: 'actions', width: 90, sortable: false, align: 'end' },
-]
+  { title: t('pages.accountAddressManagement.headers.telephone'), key: 'telephone', minWidth: 140 },
+  { title: t('pages.accountAddressManagement.headers.company'), key: 'company', minWidth: 140 },
+  { title: t('pages.accountAddressManagement.headers.actions'), key: 'actions', width: 90, sortable: false, align: 'end' },
+])
 
 const totalPages = computed(() => Math.max(1, Math.ceil((Number(total.value) || 0) / Number(pageSize.value || 10))))
 
@@ -133,11 +134,11 @@ async function loadCountries() {
     }
 
     countries.value = []
-    toast(res?.msg || '加载国家列表失败', 'error')
+    toast(res?.msg || t('pages.accountAddressManagement.messages.countryLoadFailed'), 'error')
   }
   catch (e) {
     countries.value = []
-    toast(e?.data?.msg || e?.message || '加载国家列表失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountAddressManagement.messages.countryLoadFailed'), 'error')
   }
   finally {
     countriesLoading.value = false
@@ -167,12 +168,12 @@ async function loadList() {
 
     rows.value = []
     total.value = 0
-    toast(res?.msg || '加载地址列表失败', 'error')
+    toast(res?.msg || t('pages.accountAddressManagement.messages.listLoadFailed'), 'error')
   }
   catch (e) {
     rows.value = []
     total.value = 0
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountAddressManagement.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -206,17 +207,17 @@ async function submitForm() {
 
     const res = await $api(path, { method: 'POST', body: payload })
     if (Number(res?.code) === 1) {
-      toast(res?.msg || (isEdit.value ? '编辑成功' : '创建成功'), 'success')
+      toast(res?.msg || (isEdit.value ? t('pages.accountAddressManagement.messages.editSuccess') : t('pages.accountAddressManagement.messages.createSuccess')), 'success')
       formDialog.value = false
       await loadList()
 
       return
     }
 
-    toast(res?.msg || '保存失败', 'error')
+    toast(res?.msg || t('pages.accountAddressManagement.messages.saveFailed'), 'error')
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountAddressManagement.messages.networkFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -253,10 +254,10 @@ onMounted(loadCountries)
     <VCard border>
       <VCardItem>
         <VCardTitle class="text-h5 font-weight-medium">
-          地址管理
+          {{ $t('pages.accountAddressManagement.title') }}
         </VCardTitle>
         <VCardSubtitle>
-          切换「发件地址 / 收件地址」查看对应地址簿记录。
+          {{ $t('pages.accountAddressManagement.subtitle') }}
         </VCardSubtitle>
       </VCardItem>
 
@@ -285,7 +286,7 @@ onMounted(loadCountries)
             prepend-icon="tabler-plus"
             @click="openCreate"
           >
-            新增地址
+            {{ $t('pages.accountAddressManagement.actions.add') }}
           </VBtn>
         </div>
 
@@ -314,24 +315,49 @@ onMounted(loadCountries)
             <span>{{ item.company || '—' }}</span>
           </template>
           <template #item.actions="{ item }">
-            <IconBtn @click="openEdit(item)">
-              <VIcon icon="tabler-edit" />
-            </IconBtn>
+            <div class="d-flex align-center justify-end gap-1">
+              <VTooltip :text="$t('pages.accountAddressManagement.actions.edit')">
+                <template #activator="{ props }">
+                  <IconBtn
+                    v-bind="props"
+                    size="small"
+                    color="primary"
+                    @click="openEdit(item)"
+                  >
+                    <VIcon
+                      icon="tabler-pencil"
+                      size="20"
+                    />
+                  </IconBtn>
+                </template>
+              </VTooltip>
+            </div>
           </template>
-          <template #bottom />
-        </VDataTable>
-
-        <div class="d-flex flex-wrap align-center justify-space-between mt-4 gap-3">
-          <div class="text-body-2 text-medium-emphasis">
-            共 {{ total }} 条
-          </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            :total-visible="$vuetify.display.xs ? 3 : 7"
-            rounded
-          />
-        </div>
+          <template #bottom>
+            <VDivider />
+            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+              <div class="text-body-2 text-medium-emphasis">
+                {{ $t('pages.dropShippingOrderList.pagination.total', { total }) }}
+              </div>
+              <div class="d-flex align-center gap-3">
+                <AppSelect
+                  v-model="pageSize"
+                  :items="[10, 20, 50, 100]"
+                  density="compact"
+                  hide-details
+                  style="inline-size: 100px"
+                />
+                <VPagination
+                  v-model="currentPage"
+                  :length="totalPages"
+                  :total-visible="5"
+                  size="small"
+                  active-color="primary"
+                />
+              </div>
+            </div>
+          </template>
+        </vdatatable>
       </VCardText>
     </VCard>
 

@@ -9,12 +9,13 @@ const newPassword = ref('')
 const confirmPassword = ref('')
 const submitting = ref(false)
 const snack = ref({ show: false, text: '', color: 'info' })
+const { t } = useI18n({ useScope: 'global' })
 
-const passwordHints = [
-  '至少 8 位字符，越长越好',
-  '需包含小写字母',
-  '需包含数字、符号或空格中至少一类',
-]
+const passwordHints = computed(() => [
+  t('pages.accountSettings.security.requirements.length'),
+  t('pages.accountSettings.security.requirements.lowercase'),
+  t('pages.accountSettings.security.requirements.complexity'),
+])
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
@@ -28,22 +29,22 @@ function resetForm() {
 
 async function submitChangePassword() {
   if (!currentPassword.value.trim()) {
-    toast('请填写当前密码', 'warning')
+    toast(t('pages.accountSettings.security.messages.currentRequired'), 'warning')
 
     return
   }
   if (!newPassword.value.trim()) {
-    toast('请填写新密码', 'warning')
+    toast(t('pages.accountSettings.security.messages.newRequired'), 'warning')
 
     return
   }
   if (newPassword.value !== confirmPassword.value) {
-    toast('两次输入的新密码不一致', 'warning')
+    toast(t('pages.accountSettings.security.messages.mismatch'), 'warning')
 
     return
   }
   if (newPassword.value.length < 8) {
-    toast('新密码长度至少 8 位', 'warning')
+    toast(t('pages.accountSettings.security.messages.tooShort'), 'warning')
 
     return
   }
@@ -59,15 +60,15 @@ async function submitChangePassword() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '密码已更新', 'success')
+      toast(res?.msg || t('pages.accountSettings.security.messages.updated'), 'success')
       resetForm()
     }
     else {
-      toast(res?.msg || '修改失败', 'error')
+      toast(res?.msg || t('pages.accountSettings.security.messages.failed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '请求失败，请确认已配置修改密码接口', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountSettings.security.messages.requestFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -87,7 +88,7 @@ async function submitChangePassword() {
 
   <VRow>
     <VCol cols="12">
-      <VCard title="修改密码">
+      <VCard :title="$t('pages.accountSettings.security.title')">
         <VForm @submit.prevent="submitChangePassword">
           <VCardText class="pt-0">
             <VRow>
@@ -99,7 +100,7 @@ async function submitChangePassword() {
                   v-model="currentPassword"
                   :type="isCurrentPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isCurrentPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  label="当前密码"
+                  :label="$t('pages.accountSettings.security.fields.currentPassword')"
                   autocomplete="current-password"
                   placeholder="············"
                   @click:append-inner="isCurrentPasswordVisible = !isCurrentPasswordVisible"
@@ -116,7 +117,7 @@ async function submitChangePassword() {
                   v-model="newPassword"
                   :type="isNewPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isNewPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  label="新密码"
+                  :label="$t('pages.accountSettings.security.fields.newPassword')"
                   autocomplete="new-password"
                   placeholder="············"
                   @click:append-inner="isNewPasswordVisible = !isNewPasswordVisible"
@@ -131,7 +132,7 @@ async function submitChangePassword() {
                   v-model="confirmPassword"
                   :type="isConfirmPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isConfirmPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  label="确认新密码"
+                  :label="$t('pages.accountSettings.security.fields.confirmPassword')"
                   autocomplete="new-password"
                   placeholder="············"
                   @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
@@ -142,7 +143,7 @@ async function submitChangePassword() {
 
           <VCardText>
             <h6 class="text-h6 text-medium-emphasis mb-4">
-              密码要求
+              {{ $t('pages.accountSettings.security.requirementsTitle') }}
             </h6>
             <VList class="card-list">
               <VListItem
@@ -166,7 +167,7 @@ async function submitChangePassword() {
               type="submit"
               :loading="submitting"
             >
-              保存
+              {{ $t('pages.accountSettings.security.actions.save') }}
             </VBtn>
             <VBtn
               type="button"
@@ -175,7 +176,7 @@ async function submitChangePassword() {
               :disabled="submitting"
               @click="resetForm"
             >
-              清空
+              {{ $t('pages.accountSettings.security.actions.clear') }}
             </VBtn>
           </VCardText>
         </VForm>

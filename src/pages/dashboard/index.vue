@@ -15,6 +15,7 @@ definePage({
 
 const vuetifyTheme = useTheme()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const snack = ref({ show: false, text: '', color: 'info' })
 const overviewLoading = ref(false)
@@ -31,7 +32,6 @@ const noticeIndex = ref(0)
 
 const NOTICE_READ_LATEST_ID_KEY = 'dashboard_notice_read_latest_id'
 
-/** 近 7 日订单分析：打单 waybill_stats / 一件代发 dropship_stats（默认一件代发） */
 const sevenDayOrderSource = ref('dropship')
 const activeNotices = computed(() => notices.value)
 const currentNotice = computed(() => activeNotices.value[noticeIndex.value] || null)
@@ -106,7 +106,6 @@ function formatTsText(row) {
   return row?.createtime_text || row?.receivetime || '—'
 }
 
-/** 代发运单号 — 与订单列表 17track 链接一致 */
 function trackUrl17(trackingNo) {
   const v = String(trackingNo || '').trim()
   if (!v)
@@ -123,7 +122,6 @@ function formatDsFahuotime(row) {
   return row?.fahuotime_text || row?.fahuotime || '—'
 }
 
-/** 跳转到一件代发入库列表，并带上状态、运单号筛选 */
 function goDropShippingPackageList(row) {
   const q = {}
   if (row?.status != null && row.status !== '')
@@ -138,20 +136,18 @@ function goDropShippingPackageList(row) {
   })
 }
 
-/** 近 7 日一件代发：与 dashboardOverview dropship_stats 桶字段一致 */
 const DROP_SHIP_SEVEN_BUCKETS = [
-  { key: 'pending_confirm', label: '待确认' },
-  { key: 'processing', label: '处理中' },
-  { key: 'pending_pay', label: '待付款' },
-  { key: 'paid', label: '已付款' },
-  { key: 'problem', label: '问题订单' },
+  { key: 'pending_confirm', labelKey: 'pendingConfirm' },
+  { key: 'processing', labelKey: 'processing' },
+  { key: 'pending_pay', labelKey: 'pendingPay' },
+  { key: 'paid', labelKey: 'confirmed' },
+  { key: 'problem', labelKey: 'problem' },
 ]
 
 function sumSegmentValues(rows) {
   return rows.reduce((s, r) => s + (Number(r.value) || 0), 0)
 }
 
-/** 接口约定：seven_day_total；兼容 total；否则用分段之和 */
 function pickSevenDayOrderTotal(stats, segments) {
   if (!stats || typeof stats !== 'object')
     return sumSegmentValues(segments)
@@ -169,7 +165,6 @@ function labelWaybillStatusKey(k) {
   return Number.isFinite(n) ? resolveYundanStatus(n).text : String(k)
 }
 
-/** 解析 waybill_stats（新接口） */
 function parseWaybillSevenSegments(stats) {
   if (stats && typeof stats === 'object') {
     const raw = stats.by_status ?? stats.status_counts ?? stats.count_by_status
@@ -216,23 +211,28 @@ function parseDropshipSevenSegments(stats) {
 
   return DROP_SHIP_SEVEN_BUCKETS
     .map(def => ({
-      label: def.label,
+      label: t(`pages.dashboard.sevenDay.status.${def.labelKey}`),
       value: Number(bucket[def.key] ?? stats[def.key]) || 0,
     }))
     .filter(r => r.value > 0)
 }
 
-const dropshipStatusLabels = {
-  1: '待确认',
-  2: '已确认',
-  3: '待付款',
-  4: '待发货',
-  5: '待发货',
-  6: '已发货',
-  14: '问题',
+const dropshipStatusKeys = {
+  1: 'pendingConfirm',
+  2: 'confirmed',
+  3: 'pendingPay',
+  4: 'pendingShip',
+  5: 'pendingShip',
+  6: 'shipped',
+  14: 'problemShort',
 }
 
-/** 全局 KPI：入库 / 余额 / 近7日面单 */
+function resolveDropshipStatusLabel(status) {
+  const key = dropshipStatusKeys[Number(status)]
+
+  return key ? t(`pages.dashboard.sevenDay.status.${key}`) : t('pages.dashboard.warehouse.statusFallback', { status })
+}
+
 const globalKpis = computed(() => {
   const pkg = overview.value?.packages
   const w7 = overview.value?.waybill_stats
@@ -240,33 +240,32 @@ const globalKpis = computed(() => {
 
   return [
     {
-      title: '入库包裹',
-      subtitle: '累计在库流程',
+      title: t('pages.dashboard.kpis.packages.title'),
+      subtitle: t('pages.dashboard.kpis.packages.subtitle'),
       value: pkg?.total != null ? String(pkg.total) : '—',
-      hint: pkg ? `待入库 ${pkg.pending ?? 0} · 已到库 ${pkg.arrived ?? 0}` : '',
+      hint: pkg ? t('pages.dashboard.kpis.packages.hint', { pending: pkg.pending ?? 0, arrived: pkg.arrived ?? 0 }) : '',
       icon: 'tabler-package',
       color: 'primary',
     },
     {
-      title: '账户余额',
+      title: t('pages.dashboard.kpis.balance.title'),
       subtitle: 'USD',
       value: fin?.balance != null ? formatMoney(fin.balance) : '—',
-      hint: fin ? `本月流入 ${formatMoney(fin.month_inflow)} · 流出 ${formatMoney(fin.month_outflow)}` : '',
+      hint: fin ? t('pages.dashboard.kpis.balance.hint', { inflow: formatMoney(fin.month_inflow), outflow: formatMoney(fin.month_outflow) }) : '',
       icon: 'tabler-wallet',
       color: 'success',
     },
     {
-      title: '近7日出单（打单+一件代发）',
-      subtitle: '订单数',
+      title: t('pages.dashboard.kpis.sevenDay.title'),
+      subtitle: t('pages.dashboard.kpis.sevenDay.subtitle'),
       value: w7?.seven_day_total != null ? String(w7.seven_day_total) : '—',
-      hint: w7 ? '状态分布见下方「近 7 日订单统计」' : '',
+      hint: w7 ? t('pages.dashboard.kpis.sevenDay.hint') : '',
       icon: 'tabler-calendar-event',
       color: 'warning',
     },
   ]
 })
 
-/** 近 7 日：打单 / 代发 分段与总量 */
 const sevenDayParsed = computed(() => {
   const o = overview.value
   if (!o) {
@@ -312,8 +311,8 @@ const sevenDayShowDonut = computed(() => {
 
 const sevenDayEmptyHint = computed(() => {
   return sevenDayOrderSource.value === 'waybill'
-    ? '近 7 日暂无打单订单'
-    : '近 7 日暂无一件代发订单'
+    ? t('pages.dashboard.sevenDay.emptyWaybill')
+    : t('pages.dashboard.sevenDay.emptyDropship')
 })
 
 const sevenDayAnalysisPeriodText = computed(() => {
@@ -326,13 +325,12 @@ const sevenDayAnalysisPeriodText = computed(() => {
     if (p.label)
       return String(p.label)
     if (p.start != null && p.end != null)
-      return `统计周期：${p.start} ~ ${p.end}`
+      return t('pages.dashboard.sevenDay.period', { start: p.start, end: p.end })
   }
 
   return ''
 })
 
-/** 近 7 日订单状态 — 环形图（随「打单 / 一件代发」切换） */
 const sevenDayDonutSeries = computed(() => sevenDayActiveSegments.value.map(s => s.value))
 
 const sevenDayDonutOptions = computed(() => {
@@ -364,7 +362,7 @@ const sevenDayDonutOptions = computed(() => {
             },
             total: {
               show: true,
-              label: '订单数',
+              label: t('pages.dashboard.sevenDay.donutTotal'),
               fontSize: '0.75rem',
               formatter: () => String(sevenDayActiveTotal.value || '—'),
             },
@@ -386,12 +384,11 @@ const sevenDayDonutOptions = computed(() => {
   }
 })
 
-/** 近 7 天 SKU — 横向条形图 */
 const topSkuSeries = computed(() => {
   const rows = warehouseData.value?.top_skus || []
 
   return [{
-    name: '销量',
+    name: t('pages.dashboard.warehouse.topSkuSeries'),
     data: rows.map(r => Number(r.qty) || 0),
   }]
 })
@@ -442,51 +439,50 @@ const warehouseKpis = computed(() => {
 
   return [
     {
-      title: '代发订单',
+      title: t('pages.dashboard.kpis.dropship.title'),
       value: d?.total != null ? String(d.total) : '—',
-      sub: d ? `今日 ${d.today ?? 0}` : '',
+      sub: d ? t('pages.dashboard.kpis.dropship.today', { count: d.today ?? 0 }) : '',
       icon: 'tabler-truck-delivery',
       color: 'primary',
     },
     {
-      title: 'SKU 种类',
+      title: t('pages.dashboard.kpis.sku.title'),
       value: inv?.sku_count != null ? String(inv.sku_count) : '—',
-      sub: inv ? `库存件数 ${inv.total_qty ?? '—'}` : '',
+      sub: inv ? t('pages.dashboard.kpis.sku.stockQty', { count: inv.total_qty ?? '—' }) : '',
       icon: 'tabler-box',
       color: 'info',
     },
     {
-      title: '低库存 SKU',
+      title: t('pages.dashboard.kpis.lowStock.title'),
       value: inv?.low_stock?.length != null ? String(inv.low_stock.length) : '0',
-      sub: '预警线内',
+      sub: t('pages.dashboard.kpis.lowStock.subtitle'),
       icon: 'tabler-alert-triangle',
       color: 'warning',
     },
   ]
 })
 
-/** 财务快照 KPI：白底 + 小色块图标（对齐 EcommerceStatistics 风格） */
 const financeKpis = computed(() => {
   const fin = overview.value?.finance
 
   return [
     {
-      label: '账户余额',
-      hint: 'USD · 当前可用',
+      label: t('pages.dashboard.kpis.balance.title'),
+      hint: t('pages.dashboard.finance.availableUsd'),
       value: formatMoney(fin?.balance),
       icon: 'tabler-wallet',
       color: 'primary',
     },
     {
-      label: '本月流入',
-      hint: '充值等入账合计',
+      label: t('pages.dashboard.finance.monthInflow'),
+      hint: t('pages.dashboard.finance.monthInflowHint'),
       value: formatMoney(fin?.month_inflow),
       icon: 'tabler-trending-up',
       color: 'success',
     },
     {
-      label: '本月流出',
-      hint: '订单扣费等支出合计',
+      label: t('pages.dashboard.finance.monthOutflow'),
+      hint: t('pages.dashboard.finance.monthOutflowHint'),
       value: formatMoney(fin?.month_outflow),
       icon: 'tabler-trending-down',
       color: 'error',
@@ -501,10 +497,10 @@ async function loadOverview() {
     if (Number(res?.code) === 1 && res?.data)
       overview.value = res.data
     else
-      toast(res?.msg || '加载概览失败', 'error')
+      toast(res?.msg || t('pages.dashboard.messages.overviewFailed'), 'error')
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '加载概览失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dashboard.messages.overviewFailed'), 'error')
   }
   finally {
     overviewLoading.value = false
@@ -560,11 +556,11 @@ async function loadWarehouseDashboard() {
     if (Number(res?.code) === 1 && res?.data)
       warehouseData.value = res.data
     else
-      toast(res?.msg || '加载仓库数据失败', 'error')
+      toast(res?.msg || t('pages.dashboard.messages.warehouseFailed'), 'error')
   }
   catch (e) {
     warehouseData.value = null
-    toast(e?.data?.msg || e?.message || '加载仓库数据失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dashboard.messages.warehouseFailed'), 'error')
   }
   finally {
     warehouseLoading.value = false
@@ -574,7 +570,7 @@ async function loadWarehouseDashboard() {
 async function refreshAll() {
   await loadOverview()
   await loadWarehouseDashboard()
-  toast('数据已刷新', 'success')
+  toast(t('pages.dashboard.messages.refreshed'), 'success')
 }
 
 async function initWarehouses() {
@@ -631,7 +627,7 @@ onMounted(async () => {
               color="warning"
             />
           </template>
-          <VCardTitle>{{ currentNotice?.title || '公告' }}</VCardTitle>
+          <VCardTitle>{{ currentNotice?.title || $t('pages.dashboard.notice.defaultTitle') }}</VCardTitle>
           <template #append>
             <div class="d-flex align-center gap-1">
               <IconBtn
@@ -671,7 +667,7 @@ onMounted(async () => {
             v-if="noticeLoading"
             class="text-body-2 text-medium-emphasis mt-10"
           >
-            公告加载中...
+            {{ $t('pages.dashboard.notice.loading') }}
           </div>
           <div
             v-else-if="currentNotice"
@@ -685,33 +681,32 @@ onMounted(async () => {
             variant="text"
             @click="closeNoticeDialog"
           >
-            关闭
+            {{ $t('pages.dashboard.notice.close') }}
           </VBtn>
           <VBtn
             color="primary"
             variant="flat"
             @click="markNoticeReadAndHide"
           >
-            已读并不再显示
+            {{ $t('pages.dashboard.notice.readAndHide') }}
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
-    <!-- 页头 -->
     <VRow class="align-center mb-6">
       <VCol
         cols="12"
         md="6"
       >
         <div class="text-overline text-primary mb-1">
-          运营中心
+          {{ $t('pages.dashboard.hero.overline') }}
         </div>
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          业务看板
+          {{ $t('pages.dashboard.hero.title') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-1">
-          全局履约与财务一览；下方「仓库洞察」可切换仓库查看代发、库存与近 7 日动销。
+          {{ $t('pages.dashboard.hero.subtitle') }}
         </p>
       </VCol>
       <VCol
@@ -730,7 +725,7 @@ onMounted(async () => {
             start
             size="16"
           />
-          概览 {{ overview.meta.generated_at_text }}
+          {{ $t('pages.dashboard.hero.overviewTime', { time: overview.meta.generated_at_text }) }}
         </VChip>
         <VBtn
           variant="tonal"
@@ -739,14 +734,13 @@ onMounted(async () => {
           :loading="overviewLoading || warehouseLoading"
           @click="refreshAll"
         >
-          刷新
+          {{ $t('pages.dashboard.hero.refresh') }}
         </VBtn>
       </VCol>
     </VRow>
 
-    <!-- 全局 KPI -->
     <div class="text-overline text-disabled mb-3">
-      全局概览
+      {{ $t('pages.dashboard.sections.global') }}
     </div>
     <VRow class="match-height mb-6">
       <VCol
@@ -799,7 +793,6 @@ onMounted(async () => {
     </VRow>
 
     <VRow class="match-height mb-6">
-      <!-- 面单构成 -->
       <VCol
         cols="12"
         lg="5"
@@ -811,11 +804,11 @@ onMounted(async () => {
         >
           <div class="pt-4 px-4 pb-2">
             <VCardTitle class="text-h6 pa-0">
-              近 7 日订单统计
+              {{ $t('pages.dashboard.sections.sevenDay') }}
             </VCardTitle>
             <VCardSubtitle class="text-wrap pa-0 pt-1">
               <span v-if="sevenDayAnalysisPeriodText">{{ sevenDayAnalysisPeriodText }}</span>
-              <span v-else>按状态分布 · createtime 近 7 日</span>
+              <span v-else>{{ $t('pages.dashboard.sevenDay.fallbackSubtitle') }}</span>
             </VCardSubtitle>
           </div>
           <VTabs
@@ -828,13 +821,13 @@ onMounted(async () => {
               value="dropship"
               class="text-none text-body-1"
             >
-              一件代发
+              {{ $t('pages.dashboard.sevenDay.dropshipTab') }}
             </VTab>
             <VTab
               value="waybill"
               class="text-none text-body-1"
             >
-              打单
+              {{ $t('pages.dashboard.sevenDay.waybillTab') }}
             </VTab>
           </VTabs>
           <VCardText>
@@ -860,7 +853,6 @@ onMounted(async () => {
         </VCard>
       </VCol>
 
-      <!-- 财务 + 最近流水 -->
       <VCol
         cols="12"
         lg="7"
@@ -872,9 +864,9 @@ onMounted(async () => {
         >
           <VCardItem>
             <VCardTitle class="text-h6">
-              财务快照
+              {{ $t('pages.dashboard.sections.finance') }}
             </VCardTitle>
-            <VCardSubtitle>余额与近期资金变动</VCardSubtitle>
+            <VCardSubtitle>{{ $t('pages.dashboard.finance.subtitle') }}</VCardSubtitle>
           </VCardItem>
           <VCardText>
             <VRow
@@ -924,7 +916,7 @@ onMounted(async () => {
             <VDivider class="my-4" />
 
             <div class="text-subtitle-2 font-weight-medium text-medium-emphasis mb-3">
-              最近流水
+              {{ $t('pages.dashboard.sections.recentLogs') }}
             </div>
             <VList
               v-if="overview?.finance?.recent_logs?.length"
@@ -964,7 +956,7 @@ onMounted(async () => {
                       {{ Number(log.change_money) >= 0 ? '+' : '' }}{{ formatMoney(log.change_money) }}
                     </div>
                     <div class="text-caption text-medium-emphasis">
-                      余额 {{ formatMoney(log.last_money) }}
+                      {{ $t('pages.dashboard.finance.balance', { amount: formatMoney(log.last_money) }) }}
                     </div>
                   </div>
                 </template>
@@ -974,14 +966,13 @@ onMounted(async () => {
               v-else
               class="text-body-2 text-medium-emphasis"
             >
-              暂无流水
+              {{ $t('pages.dashboard.finance.emptyLogs') }}
             </div>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
 
-    <!-- 最近入库 -->
     <VCard
       :loading="overviewLoading"
       border
@@ -989,9 +980,9 @@ onMounted(async () => {
     >
       <VCardItem>
         <VCardTitle class="text-h6">
-          最近入库动态
+          {{ $t('pages.dashboard.sections.recentInbound') }}
         </VCardTitle>
-        <VCardSubtitle>包裹轨迹摘要</VCardSubtitle>
+        <VCardSubtitle>{{ $t('pages.dashboard.recentInbound.subtitle') }}</VCardSubtitle>
       </VCardItem>
       <VCardText class="pt-0">
         <VTable
@@ -1002,9 +993,9 @@ onMounted(async () => {
         >
           <thead>
             <tr>
-              <th>运单号</th>
+              <th>{{ $t('pages.dashboard.recentInbound.headers.trackingNo') }}</th>
               <th>SKU</th>
-              <th>时间</th>
+              <th>{{ $t('pages.dashboard.recentInbound.headers.time') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -1031,23 +1022,22 @@ onMounted(async () => {
           v-else
           class="text-body-2 text-medium-emphasis py-6 text-center"
         >
-          暂无入库记录
+          {{ $t('pages.dashboard.recentInbound.empty') }}
         </div>
       </VCardText>
     </VCard>
 
-    <!-- 仓库洞察 -->
     <div class="mb-2">
       <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-3">
         <div class="text-overline text-disabled">
-          仓库洞察
+          {{ $t('pages.dashboard.sections.warehouseInsight') }}
         </div>
         <VChip
           v-if="warehouseData?.meta?.generated_at_text"
           size="small"
           variant="tonal"
         >
-          仓库数据 {{ warehouseData.meta.generated_at_text }}
+          {{ $t('pages.dashboard.warehouse.generatedAt', { time: warehouseData.meta.generated_at_text }) }}
         </VChip>
       </div>
 
@@ -1128,9 +1118,9 @@ onMounted(async () => {
           >
             <VCardItem>
               <VCardTitle class="text-h6">
-                近 7 天 SKU 销量 Top
+                {{ $t('pages.dashboard.sections.topSku') }}
               </VCardTitle>
-              <VCardSubtitle>按当前仓库聚合动销件数</VCardSubtitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.topSkuSubtitle') }}</VCardSubtitle>
             </VCardItem>
             <VCardText>
               <div
@@ -1148,7 +1138,7 @@ onMounted(async () => {
                 v-else
                 class="text-body-2 text-medium-emphasis py-12 text-center"
               >
-                暂无销量数据
+                {{ $t('pages.dashboard.warehouse.topSkuEmpty') }}
               </div>
             </VCardText>
           </VCard>
@@ -1165,9 +1155,9 @@ onMounted(async () => {
           >
             <VCardItem>
               <VCardTitle class="text-h6">
-                低库存关注
+                {{ $t('pages.dashboard.sections.lowStock') }}
               </VCardTitle>
-              <VCardSubtitle>库存 ≤ 预警值</VCardSubtitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.lowStockSubtitle') }}</VCardSubtitle>
             </VCardItem>
             <VCardText>
               <div
@@ -1206,7 +1196,7 @@ onMounted(async () => {
                     <div class="text-end flex-shrink-0">
                       <div class="text-body-2 tabular-nums">
                         <span class="text-error font-weight-semibold">{{ row.sku_num }}</span>
-                        <span class="text-medium-emphasis"> / 预警 </span>
+                        <span class="text-medium-emphasis">{{ $t('pages.dashboard.warehouse.warning') }}</span>
                         <span class="text-medium-emphasis">{{ row.warn_num }}</span>
                       </div>
                     </div>
@@ -1217,14 +1207,13 @@ onMounted(async () => {
                 v-else
                 class="text-body-2 text-medium-emphasis py-8 text-center"
               >
-                暂无低库存记录
+                {{ $t('pages.dashboard.warehouse.lowStockEmpty') }}
               </div>
             </VCardText>
           </VCard>
         </VCol>
       </VRow>
 
-      <!-- 代发状态 + 最近订单 -->
       <VRow>
         <VCol cols="12">
           <VCard
@@ -1233,9 +1222,9 @@ onMounted(async () => {
           >
             <VCardItem>
               <VCardTitle class="text-h6">
-                一件代发订单
+                {{ $t('pages.dashboard.sections.dropshipOrders') }}
               </VCardTitle>
-              <VCardSubtitle>展示最新20条记录</VCardSubtitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.dropshipSubtitle') }}</VCardSubtitle>
             </VCardItem>
             <VCardText>
               <div
@@ -1249,7 +1238,7 @@ onMounted(async () => {
                   variant="tonal"
                   color="primary"
                 >
-                  {{ dropshipStatusLabels[Number(st)] || `状态 ${st}` }}：{{ cnt }}
+                  {{ resolveDropshipStatusLabel(st) }}: {{ cnt }}
                 </VChip>
               </div>
               <VTable
@@ -1260,11 +1249,11 @@ onMounted(async () => {
               >
                 <thead>
                   <tr>
-                    <th>参考号</th>
-                    <th>运单号</th>
-                    <th>费用</th>
-                    <th>发货时间</th>
-                    <th>创建时间</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.reference') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.trackingNo') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.fee') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.shipTime') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.createTime') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1307,7 +1296,7 @@ onMounted(async () => {
                 v-else
                 class="text-body-2 text-medium-emphasis py-4 text-center"
               >
-                暂无最近代发订单
+                {{ $t('pages.dashboard.dropshipRecent.empty') }}
               </div>
             </VCardText>
           </VCard>
@@ -1322,7 +1311,7 @@ onMounted(async () => {
       border="start"
       prominent
     >
-      未获取到可用仓库，请确认已在系统中维护仓库信息。
+      {{ $t('pages.dashboard.warehouse.noWarehouse') }}
     </VAlert>
   </VContainer>
 </template>

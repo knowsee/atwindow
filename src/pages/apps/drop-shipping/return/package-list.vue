@@ -1,6 +1,6 @@
 <script setup>
-import { $api } from '@/utils/api'
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
+import { $api } from '@/utils/api'
 import { resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
 import { loadWarehouseOptions, normalizeRangeText } from '@/views/apps/drop-shipping/useDropShippingShared'
 
@@ -19,12 +19,16 @@ const itemsPerPage = ref(20)
 const warehouseOptions = ref([])
 const snack = ref({ show: false, text: '', color: 'info' })
 const warehousePersistReady = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
-const typeItems = [
-  { title: '全部品相', value: '' },
-  { title: '良品', value: '良品' },
-  { title: '不良品', value: '不良品' },
-]
+const QUALITY_GOOD = '\u826f\u54c1'
+const QUALITY_BAD = '\u4e0d\u826f\u54c1'
+
+const typeItems = computed(() => [
+  { title: t('pages.dropShippingReturnPackageList.quality.all'), value: '' },
+  { title: t('pages.dropShippingReturnOrderCreate.quality.good'), value: QUALITY_GOOD },
+  { title: t('pages.dropShippingReturnOrderCreate.quality.bad'), value: QUALITY_BAD },
+])
 
 const filters = ref({
   warehouseId: null,
@@ -34,22 +38,31 @@ const filters = ref({
   sku: '',
 })
 
-const headers = [
-  { title: '仓库', key: 'warehouse_name', minWidth: '140' },
-  { title: '运单号', key: 'tracking_no', minWidth: '180' },
+const headers = computed(() => [
+  { title: t('pages.dropShippingOrderCreate.sections.logistics.warehouse'), key: 'warehouse_name', minWidth: '140' },
+  { title: t('pages.dropShippingOrderList.headers.trackingNo'), key: 'tracking_no', minWidth: '180' },
   { title: 'SKU', key: 'sku', minWidth: '120' },
-  { title: '申报', key: 'sku_num', minWidth: '80', align: 'end' },
-  { title: '清点', key: 'qd_num', minWidth: '80', align: 'end' },
-  { title: '品相', key: 'type', minWidth: '96' },
-  { title: '重量(kg)', key: 'weight', minWidth: '88', align: 'end' },
-  { title: '创建时间', key: 'createtime', minWidth: '160' },
-  { title: '状态', key: 'status', minWidth: '88', align: 'center' },
-]
+  { title: t('pages.dropShippingReturnPackageList.headers.declared'), key: 'sku_num', minWidth: '80', align: 'end' },
+  { title: t('pages.dropShippingReturnPackageList.headers.counted'), key: 'qd_num', minWidth: '80', align: 'end' },
+  { title: t('pages.dropShippingReturnPackageList.headers.quality'), key: 'type', minWidth: '96' },
+  { title: t('pages.dropShippingReturnPackageList.headers.weightKg'), key: 'weight', minWidth: '88', align: 'end' },
+  { title: t('pages.dropShippingOrderList.filters.createdAt'), key: 'createtime', minWidth: '160' },
+  { title: t('pages.dropShippingOrderList.headers.status'), key: 'status', minWidth: '88', align: 'center' },
+])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
+}
+
+function resolveQualityType(type) {
+  if (type === QUALITY_GOOD)
+    return t('pages.dropShippingReturnOrderCreate.quality.good')
+  if (type === QUALITY_BAD)
+    return t('pages.dropShippingReturnOrderCreate.quality.bad')
+
+  return type || '—'
 }
 
 function buildBody() {
@@ -90,13 +103,13 @@ async function loadList() {
     else {
       rows.value = []
       total.value = 0
-      toast(res?.msg || '加载退货包裹失败', 'error')
+      toast(res?.msg || t('pages.dropShippingReturnPackageList.messages.loadFailed'), 'error')
     }
   }
   catch (e) {
     rows.value = []
     total.value = 0
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingReturnPackageList.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -131,10 +144,10 @@ watch(() => filters.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  const remote = await loadWarehouseOptions()
+  const remote = await loadWarehouseOptions(t)
 
   warehouseOptions.value = [
-    { title: '全部仓库', value: null },
+    { title: t('pages.dropShippingOrderList.filters.allWarehouses'), value: null },
     ...remote,
   ]
   filters.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: false })
@@ -144,151 +157,149 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VContainer
-    fluid
-    class="pa-4 pa-sm-6"
+  <VSnackbar
+    v-model="snack.show"
+    :color="snack.color"
+    location="top"
+    :timeout="2600"
   >
-    <VSnackbar
-      v-model="snack.show"
-      :color="snack.color"
-      location="top"
-      :timeout="2600"
-    >
-      {{ snack.text }}
-    </VSnackbar>
+    {{ snack.text }}
+  </VSnackbar>
 
-    <VCard class="rounded-lg">
-      <VCardItem class="pb-4 pt-6 px-6">
-        <template #title>
-          <span class="text-h5 font-weight-medium">退货包裹</span>
+  <VCard class="rounded-lg">
+    <VCardItem class="pb-3">
+      <template #title>
+        <span class="text-h5 font-weight-medium">{{ $t('pages.dropShippingReturnPackageList.title') }}</span>
+      </template>
+      <template #subtitle>
+        <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingReturnPackageList.subtitle') }}</span>
+      </template>
+    </VCardItem>
+    <VDivider />
+    <VCardText class="pa-4 pa-sm-6">
+      <AppQueryPanel
+        class="mb-4"
+        :loading="loading"
+        actions-position="bottom"
+        @search="searchList"
+        @reset="resetFilters"
+      >
+        <VRow dense>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <AppSelect
+              v-model="filters.warehouseId"
+              :items="warehouseOptions"
+              item-title="title"
+              item-value="value"
+              :label="$t('pages.dropShippingOrderCreate.sections.logistics.warehouse')"
+              clearable
+              hide-details
+              density="compact"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <AppSelect
+              v-model="filters.type"
+              :items="typeItems"
+              item-title="title"
+              item-value="value"
+              :label="$t('pages.dropShippingReturnPackageList.headers.quality')"
+              clearable
+              hide-details
+              density="compact"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <AppTextField
+              v-model="filters.trackingNo"
+              :label="$t('pages.dropShippingOrderList.headers.trackingNo')"
+              :placeholder="$t('pages.dropShippingOrderList.headers.trackingNo')"
+              hide-details
+              density="compact"
+              @keyup.enter="searchList"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <AppTextField
+              v-model="filters.sku"
+              label="SKU"
+              placeholder="SKU"
+              hide-details
+              density="compact"
+              @keyup.enter="searchList"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="4"
+          >
+            <AppDateTimePicker
+              v-model="filters.createRange"
+              :label="$t('pages.dropShippingOrderList.filters.createdAt')"
+              hide-details
+              density="compact"
+              :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
+            />
+          </VCol>
+        </VRow>
+      </AppQueryPanel>
+
+      <VDataTableServer
+        :headers="headers"
+        :items="rows"
+        :items-length="total"
+        :loading="loading"
+        item-value="id"
+        class="text-body-2 ds-return-package-list__table"
+      >
+        <template #item.type="{ item }">
+          <VChip
+            size="small"
+            variant="tonal"
+            :color="item.type === QUALITY_BAD ? 'error' : 'success'"
+          >
+            {{ resolveQualityType(item.type) }}
+          </VChip>
         </template>
-        <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">接口 /package/returnKucun（按运单维度）。</span>
-        </template>
-      </VCardItem>
-      <VDivider />
-      <VCardText class="pa-4 pa-sm-6">
-        <AppQueryPanel
-          class="mb-4"
-          :loading="loading"
-          actions-position="bottom"
-          @search="searchList"
-          @reset="resetFilters"
-        >
-          <VRow dense>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppSelect
-                v-model="filters.warehouseId"
-                :items="warehouseOptions"
-                item-title="title"
-                item-value="value"
-                label="仓库"
-                clearable
-                hide-details
-                density="compact"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppSelect
-                v-model="filters.type"
-                :items="typeItems"
-                item-title="title"
-                item-value="value"
-                label="品相"
-                clearable
-                hide-details
-                density="compact"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppTextField
-                v-model="filters.trackingNo"
-                label="运单号"
-                placeholder="运单号"
-                hide-details
-                density="compact"
-                @keyup.enter="searchList"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppTextField
-                v-model="filters.sku"
-                label="SKU"
-                placeholder="SKU"
-                hide-details
-                density="compact"
-                @keyup.enter="searchList"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppDateTimePicker
-                v-model="filters.createRange"
-                label="创建时间"
-                hide-details
-                density="compact"
-                :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
-              />
-            </VCol>
-          </VRow>
-        </AppQueryPanel>
 
-        <VDataTableServer
-          :headers="headers"
-          :items="rows"
-          :items-length="total"
-          :loading="loading"
-          item-value="id"
-          class="text-body-2 ds-return-package-list__table"
-        >
-          <template #item.type="{ item }">
-            <VChip
-              size="small"
-              variant="tonal"
-              :color="item.type === '不良品' ? 'error' : 'success'"
-            >
-              {{ item.type || '—' }}
-            </VChip>
-          </template>
-
-          <template #bottom>
-            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
-              <span class="text-body-2 text-medium-emphasis">共 {{ total }} 条</span>
-              <div class="d-flex align-center gap-3">
-                <AppSelect
-                  :model-value="itemsPerPage"
-                  :items="[10, 20, 50, 100]"
-                  style="inline-size: 96px;"
-                  density="compact"
-                  hide-details
-                  @update:model-value="itemsPerPage = Number($event)"
-                />
-                <VPagination
-                  v-model="page"
-                  :length="pageLength"
-                  :total-visible="7"
-                />
-              </div>
+        <template #bottom>
+          <VDivider />
+          <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+            <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderList.pagination.total', { total }) }}</span>
+            <div class="d-flex align-center gap-3">
+              <AppSelect
+                :model-value="itemsPerPage"
+                :items="[10, 20, 50, 100]"
+                style="inline-size: 100px;"
+                density="compact"
+                hide-details
+                @update:model-value="itemsPerPage = Number($event)"
+              />
+              <VPagination
+                v-model="page"
+                :length="pageLength"
+                :total-visible="5"
+                size="small"
+                active-color="primary"
+              />
             </div>
-          </template>
-        </VDataTableServer>
-      </VCardText>
-    </VCard>
-  </VContainer>
+          </div>
+        </template>
+      </VDataTableServer>
+    </VCardText>
+  </VCard>
 </template>
 
 <style scoped>

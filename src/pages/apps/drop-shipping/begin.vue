@@ -17,34 +17,35 @@ const formRef = ref()
 const snack = ref({ show: false, text: '', color: 'info' })
 const warehouseOptions = ref([])
 const warehousePersistReady = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
-const serviceSteps = [
+const serviceSteps = computed(() => [
   {
-    title: '注册账号',
-    desc: '完成账号注册并进入一件代发业务模块',
+    title: t('pages.dropShippingBegin.steps.register.title'),
+    desc: t('pages.dropShippingBegin.steps.register.desc'),
     icon: 'tabler-user-plus',
   },
   {
-    title: '提交申请',
-    desc: '选择仓库并填写预估业务规模',
+    title: t('pages.dropShippingBegin.steps.apply.title'),
+    desc: t('pages.dropShippingBegin.steps.apply.desc'),
     icon: 'tabler-send',
   },
   {
-    title: '审核开通',
-    desc: '后台工作人员审核后开通服务权限',
+    title: t('pages.dropShippingBegin.steps.review.title'),
+    desc: t('pages.dropShippingBegin.steps.review.desc'),
     icon: 'tabler-shield-check',
   },
   {
-    title: '创建入库',
-    desc: '提交入库单并安排货物入仓',
+    title: t('pages.dropShippingBegin.steps.inbound.title'),
+    desc: t('pages.dropShippingBegin.steps.inbound.desc'),
     icon: 'tabler-package-import',
   },
   {
-    title: '创建订单',
-    desc: '服务开通后即可创建订单并发货',
+    title: t('pages.dropShippingBegin.steps.order.title'),
+    desc: t('pages.dropShippingBegin.steps.order.desc'),
     icon: 'tabler-rocket',
   },
-]
+])
 
 const form = ref({
   warehouseId: null,
@@ -67,7 +68,7 @@ async function initBaseData() {
     warehousePersistReady.value = true
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '仓库加载失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingBegin.messages.warehouseLoadFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -99,14 +100,14 @@ async function submitApply() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '您的开通申请已提交，请等待后台工作人员审核开通，如有疑问可联系客服或者销售经理查询进度！', 'success')
+      toast(res?.msg || t('pages.dropShippingBegin.messages.applySuccess'), 'success')
     }
     else {
-      toast(res?.msg || '提交失败', 'error')
+      toast(res?.msg || t('pages.dropShippingBegin.messages.submitFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingBegin.messages.networkFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -135,10 +136,10 @@ const pageBlocking = computed(() => loading.value)
     <VCard class="rounded-lg mb-4">
       <VCardItem class="pb-3 pt-5 px-6">
         <template #title>
-          <span class="text-h5 font-weight-medium">一件代发步骤</span>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.dropShippingBegin.stepsTitle') }}</span>
         </template>
         <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">先提交开通申请，审核通过后即可使用入库与订单能力。</span>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingBegin.stepsSubtitle') }}</span>
         </template>
       </VCardItem>
       <VDivider />
@@ -173,17 +174,17 @@ const pageBlocking = computed(() => loading.value)
     <VCard class="rounded-lg">
       <VCardItem class="pb-4 pt-6 px-6">
         <template #title>
-          <span class="text-h5 font-weight-medium">服务申请</span>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.dropShippingBegin.application.title') }}</span>
         </template>
         <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">请如实填写计划开通仓库与业务规模，便于平台审核与后续支持。</span>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingBegin.application.subtitle') }}</span>
         </template>
       </VCardItem>
       <VDivider />
       <VCardText class="pa-4 pa-sm-6">
         <FormPageLoadingOverlay
           :loading="pageBlocking"
-          message="正在加载仓库列表..."
+          :message="$t('pages.dropShippingBegin.application.loadingWarehouses')"
         >
           <VAlert
             type="info"
@@ -191,7 +192,7 @@ const pageBlocking = computed(() => loading.value)
             density="comfortable"
             class="mb-6"
           >
-            提交后将进入人工审核流程，如有疑问可联系销售或客服查询进度。
+            {{ $t('pages.dropShippingBegin.application.notice') }}
           </VAlert>
 
           <VForm
@@ -205,15 +206,15 @@ const pageBlocking = computed(() => loading.value)
               >
                 <AppSelect
                   v-model="form.warehouseId"
-                  label="需开通仓库"
-                  placeholder="请选择需要开通服务的仓库"
+                  :label="$t('pages.dropShippingBegin.fields.warehouse')"
+                  :placeholder="$t('pages.dropShippingBegin.fields.warehousePlaceholder')"
                   :items="warehouseOptions"
                   item-title="title"
                   item-value="value"
                   :loading="loading"
                   :disabled="loading"
                   density="comfortable"
-                  :rules="[v => !!v || '请选择仓库']"
+                  :rules="[v => !!v || $t('pages.dropShippingBegin.validation.warehouseRequired')]"
                 />
               </VCol>
 
@@ -226,11 +227,11 @@ const pageBlocking = computed(() => loading.value)
                   type="number"
                   min="0"
                   step="1"
-                  label="预计每周发货件数"
-                  placeholder="请输入件数"
-                  suffix="件"
+                  :label="$t('pages.dropShippingBegin.fields.weeklyShipments')"
+                  :placeholder="$t('pages.dropShippingBegin.fields.weeklyShipmentsPlaceholder')"
+                  :suffix="$t('pages.dropShippingBegin.units.pieces')"
                   density="comfortable"
-                  :rules="[v => Number(v) > 0 || '请输入有效件数']"
+                  :rules="[v => Number(v) > 0 || $t('pages.dropShippingBegin.validation.shipmentsRequired')]"
                 />
               </VCol>
 
@@ -243,11 +244,11 @@ const pageBlocking = computed(() => loading.value)
                   type="number"
                   min="0"
                   step="0.01"
-                  label="预计每周发货重量"
-                  placeholder="请输入重量"
+                  :label="$t('pages.dropShippingBegin.fields.weeklyWeight')"
+                  :placeholder="$t('pages.dropShippingBegin.fields.weeklyWeightPlaceholder')"
                   suffix="kg"
                   density="comfortable"
-                  :rules="[v => Number(v) > 0 || '请输入有效重量']"
+                  :rules="[v => Number(v) > 0 || $t('pages.dropShippingBegin.validation.weightRequired')]"
                 />
               </VCol>
 
@@ -257,10 +258,10 @@ const pageBlocking = computed(() => loading.value)
               >
                 <AppTextField
                   v-model="form.goodsType"
-                  label="商品类型"
-                  placeholder="例如：服饰、家居、3C、日用品"
+                  :label="$t('pages.dropShippingBegin.fields.goodsType')"
+                  :placeholder="$t('pages.dropShippingBegin.fields.goodsTypePlaceholder')"
                   density="comfortable"
-                  :rules="[v => !!String(v || '').trim() || '请填写商品类型']"
+                  :rules="[v => !!String(v || '').trim() || $t('pages.dropShippingBegin.validation.goodsTypeRequired')]"
                 />
               </VCol>
 
@@ -270,10 +271,10 @@ const pageBlocking = computed(() => loading.value)
               >
                 <AppTextField
                   v-model="form.saleType"
-                  label="销售方式"
-                  placeholder="例如 eBay、Amazon、独立 B2C 平台等"
+                  :label="$t('pages.dropShippingBegin.fields.saleType')"
+                  :placeholder="$t('pages.dropShippingBegin.fields.saleTypePlaceholder')"
                   density="comfortable"
-                  :rules="[v => !!String(v || '').trim() || '请填写销售方式']"
+                  :rules="[v => !!String(v || '').trim() || $t('pages.dropShippingBegin.validation.saleTypeRequired')]"
                 />
               </VCol>
             </VRow>
@@ -294,7 +295,7 @@ const pageBlocking = computed(() => loading.value)
           :disabled="loading"
           @click="submitApply"
         >
-          提交开通申请
+          {{ $t('pages.dropShippingBegin.actions.submit') }}
         </VBtn>
       </VCardText>
     </VCard>

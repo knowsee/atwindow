@@ -1,6 +1,8 @@
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -90,6 +92,21 @@ export default defineConfig({
       ],
     }),
     svgLoader(),
+
+    {
+      name: 'generate-version-json',
+      apply: 'build',
+      writeBundle() {
+        const publicDir = resolve(__dirname, 'public')
+        if (!existsSync(publicDir))
+          mkdirSync(publicDir, { recursive: true })
+        writeFileSync(
+          resolve(publicDir, 'version.json'),
+          JSON.stringify({ version: String(Date.now()) }),
+          'utf-8',
+        )
+      },
+    },
   ],
   define: { 'process.env': {} },
   resolve: {
@@ -110,16 +127,18 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['vuetify'],
-    entries: [
-      './src/**/*.vue',
-    ],
   },
   server: {
+    warmupFiles: [
+      './src/pages/login.vue',
+      './src/pages/dashboard/index.vue',
+      './src/layouts/default.vue',
+    ],
     proxy: {
       '/api': {
-        target: 'http://192.168.0.175:8002', //http://192.168.0.175:8002
+        target: 'http://192.168.0.176:8002',
         changeOrigin: true,
-        secure: true,
+        secure: false, // 目标是 HTTP，不需要 SSL 证书验证
       },
     },
   },

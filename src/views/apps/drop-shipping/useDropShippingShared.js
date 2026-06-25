@@ -1,11 +1,28 @@
+import { getI18n } from '@/plugins/i18n'
 import { $api } from '@/utils/api'
 
-export const DS_STATUS_ITEMS = [
-  { title: '全部', value: '' },
-  { title: '未到库', value: 1 },
-  { title: '已到库', value: 2 },
-  { title: '已到库未上报', value: 3 },
+const globalT = (key, params) => {
+  try {
+    return getI18n().global.t(key, params)
+  }
+  catch {
+    return key
+  }
+}
+
+export const DS_STATUS_DEFS = [
+  { titleKey: 'domain.dropShipping.packageStatuses.all', value: '' },
+  { titleKey: 'domain.dropShipping.packageStatuses.notArrived', value: 1 },
+  { titleKey: 'domain.dropShipping.packageStatuses.arrived', value: 2 },
+  { titleKey: 'domain.dropShipping.packageStatuses.arrivedNotReported', value: 3 },
 ]
+
+export const createDsStatusItems = (translate = globalT) => DS_STATUS_DEFS.map(item => ({
+  title: translate(item.titleKey),
+  value: item.value,
+}))
+
+export const DS_STATUS_ITEMS = createDsStatusItems()
 
 export function normalizeRangeText(raw) {
   const s = String(raw || '').trim()
@@ -19,18 +36,18 @@ export function normalizeRangeText(raw) {
 }
 
 /**
- * 入库单预计到仓时间（仅年月日）：
- * - 接口 `yjdc_time` 常为「2026-02-04 至 2026-02-10」
- * - 回填给 flatpickr range 须用英文默认分隔符 ` to `，否则无法识别为区间
- * - 无文案时用 `yjdcstime` / `yjdcetime` 秒级时间戳，格式化为 Y-m-d
+ * Expected inbound arrival date range:
+ * - API `yjdc_time` may use a localized separator.
+ * - Flatpickr range needs the default ` to ` separator.
+ * - If text is missing, use `yjdcstime` / `yjdcetime` Unix seconds and format as Y-m-d.
  */
 export function resolvePackageYjdcTimeRange(pkg) {
   const p = pkg || {}
   const text = String(p.yjdc_time ?? p.yjdc_Time ?? '').trim()
   if (text) {
     let parts
-    if (text.includes('至'))
-      parts = text.split(/\s*至\s*/).map(part => part.trim()).filter(Boolean)
+    if (text.includes('\u81f3'))
+      parts = text.split(/\s*\u81f3\s*/).map(part => part.trim()).filter(Boolean)
     else if (/\s+to\s+/i.test(text))
       parts = text.split(/\s+to\s+/i).map(part => part.trim()).filter(Boolean)
     else if (text.includes(' - '))
@@ -72,7 +89,7 @@ export function resolvePackageYjdcTimeRange(pkg) {
   return `${fmtDate(sa)} to ${fmtDate(sb)}`
 }
 
-export async function loadWarehouseOptions() {
+export async function loadWarehouseOptions(translate = globalT) {
   const res = await $api('/package/queryWarehouses', {
     method: 'POST',
     body: { id: 1 },
@@ -82,8 +99,15 @@ export async function loadWarehouseOptions() {
     return []
 
   return res.data.map(item => ({
-    title: item.warehouse || item.warehouse_name || `仓库${item.id}`,
+    title: item.warehouse || item.warehouse_name || translate('common.warehouseFallback', { id: item.id }),
     value: Number(item.id),
+    sendName: item.send_name || '',
+    address: item.address || '',
+    telephone: item.telephone || '',
+    country: item.country || '',
+    city: item.city || '',
+    state: item.state || '',
+    code: item.code || '',
   }))
 }
 
@@ -96,4 +120,19 @@ export async function loadCountryOptions() {
     title: `${item.cn_name || item.en_name || item.short_name || ''}`.trim(),
     value: item.short_name || item.en_name || item.cn_name,
   })).filter(item => item.value)
+}
+
+export async function loadCartonOptions(translate = globalT) {
+  const res = await $api('/ordernew/getCartonList', { method: 'GET' })
+  if (Number(res?.code) !== 1 || !Array.isArray(res?.data))
+    return [{ title: translate('common.options.notRequired'), value: 0, price: 0 }]
+
+  return [
+    { title: translate('common.options.notRequired'), value: 0, price: 0 },
+    ...res.data.map(item => ({
+      title: item.name,
+      value: Number(item.id),
+      price: Number(item.price) || 0,
+    })),
+  ]
 }

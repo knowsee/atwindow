@@ -14,6 +14,7 @@ const fileInputRef = ref()
 const selectedFile = ref(null)
 const submitting = ref(false)
 const snack = ref({ show: false, text: '', color: 'info' })
+const { t } = useI18n({ useScope: 'global' })
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
@@ -35,14 +36,14 @@ function onFileChange(event) {
 
 async function submitBatch() {
   if (!selectedFile.value) {
-    toast('请先选择 Excel 文件', 'warning')
+    toast(t('pages.productBatch.messages.fileRequired'), 'warning')
     
     return
   }
 
   const ext = selectedFile.value.name.split('.').pop()?.toLowerCase()
   if (!['xls', 'xlsx'].includes(ext || '')) {
-    toast('仅支持 .xls / .xlsx 文件', 'warning')
+    toast(t('pages.productBatch.messages.fileTypeInvalid'), 'warning')
     
     return
   }
@@ -63,16 +64,16 @@ async function submitBatch() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '批量新增提交成功', 'success')
+      toast(res?.msg || t('pages.productBatch.messages.submitSuccess'), 'success')
       setTimeout(() => goList(), 700)
       
       return
     }
 
-    toast(res?.msg || '批量新增失败', 'error')
+    toast(res?.msg || t('pages.productBatch.messages.submitFailed'), 'error')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '批量新增失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productBatch.messages.submitFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -88,10 +89,10 @@ async function submitBatch() {
     <div class="product-batch__inner pb-12">
       <div class="product-batch__hero mb-6">
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          批量新增产品
+          {{ $t('pages.productBatch.title') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-          上传 Excel 模板文件后批量导入产品数据。
+          {{ $t('pages.productBatch.subtitle') }}
         </p>
       </div>
 
@@ -105,8 +106,8 @@ async function submitBatch() {
       </VSnackbar>
 
       <PrintLabelSectionCard
-        title="上传文件"
-        subtitle="仅支持 .xls / .xlsx，建议先下载模板填写。"
+        :title="$t('pages.productBatch.upload.title')"
+        :subtitle="$t('pages.productBatch.upload.subtitle')"
       >
         <template #append>
           <VBtn
@@ -114,7 +115,7 @@ async function submitBatch() {
             prepend-icon="tabler-arrow-left"
             @click="goList"
           >
-            返回列表
+            {{ $t('pages.productBatch.actions.backToList') }}
           </VBtn>
         </template>
 
@@ -139,7 +140,7 @@ async function submitBatch() {
               class="text-primary mb-2"
             />
             <div class="text-subtitle-2">
-              点击选择 Excel 文件
+              {{ $t('pages.productBatch.upload.choose') }}
             </div>
             <div
               v-if="selectedFile"
@@ -151,20 +152,20 @@ async function submitBatch() {
               v-else
               class="text-caption text-medium-emphasis mt-2"
             >
-              未选择文件
+              {{ $t('pages.productBatch.upload.empty') }}
             </div>
           </div>
         </VSheet>
 
         <div class="mt-3 text-body-2">
-          模板下载：
+          {{ $t('pages.productBatch.upload.templateDownload') }}
           <a
-            href="/download/产品批量添加模板.xls"
+            href="/download/%E4%BA%A7%E5%93%81%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E6%A8%A1%E6%9D%BF.xls"
             class="text-primary"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
           >
-            产品批量添加模板.xls
+            {{ $t('pages.productBatch.upload.templateName') }}
           </a>
         </div>
       </PrintLabelSectionCard>
@@ -180,7 +181,7 @@ async function submitBatch() {
             prepend-icon="tabler-upload"
             @click="submitBatch"
           >
-            提交导入
+            {{ $t('pages.productBatch.actions.submitImport') }}
           </VBtn>
         </VCardText>
       </VCard>

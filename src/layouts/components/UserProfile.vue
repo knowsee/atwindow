@@ -111,7 +111,7 @@ const logout = async () => {
                 size="22"
               />
             </template>
-            <VListItemTitle>修改密码</VListItemTitle>
+            <VListItemTitle>{{ $t('layout.userMenu.changePassword') }}</VListItemTitle>
           </VListItem>
 
           <div class="px-4 py-2">
@@ -122,7 +122,7 @@ const logout = async () => {
               append-icon="tabler-logout"
               @click="logout"
             >
-              注销
+              {{ $t('layout.userMenu.logout') }}
             </VBtn>
           </div>
         </VList>

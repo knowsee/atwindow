@@ -4,6 +4,7 @@ import AccountSettingsSecurity from '@/views/pages/account-settings/AccountSetti
 
 const route = useRoute('pages-account-settings-tab')
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const allowedTabs = ['account', 'security']
 
@@ -12,18 +13,18 @@ const activeTab = computed({
   set: () => route.params.tab,
 })
 
-const tabs = [
+const tabs = computed(() => [
   {
-    title: '账户信息',
+    title: t('pages.accountSettings.tabs.account'),
     icon: 'tabler-users',
     tab: 'account',
   },
   {
-    title: '修改密码',
+    title: t('pages.accountSettings.tabs.security'),
     icon: 'tabler-lock',
     tab: 'security',
   },
-]
+])
 
 watch(
   () => route.params.tab,

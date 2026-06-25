@@ -1,5 +1,5 @@
 <script setup>
-/* eslint-disable camelcase -- /Ordernewapi/shippingList 查询参数与后端字段名一致 */
+/* eslint-disable camelcase -- /Ordernewapi/shippingList query params match backend field names */
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
 import ShippingBatchStatusDialog from '@/components/print-label/ShippingBatchStatusDialog.vue'
 import { $api } from '@/utils/api'
@@ -21,8 +21,9 @@ const lastPage = ref(1)
 const itemsPerPage = ref(20)
 const snack = ref({ show: false, text: '', color: 'info' })
 const batchDialogOpen = ref(false)
+const { t, locale } = useI18n({ useScope: 'global' })
 
-/** 从订单行打开批次弹窗时的预填与是否直达明细 */
+/** Prefill and direct-detail settings when opening the batch dialog from an order row. */
 const batchDialogProps = ref({
   initialBatchSn: '',
   initialBatchId: null,
@@ -32,7 +33,7 @@ const batchDialogProps = ref({
 const router = useRouter()
 const cancellingId = ref(null)
 
-// 参考号 cankaohao；渠道 channelType；创建区间 createRange → create_time
+// Reference cankaohao; channel channelType; createRange maps to create_time.
 const filters = ref({
   cankaohao: '',
   channelType: ORDER_DD_FILTER_ALL,
@@ -41,11 +42,14 @@ const filters = ref({
   tracking_number: '',
 })
 
-const channelTypeItems = ref([
-  { title: '全部渠道', value: ORDER_DD_FILTER_ALL },
+const loadedChannelTypeItems = ref([])
+
+const channelTypeItems = computed(() => [
+  { title: t('pages.printLabelShippingList.filters.allChannels'), value: ORDER_DD_FILTER_ALL },
+  ...loadedChannelTypeItems.value,
 ])
 
-/** 与筛选同源：provider / QID → 渠道展示名（getChannelList） */
+/** Same source as filters: provider / QID maps to channel display name from getChannelList. */
 const channelNameByQid = shallowRef(new Map())
 
 async function loadChannelList() {
@@ -56,7 +60,7 @@ async function loadChannelList() {
 
       const mapped = res.data.map(c => {
         const qid = Number(c.qid)
-        const title = String(c.name ?? '').trim() || '未命名渠道'
+        const title = String(c.name ?? '').trim() || t('pages.printLabelShippingList.filters.unnamedChannel')
         if (Number.isFinite(qid))
           nameByQid.set(qid, title)
 
@@ -64,10 +68,7 @@ async function loadChannelList() {
       })
 
       channelNameByQid.value = nameByQid
-      channelTypeItems.value = [
-        { title: '全部渠道', value: ORDER_DD_FILTER_ALL },
-        ...mapped,
-      ]
+      loadedChannelTypeItems.value = mapped
     }
   }
   catch (e) {
@@ -75,7 +76,7 @@ async function loadChannelList() {
   }
 }
 
-/** 列表渠道名称：按行 provider（QID）匹配 getChannelList */
+/** Match row provider (QID) to getChannelList for the list channel name. */
 function channelDisplayName(row) {
   const raw = row?.provider
   if (raw == null || raw === '')
@@ -88,37 +89,39 @@ function channelDisplayName(row) {
   return name || String(qid)
 }
 
-/** 渠道 + 渠道编码：有编码时为「名称（编码）」，无编码则仅名称 */
+/** Channel plus channel code when present. */
 function channelTableCell(row) {
   const namePart = channelDisplayName(row)
   const code = String(row?.channel_code ?? '').trim()
   if (!code)
     return namePart
 
-  return `${namePart}（${code}）`
+  return `${namePart} (${code})`
 }
 
-const STATUS_ITEMS = [
-  { title: '全部', value: null },
-  { title: '待处理', value: 0 },
-  { title: '请求中', value: 1 },
-  { title: '成功', value: 2 },
-  { title: '失败', value: 3 },
-  { title: '已取消', value: 4 },
-]
+const STATUS_ITEMS = computed(() => [
+  { title: t('pages.printLabelShippingList.statuses.all'), value: null },
+  { title: t('pages.printLabelShippingList.statuses.pending'), value: 0 },
+  { title: t('pages.printLabelShippingList.statuses.requesting'), value: 1 },
+  { title: t('pages.printLabelShippingList.statuses.success'), value: 2 },
+  { title: t('pages.printLabelShippingList.statuses.failed'), value: 3 },
+  { title: t('pages.printLabelShippingList.statuses.cancelled'), value: 4 },
+])
 
-const headers = [
-  { title: 'ID', key: 'id', width: '88', align: 'end' },
-  { title: '创建时间', key: 'createtime', minWidth: '158' },
-  { title: '订单号', key: 'order_sn', minWidth: '168' },
-  { title: '参考号', key: 'cankaohao', minWidth: '120' },
-  { title: '跟踪号', key: 'tracking_number', minWidth: '160' },
-  { title: '渠道（渠道编码）', key: 'provider', minWidth: '200' },
-  { title: '费用', key: 'customer_fee', minWidth: '96', align: 'end' },
-  { title: '状态', key: 'status', minWidth: '100', align: 'center' },
-  { title: '失败原因', key: 'fail_reason', minWidth: '160' },
-  { title: '操作', key: 'actions', sortable: false, minWidth: '220', width: '220', align: 'end', fixed: 'end' },
-]
+const headers = computed(() => [
+  { title: t('pages.printLabelShippingList.headers.id'), key: 'id', width: '88', align: 'end' },
+  { title: t('pages.printLabelShippingList.headers.createdAt'), key: 'createtime', minWidth: '158' },
+  { title: t('pages.printLabelShippingList.headers.orderNo'), key: 'order_sn', minWidth: '168' },
+  { title: t('pages.printLabelShippingList.headers.refNo'), key: 'cankaohao', minWidth: '120' },
+  { title: t('pages.printLabelShippingList.headers.trackingNo'), key: 'tracking_number', minWidth: '160' },
+  { title: t('pages.printLabelShippingList.headers.channelWithCode'), key: 'provider', minWidth: '200' },
+  { title: t('pages.printLabelShippingList.headers.fee'), key: 'customer_fee', minWidth: '96', align: 'end' },
+  { title: t('pages.printLabelShippingList.headers.status'), key: 'status', minWidth: '100', align: 'center' },
+  { title: t('pages.printLabelShippingList.headers.failReason'), key: 'fail_reason', minWidth: '160' },
+  { title: t('pages.printLabelShippingList.headers.actions'), key: 'actions', sortable: false, minWidth: '180', width: '180', align: 'end', fixed: 'end' },
+])
+
+const dateLocale = computed(() => ({ zh: 'zh-CN', en: 'en-US', fr: 'fr-FR' })[locale.value] || undefined)
 
 const pageLength = computed(() => Math.max(1, lastPage.value))
 
@@ -142,16 +145,16 @@ function formatTs(ts) {
   if (!Number.isFinite(n) || n <= 0)
     return '—'
   
-  return new Date(n * 1000).toLocaleString('zh-CN', { hour12: false })
+  return new Date(n * 1000).toLocaleString(dateLocale.value, { hour12: false })
 }
 
 function statusLabel(s) {
   const m = {
-    0: '待处理',
-    1: '请求中',
-    2: '成功',
-    3: '失败',
-    4: '已取消',
+    0: t('pages.printLabelShippingList.statuses.pending'),
+    1: t('pages.printLabelShippingList.statuses.requesting'),
+    2: t('pages.printLabelShippingList.statuses.success'),
+    3: t('pages.printLabelShippingList.statuses.failed'),
+    4: t('pages.printLabelShippingList.statuses.cancelled'),
   }
 
   
@@ -161,7 +164,7 @@ function statusLabel(s) {
 function statusLabelWithCancel(row) {
   const base = statusLabel(row?.status)
   if (Number(row?.cancel_status) === 1)
-    return `${base}（取消中）`
+    return `${base} (${t('pages.printLabelShippingList.statuses.cancelling')})`
 
   return base
 }
@@ -181,7 +184,7 @@ function statusColor(s) {
 }
 
 /**
- * AppDateTimePicker range：与运单旧列表一致，提交为 create_time
+ * AppDateTimePicker range matches the legacy shipment list and submits create_time.
  * @param {unknown} raw
  */
 function normalizeCreateRange(raw) {
@@ -246,13 +249,13 @@ async function loadList() {
     rows.value = []
     total.value = 0
     lastPage.value = 1
-    toast(res?.msg || '加载订单列表失败', 'error')
+    toast(res?.msg || t('pages.printLabelShippingList.messages.loadFailed'), 'error')
   }
   catch (e) {
     rows.value = []
     total.value = 0
     lastPage.value = 1
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.printLabelShippingList.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -289,7 +292,7 @@ function shippingRowBatchDisplay(row) {
   return '—'
 }
 
-/** 有有效批次：batch_id>0 或 batch_sn 非空且非 "0" */
+/** Valid batch: batch_id > 0 or batch_sn is non-empty and not "0". */
 function hasShippingBatch(row) {
   const bid = Number(row?.batch_id)
   if (Number.isFinite(bid) && bid > 0)
@@ -341,7 +344,7 @@ onMounted(() => {
 function openLabel(row) {
   const url = resolveBackendFileUrl(row?.label_url)
   if (!url) {
-    toast('暂无面单文件', 'warning')
+    toast(t('pages.printLabelShippingList.messages.noLabelFile'), 'warning')
 
     return
   }
@@ -351,7 +354,7 @@ function openLabel(row) {
 function openView(row) {
   const id = row?.id
   if (id == null || id === '') {
-    toast('订单 ID 无效', 'warning')
+    toast(t('pages.printLabelShippingList.messages.invalidOrderId'), 'warning')
 
     return
   }
@@ -362,7 +365,7 @@ function openView(row) {
   })
 }
 
-/** 成功（status=2）时可取消；接口名以后端为准 */
+/** Can cancel successful shipments (status = 2); backend controls the actual endpoint semantics. */
 function showCancelButton(row) {
   return Number(row?.status) === 2
 }
@@ -370,11 +373,11 @@ function showCancelButton(row) {
 async function cancelShipping(row) {
   const orderId = Number(row?.id)
   if (!Number.isFinite(orderId) || orderId <= 0) {
-    toast('订单标识无效', 'warning')
+    toast(t('pages.printLabelShippingList.messages.invalidOrderIdentifier'), 'warning')
 
     return
   }
-  if (!window.confirm('确定取消该运单？'))
+  if (!window.confirm(t('pages.printLabelShippingList.messages.cancelConfirm')))
     return
 
   cancellingId.value = row.id
@@ -385,15 +388,15 @@ async function cancelShipping(row) {
     })
 
     if (Number(res?.code) === 1 || Number(res?.code) === 200) {
-      toast(res?.message || res?.msg || '已提交取消', 'success')
+      toast(res?.message || res?.msg || t('pages.printLabelShippingList.messages.cancelSubmitted'), 'success')
       loadList()
 
       return
     }
-    toast(res?.message || res?.msg || '取消失败', 'error')
+    toast(res?.message || res?.msg || t('pages.printLabelShippingList.messages.cancelFailed'), 'error')
   }
   catch (e) {
-    toast(e?.data?.message || e?.data?.msg || e?.message || '取消失败', 'error')
+    toast(e?.data?.message || e?.data?.msg || e?.message || t('pages.printLabelShippingList.messages.cancelFailed'), 'error')
   }
   finally {
     cancellingId.value = null
@@ -404,314 +407,287 @@ watch([page, itemsPerPage], loadList, { immediate: true })
 </script>
 
 <template>
-  <VContainer
-    fluid
-    class="pa-4 pa-sm-6"
+  <VSnackbar
+    v-model="snack.show"
+    :color="snack.color"
+    location="top"
+    :timeout="2600"
   >
-    <VSnackbar
-      v-model="snack.show"
-      :color="snack.color"
-      location="top"
-      :timeout="2600"
-    >
-      {{ snack.text }}
-    </VSnackbar>
+    {{ snack.text }}
+  </VSnackbar>
 
-    <ShippingBatchStatusDialog
-      :model-value="batchDialogOpen"
-      :initial-batch-sn="batchDialogProps.initialBatchSn"
-      :initial-batch-id="batchDialogProps.initialBatchId"
-      :auto-open-batch-detail="batchDialogProps.autoOpenBatchDetail"
-      @update:model-value="onBatchDialogUpdate"
-    />
+  <ShippingBatchStatusDialog
+    :model-value="batchDialogOpen"
+    :initial-batch-sn="batchDialogProps.initialBatchSn"
+    :initial-batch-id="batchDialogProps.initialBatchId"
+    :auto-open-batch-detail="batchDialogProps.autoOpenBatchDetail"
+    @update:model-value="onBatchDialogUpdate"
+  />
 
-    <VCard class="rounded-lg">
-      <VCardItem class="pb-4 pt-6 px-6">
-        <template #title>
-          <span class="text-h5 font-weight-medium">订单列表</span>
-        </template>
-        <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">填写条件后点击「查询」，分页切换会自动刷新。</span>
-        </template>
-        <template #append>
-          <div class="d-flex flex-wrap gap-2 justify-end">
-            <VBtn
-              variant="tonal"
-              size="small"
-              class="text-none"
-              prepend-icon="tabler-packages"
-              @click="openBatchDialogFromToolbar"
-            >
-              批量出单状态
-            </VBtn>
-            <VBtn
-              color="primary"
-              size="small"
-              prepend-icon="tabler-plus"
-              class="text-none"
-              :to="{ name: 'apps-print-label-create' }"
-            >
-              新建运单
-            </VBtn>
-          </div>
-        </template>
-      </VCardItem>
-      <VDivider />
-      <VCardText class="pa-4 pa-sm-6">
-        <AppQueryPanel
-          class="mb-4"
-          :loading="loading"
-          actions-position="bottom"
-          @search="searchList"
-          @reset="resetFilters"
-        >
-          <VRow dense>
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <AppTextField
-                v-model="filters.cankaohao"
-                label="参考号"
-                placeholder="模糊匹配"
-                hide-details
-                density="compact"
-                clearable
-                @keyup.enter="searchList"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <AppSelect
-                v-model="filters.channelType"
-                :items="channelTypeItems"
-                item-title="title"
-                item-value="value"
-                label="渠道"
-                hide-details
-                density="compact"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <AppSelect
-                v-model="filters.status"
-                :items="STATUS_ITEMS"
-                item-title="title"
-                item-value="value"
-                label="状态"
-                clearable
-                hide-details
-                density="compact"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              md="6"
-            >
-              <AppDateTimePicker
-                v-model="filters.createRange"
-                label="创建日期"
-                density="compact"
-                hide-details
-                placeholder="选择日期区间"
-                :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
-                @keyup.enter="searchList"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              md="6"
-            >
-              <AppTextField
-                v-model="filters.tracking_number"
-                label="跟踪号"
-                hide-details
-                density="compact"
-                clearable
-                @keyup.enter="searchList"
-              />
-            </VCol>
-          </VRow>
-        </AppQueryPanel>
+  <VCard class="rounded-lg">
+    <VCardItem class="pb-3">
+      <template #title>
+        <span class="text-h5 font-weight-medium">{{ $t('pages.printLabelShippingList.title') }}</span>
+      </template>
+      <template #subtitle>
+        <span class="text-body-2 text-medium-emphasis">{{ $t('pages.printLabelShippingList.subtitle') }}</span>
+      </template>
+      <template #append>
+        <div class="d-flex flex-wrap gap-2 justify-end">
+          <VBtn
+            variant="tonal"
+            size="small"
+            class="text-none"
+            prepend-icon="tabler-packages"
+            @click="openBatchDialogFromToolbar"
+          >
+            {{ $t('pages.printLabelShippingList.actions.batchStatus') }}
+          </VBtn>
+          <VBtn
+            color="primary"
+            size="small"
+            prepend-icon="tabler-plus"
+            class="text-none"
+            :to="{ name: 'apps-print-label-create' }"
+          >
+            {{ $t('pages.printLabelShippingList.actions.create') }}
+          </VBtn>
+        </div>
+      </template>
+    </VCardItem>
+    <VDivider />
+    <VCardText class="pa-4 pa-sm-6">
+      <AppQueryPanel
+        class="mb-4"
+        :loading="loading"
+        actions-position="bottom"
+        @search="searchList"
+        @reset="resetFilters"
+      >
+        <VRow dense>
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <AppTextField
+              v-model="filters.cankaohao"
+              :label="$t('pages.printLabelShippingList.filters.refNo')"
+              :placeholder="$t('pages.printLabelShippingList.filters.fuzzy')"
+              hide-details
+              density="compact"
+              clearable
+              @keyup.enter="searchList"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <AppSelect
+              v-model="filters.channelType"
+              :items="channelTypeItems"
+              item-title="title"
+              item-value="value"
+              :label="$t('pages.printLabelShippingList.filters.channel')"
+              hide-details
+              density="compact"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <AppSelect
+              v-model="filters.status"
+              :items="STATUS_ITEMS"
+              item-title="title"
+              item-value="value"
+              :label="$t('pages.printLabelShippingList.filters.status')"
+              clearable
+              hide-details
+              density="compact"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="6"
+          >
+            <AppDateTimePicker
+              v-model="filters.createRange"
+              :label="$t('pages.printLabelShippingList.filters.createdDate')"
+              density="compact"
+              hide-details
+              :placeholder="$t('pages.printLabelShippingList.filters.dateRange')"
+              :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
+              @keyup.enter="searchList"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="6"
+          >
+            <AppTextField
+              v-model="filters.tracking_number"
+              :label="$t('pages.printLabelShippingList.filters.trackingNo')"
+              hide-details
+              density="compact"
+              clearable
+              @keyup.enter="searchList"
+            />
+          </VCol>
+        </VRow>
+      </AppQueryPanel>
 
-        <VDataTableServer
-          :headers="headers"
-          :items="rows"
-          :items-length="total"
-          :loading="loading"
-          item-value="id"
-          class="text-body-2 ds-shipping-list__table"
-        >
-          <template #item.createtime="{ item }">
-            {{ formatTs(item.createtime) }}
-          </template>
-          <template #item.batch_sn="{ item }">
-            <span
-              class="text-truncate d-inline-block"
-              style="max-inline-size: 140px;"
-            >{{ shippingRowBatchDisplay(item) }}</span>
-          </template>
-          <template #item.provider="{ item }">
-            <span
-              class="text-truncate d-inline-block"
-              style="max-inline-size: 280px;"
-              :title="channelTableCell(item)"
-            >{{ channelTableCell(item) }}</span>
-          </template>
-          <template #item.customer_fee="{ item }">
-            <span class="tabular-nums">{{ formatMoney(item.customer_fee, item.currency) }}</span>
-          </template>
-          <template #item.status="{ item }">
-            <VChip
-              size="small"
-              variant="tonal"
-              :color="statusColor(item.status)"
-            >
-              {{ statusLabelWithCancel(item) }}
-            </VChip>
-          </template>
-          <template #item.fail_reason="{ item }">
-            <span
-              class="text-truncate d-inline-block"
-              style="max-inline-size: 220px;"
-              :title="item.fail_reason || ''"
-            >{{ item.fail_reason || '—' }}</span>
-          </template>
-          <template #item.actions="{ item }">
-            <div
-              class="shipping-list__actions-toolbar"
-              role="toolbar"
-              :aria-label="`订单操作 ${String(item?.order_sn ?? item?.id ?? '')}`"
-            >
-              <VTooltip
-                location="top"
-                text="查看订单详情"
-              >
+      <VDataTableServer
+        :headers="headers"
+        :items="rows"
+        :items-length="total"
+        :loading="loading"
+        item-value="id"
+        class="text-body-2 ds-shipping-list__table"
+      >
+        <template #item.createtime="{ item }">
+          {{ formatTs(item.createtime) }}
+        </template>
+        <template #item.batch_sn="{ item }">
+          <span
+            class="text-truncate d-inline-block"
+            style="max-inline-size: 140px;"
+          >{{ shippingRowBatchDisplay(item) }}</span>
+        </template>
+        <template #item.provider="{ item }">
+          <span
+            class="text-truncate d-inline-block"
+            style="max-inline-size: 280px;"
+            :title="item.channel_name"
+          >{{ item.channel_name }}</span>
+        </template>
+        <template #item.customer_fee="{ item }">
+          <span class="tabular-nums">{{ formatMoney(item.customer_fee, item.currency) }}</span>
+        </template>
+        <template #item.status="{ item }">
+          <VChip
+            size="small"
+            variant="tonal"
+            :color="statusColor(item.status)"
+          >
+            {{ statusLabelWithCancel(item) }}
+          </VChip>
+        </template>
+        <template #item.fail_reason="{ item }">
+          <span
+            class="text-truncate d-inline-block"
+            style="max-inline-size: 220px;"
+            :title="item.fail_reason || ''"
+          >{{ item.fail_reason || '—' }}</span>
+        </template>
+        <template #item.actions="{ item }">
+          <div class="d-flex align-center justify-end gap-1">
+            <template v-if="cancellingId === item.id">
+              <VProgressCircular
+                indeterminate
+                size="20"
+                width="2"
+                color="error"
+              />
+              <span class="text-caption text-error">{{ $t('pages.printLabelShippingList.messages.cancelling') }}</span>
+            </template>
+            <template v-else>
+              <VTooltip :text="$t('pages.printLabelShippingList.tooltips.view')">
                 <template #activator="{ props: tipProps }">
-                  <VBtn
+                  <IconBtn
                     v-bind="tipProps"
                     size="small"
-                    density="compact"
                     color="primary"
-                    variant="tonal"
-                    class="text-none shipping-list__toolbar-btn shipping-list__toolbar-btn--primary"
-                    prepend-icon="tabler-list-details"
                     @click="openView(item)"
                   >
-                    查看
-                  </VBtn>
+                    <VIcon
+                      icon="tabler-eye"
+                      size="20"
+                    />
+                  </IconBtn>
                 </template>
               </VTooltip>
-              <VTooltip
-                location="top"
-                text="在新窗口打开面单"
-              >
+              <VTooltip :text="$t('pages.printLabelShippingList.tooltips.label')">
                 <template #activator="{ props: tipProps }">
-                  <VBtn
+                  <IconBtn
                     v-bind="tipProps"
-                    icon
                     size="small"
-                    density="compact"
-                    variant="tonal"
-                    color="primary"
-                    class="shipping-list__toolbar-btn"
-                    aria-label="面单"
+                    color="secondary"
                     :disabled="!item.label_url"
                     @click="openLabel(item)"
                   >
                     <VIcon
-                      icon="tabler-file-text"
-                      size="18"
+                      icon="tabler-download"
+                      size="20"
                     />
-                  </VBtn>
+                  </IconBtn>
                 </template>
               </VTooltip>
-              <VTooltip
-                v-if="hasShippingBatch(item)"
-                location="top"
-                text="打开该批次导入明细"
-              >
-                <template #activator="{ props: tipProps }">
-                  <VBtn
-                    v-bind="tipProps"
-                    icon
+              <VMenu>
+                <template #activator="{ props: menuProps }">
+                  <IconBtn
+                    v-bind="menuProps"
                     size="small"
-                    density="compact"
-                    variant="tonal"
                     color="secondary"
-                    class="shipping-list__toolbar-btn"
-                    aria-label="批次明细"
+                  >
+                    <VIcon
+                      icon="tabler-dots-vertical"
+                      size="20"
+                    />
+                  </IconBtn>
+                </template>
+                <VList density="compact">
+                  <VListItem
+                    v-if="hasShippingBatch(item)"
+                    :title="$t('pages.printLabelShippingList.actions.batchDetail')"
+                    prepend-icon="tabler-packages"
                     @click="openBatchDetailFromOrderRow(item)"
-                  >
-                    <VIcon
-                      icon="tabler-packages"
-                      size="18"
-                    />
-                  </VBtn>
-                </template>
-              </VTooltip>
-              <VTooltip
-                v-if="showCancelButton(item)"
-                location="top"
-                text="取消运单"
-              >
-                <template #activator="{ props: tipProps }">
-                  <VBtn
-                    v-bind="tipProps"
-                    icon
-                    size="small"
-                    density="compact"
-                    variant="tonal"
-                    color="error"
-                    class="shipping-list__toolbar-btn"
-                    aria-label="取消"
-                    :loading="cancellingId === item.id"
+                  />
+                  <VListItem
+                    v-if="showCancelButton(item)"
+                    :title="$t('pages.printLabelShippingList.actions.cancelShipment')"
+                    prepend-icon="tabler-ban"
+                    base-color="error"
                     @click="cancelShipping(item)"
-                  >
-                    <VIcon
-                      icon="tabler-ban"
-                      size="18"
-                    />
-                  </VBtn>
-                </template>
-              </VTooltip>
-            </div>
-          </template>
+                  />
+                </VList>
+              </VMenu>
+            </template>
+          </div>
+        </template>
 
-          <template #bottom>
-            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
-              <span class="text-body-2 text-medium-emphasis">共 {{ total }} 条</span>
-              <div class="d-flex align-center gap-3">
-                <AppSelect
-                  :model-value="itemsPerPage"
-                  :items="[10, 20, 50, 100]"
-                  style="inline-size: 96px;"
-                  density="compact"
-                  hide-details
-                  @update:model-value="itemsPerPage = Number($event)"
-                />
-                <VPagination
-                  v-model="page"
-                  :length="pageLength"
-                  :total-visible="7"
-                />
-              </div>
+        <template #bottom>
+          <VDivider />
+          <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+            <span class="text-body-2 text-medium-emphasis">{{ $t('pages.printLabelShippingList.pagination.total', { total }) }}</span>
+            <div class="d-flex align-center gap-3">
+              <AppSelect
+                :model-value="itemsPerPage"
+                :items="[10, 20, 50, 100]"
+                style="inline-size: 100px;"
+                density="compact"
+                hide-details
+                @update:model-value="itemsPerPage = Number($event)"
+              />
+              <VPagination
+                v-model="page"
+                :length="pageLength"
+                :total-visible="5"
+                size="small"
+                active-color="primary"
+              />
             </div>
-          </template>
-        </VDataTableServer>
-      </VCardText>
-    </VCard>
-  </VContainer>
+          </div>
+        </template>
+      </VDataTableServer>
+    </VCardText>
+  </VCard>
 </template>
 
 <style scoped>
@@ -724,7 +700,7 @@ watch([page, itemsPerPage], loadList, { immediate: true })
   vertical-align: middle;
 }
 
-/* 与批量出单状态弹窗操作列一致：主按钮 + 图标次操作，无外框 */
+/* Match the batch-status dialog action column: primary button plus secondary icon actions. */
 .shipping-list__actions-toolbar {
   display: inline-flex;
   flex-direction: row;

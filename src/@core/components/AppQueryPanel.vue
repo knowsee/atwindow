@@ -4,7 +4,7 @@ import { computed, ref, useSlots } from 'vue'
 const props = defineProps({
   title: {
     type: String,
-    default: '查询条件',
+    default: '',
   },
   subtitle: {
     type: String,
@@ -24,17 +24,18 @@ const props = defineProps({
   },
   searchLabel: {
     type: String,
-    default: '查询',
+    default: '',
   },
   resetLabel: {
     type: String,
-    default: '重置',
+    default: '',
   },
   actionsPosition: {
     type: String,
     default: 'top',
     validator: v => ['top', 'bottom'].includes(v),
   },
+
   /**
    * 为 true 且提供 `#advanced` 插槽时：只默认展示 `#primary`，其余放入高级搜索，需手动展开。
    * 未使用展开布局时仍走默认插槽（与历史用法兼容）。
@@ -43,6 +44,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+
   /**
    * 快捷筛选（如订单状态胶囊）。传入 { title, value }[]，非空时展示在底部「查询」等按钮下方（无底部栏时跟在表单区后）。
    * 与 quickFilter 搭配使用，并通过 v-model:quick-filter 或 @update:quick-filter 同步。
@@ -62,11 +64,19 @@ const emit = defineEmits(['search', 'reset', 'update:quickFilter'])
 defineOptions({ name: 'AppQueryPanel' })
 
 const slots = useSlots()
+const { t } = useI18n({ useScope: 'global' })
 const hasAdvancedSlot = computed(() => typeof slots.advanced === 'function')
 const useExpandLayout = computed(() => props.expandable && hasAdvancedSlot.value)
 const advancedOpen = ref(false)
 
 const hasQuickFilters = computed(() => props.quickFilterItems.length > 0)
+const panelTitle = computed(() => props.title || t('components.queryPanel.title'))
+const searchButtonLabel = computed(() => props.searchLabel || t('components.queryPanel.search'))
+const resetButtonLabel = computed(() => props.resetLabel || t('components.queryPanel.reset'))
+
+const advancedToggleLabel = computed(() => advancedOpen.value
+  ? t('components.queryPanel.collapseAdvanced')
+  : t('components.queryPanel.expandAdvanced'))
 
 function toggleAdvanced() {
   advancedOpen.value = !advancedOpen.value
@@ -90,7 +100,7 @@ function selectQuickFilter(value) {
     <div class="app-query-panel__toolbar d-flex flex-column flex-sm-row flex-wrap align-stretch align-sm-center gap-3">
       <div class="app-query-panel__title flex-grow-1 min-w-0">
         <div class="text-subtitle-2 text-high-emphasis font-weight-medium">
-          {{ title }}
+          {{ panelTitle }}
         </div>
         <div
           v-if="subtitle"
@@ -113,7 +123,7 @@ function selectQuickFilter(value) {
             class="flex-sm-grow-0"
             @click="emit('search')"
           >
-            {{ searchLabel }}
+            {{ searchButtonLabel }}
           </VBtn>
           <VBtn
             v-if="showReset"
@@ -123,7 +133,7 @@ function selectQuickFilter(value) {
             :disabled="loading"
             @click="emit('reset')"
           >
-            {{ resetLabel }}
+            {{ resetButtonLabel }}
           </VBtn>
         </slot>
         <slot name="export" />
@@ -142,7 +152,7 @@ function selectQuickFilter(value) {
             :prepend-icon="advancedOpen ? 'tabler-chevron-up' : 'tabler-chevron-down'"
             @click="toggleAdvanced"
           >
-            {{ advancedOpen ? '收起高级搜索' : '展开高级搜索' }}
+            {{ advancedToggleLabel }}
           </VBtn>
         </div>
         <VExpandTransition>
@@ -171,7 +181,7 @@ function selectQuickFilter(value) {
           class="flex-sm-grow-0"
           @click="emit('search')"
         >
-          {{ searchLabel }}
+          {{ searchButtonLabel }}
         </VBtn>
         <VBtn
           v-if="showReset"
@@ -181,7 +191,7 @@ function selectQuickFilter(value) {
           :disabled="loading"
           @click="emit('reset')"
         >
-          {{ resetLabel }}
+          {{ resetButtonLabel }}
         </VBtn>
       </slot>
       <slot name="export" />
@@ -194,7 +204,7 @@ function selectQuickFilter(value) {
       <div
         class="app-query-panel__quick-filter-inner d-flex flex-wrap align-center gap-2"
         role="tablist"
-        aria-label="快捷筛选"
+        :aria-label="$t('components.queryPanel.quickFilterAria')"
       >
         <VBtn
           v-for="item in quickFilterItems"

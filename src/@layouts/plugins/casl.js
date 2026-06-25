@@ -1,4 +1,4 @@
-import { useAbility } from '@casl/vue'
+import { getAppAbility } from '@/utils/authAbilityRegistry'
 
 /**
  * Returns ability result if ACL is configured or else just return true
@@ -35,9 +35,14 @@ export const canViewNavMenuGroup = item => {
   return can(item.action, item.subject) && hasAnyVisibleChild
 }
 export const canNavigate = to => {
-  const ability = useAbility()
+  // 路由守卫在 Vue 组件上下文之外调用，不能用 useAbility()（依赖 inject）
+  // 改用全局注册的 ability 实例，规避 "Cannot inject Ability" 报错
+  const ability = getAppAbility()
 
-  // Get the most specific route (last one in the matched array)
+  // ability 尚未初始化时（插件未加载），对无 ACL 配置的路由放行
+  if (!ability)
+    return to.matched.every(r => !(r.meta?.action && r.meta?.subject))
+
   const targetRoute = to.matched[to.matched.length - 1]
 
   // If the target route has specific permissions, check those first

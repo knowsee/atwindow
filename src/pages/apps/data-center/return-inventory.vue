@@ -19,12 +19,16 @@ const itemsPerPage = ref(20)
 const warehouseOptions = ref([])
 const snack = ref({ show: false, text: '', color: 'info' })
 const warehousePersistReady = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
-const typeItems = [
-  { title: '全部品相', value: '' },
-  { title: '良品', value: '良品' },
-  { title: '不良品', value: '不良品' },
-]
+const QUALITY_GOOD = '\u826f\u54c1'
+const QUALITY_BAD = '\u4e0d\u826f\u54c1'
+
+const typeItems = computed(() => [
+  { title: t('pages.dropShippingReturnPackageList.quality.all'), value: '' },
+  { title: t('pages.dropShippingReturnOrderCreate.quality.good'), value: QUALITY_GOOD },
+  { title: t('pages.dropShippingReturnOrderCreate.quality.bad'), value: QUALITY_BAD },
+])
 
 const filters = ref({
   warehouseId: null,
@@ -32,21 +36,30 @@ const filters = ref({
   enSku: '',
 })
 
-const headers = [
+const headers = computed(() => [
   { title: 'SKU', key: 'sku', minWidth: '140' },
-  { title: '品相', key: 'type', minWidth: '96' },
-  { title: '仓库', key: 'warehouse_name', minWidth: '160' },
-  { title: '库存数量', key: 'sku_num', minWidth: '100', align: 'end' },
-  { title: '到仓31–60天', key: 'num_one', minWidth: '120', align: 'end' },
-  { title: '到仓61–90天', key: 'num_two', minWidth: '120', align: 'end' },
-  { title: '到仓90天以上', key: 'num_three', minWidth: '120', align: 'end' },
-  { title: '仓储计费时间', key: 'logTime', minWidth: '160' },
-]
+  { title: t('pages.dropShippingReturnPackageList.headers.quality'), key: 'type', minWidth: '96' },
+  { title: t('pages.dropShippingOrderCreate.sections.logistics.warehouse'), key: 'warehouse_name', minWidth: '160' },
+  { title: t('pages.dataCenterSalesAnalysis.headers.stockQty'), key: 'sku_num', minWidth: '100', align: 'end' },
+  { title: t('pages.dataCenterReturnInventory.headers.arrived31To60'), key: 'num_one', minWidth: '120', align: 'end' },
+  { title: t('pages.dataCenterReturnInventory.headers.arrived61To90'), key: 'num_two', minWidth: '120', align: 'end' },
+  { title: t('pages.dataCenterReturnInventory.headers.arrivedOver90'), key: 'num_three', minWidth: '120', align: 'end' },
+  { title: t('pages.dataCenterReturnInventory.headers.storageBillingTime'), key: 'logTime', minWidth: '160' },
+])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
+}
+
+function resolveQualityType(type) {
+  if (type === QUALITY_GOOD)
+    return t('pages.dropShippingReturnOrderCreate.quality.good')
+  if (type === QUALITY_BAD)
+    return t('pages.dropShippingReturnOrderCreate.quality.bad')
+
+  return type || '—'
 }
 
 function buildBody() {
@@ -85,13 +98,13 @@ async function loadList() {
     else {
       rows.value = []
       total.value = 0
-      toast(res?.msg || '加载退货库存失败', 'error')
+      toast(res?.msg || t('pages.dataCenterReturnInventory.messages.loadFailed'), 'error')
     }
   }
   catch (e) {
     rows.value = []
     total.value = 0
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dataCenterSalesAnalysis.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -124,10 +137,10 @@ watch(() => filters.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  const remote = await loadWarehouseOptions()
+  const remote = await loadWarehouseOptions(t)
 
   warehouseOptions.value = [
-    { title: '全部仓库', value: null },
+    { title: t('pages.dropShippingOrderList.filters.allWarehouses'), value: null },
     ...remote,
   ]
   filters.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: false })
@@ -153,7 +166,7 @@ onMounted(async () => {
     <VCard class="rounded-lg">
       <VCardItem class="pb-4 pt-6 px-6">
         <template #title>
-          <span class="text-h5 font-weight-medium">退货库存</span>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.dataCenterReturnInventory.title') }}</span>
         </template>
       </VCardItem>
       <VDivider />
@@ -175,7 +188,7 @@ onMounted(async () => {
                 :items="warehouseOptions"
                 item-title="title"
                 item-value="value"
-                label="仓库"
+                :label="$t('pages.dropShippingOrderCreate.sections.logistics.warehouse')"
                 clearable
                 hide-details
                 density="compact"
@@ -190,7 +203,7 @@ onMounted(async () => {
                 :items="typeItems"
                 item-title="title"
                 item-value="value"
-                label="品相"
+                :label="$t('pages.dropShippingReturnPackageList.headers.quality')"
                 clearable
                 hide-details
                 density="compact"
@@ -203,7 +216,7 @@ onMounted(async () => {
               <AppTextField
                 v-model="filters.enSku"
                 label="SKU"
-                placeholder="输入 SKU"
+                :placeholder="$t('pages.dataCenterReturnInventory.filters.skuPlaceholder')"
                 hide-details
                 density="compact"
                 @keyup.enter="searchList"
@@ -224,20 +237,21 @@ onMounted(async () => {
             <VChip
               size="small"
               variant="tonal"
-              :color="item.type === '不良品' ? 'error' : 'success'"
+              :color="item.type === QUALITY_BAD ? 'error' : 'success'"
             >
-              {{ item.type || '—' }}
+              {{ resolveQualityType(item.type) }}
             </VChip>
           </template>
 
           <template #bottom>
-            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
-              <span class="text-body-2 text-medium-emphasis">共 {{ total }} 条</span>
+            <VDivider />
+            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+              <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderList.pagination.total', { total }) }}</span>
               <div class="d-flex align-center gap-3">
                 <AppSelect
                   :model-value="itemsPerPage"
                   :items="[10, 20, 50, 100]"
-                  style="inline-size: 96px;"
+                  style="inline-size: 100px;"
                   density="compact"
                   hide-details
                   @update:model-value="itemsPerPage = Number($event)"
@@ -245,7 +259,9 @@ onMounted(async () => {
                 <VPagination
                   v-model="page"
                   :length="pageLength"
-                  :total-visible="7"
+                  :total-visible="5"
+                  size="small"
+                  active-color="primary"
                 />
               </div>
             </div>

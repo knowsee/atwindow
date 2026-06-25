@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue'
 import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
+import { computed } from 'vue'
 
 /**
  * 货品明细：与模板中 VDataTable + VCard 区块规范一致（见 ecommerce 列表、订单详情）
@@ -29,10 +29,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add', 'remove'])
+const { t } = useI18n({ useScope: 'global' })
 
 const headers = computed(() => {
   const w = props.unitLabel.w
   const cur = props.selectedCurrency
+  const requiredSuffix = t('components.printLabelProducts.requiredSuffix')
 
   return [
     {
@@ -49,40 +51,44 @@ const headers = computed(() => {
       minWidth: '140px',
     },
     {
-      title: '英文名称',
+      title: t('components.printLabelProducts.headers.enName'),
       key: 'en_name',
       sortable: false,
       minWidth: '160px',
     },
     {
-      title: props.selectedCnNameRequired ? '中文名称 *' : '中文名称',
+      title: props.selectedCnNameRequired
+        ? `${t('components.printLabelProducts.headers.cnName')}${requiredSuffix}`
+        : t('components.printLabelProducts.headers.cnName'),
       key: 'cn_name',
       sortable: false,
       minWidth: '140px',
     },
     {
-      title: '数量',
+      title: t('components.printLabelProducts.headers.qty'),
       key: 'sku_num',
       sortable: false,
       width: '132px',
       align: 'center',
     },
     {
-      title: `每件重量（${w}）`,
+      title: t('components.printLabelProducts.headers.weightPerItem', { unit: w }),
       key: 'weight',
       sortable: false,
       width: '152px',
       align: 'end',
     },
     {
-      title: props.selectedValueRequired ? `申报价值（${cur}） *` : `申报价值（${cur}）`,
+      title: props.selectedValueRequired
+        ? `${t('components.printLabelProducts.headers.declaredValue', { currency: cur })}${requiredSuffix}`
+        : t('components.printLabelProducts.headers.declaredValue', { currency: cur }),
       key: 'value',
       sortable: false,
       width: '152px',
       align: 'end',
     },
     {
-      title: '操作',
+      title: t('components.printLabelProducts.headers.actions'),
       key: 'actions',
       sortable: false,
       width: '72px',
@@ -103,11 +109,11 @@ function lineNo(index) {
   >
     <template #title>
       <h6 class="text-h6 font-weight-medium text-high-emphasis">
-        货品信息
+        {{ $t('components.printLabelProducts.title') }}
       </h6>
     </template>
     <template #subtitle>
-      <span class="text-body-2 text-medium-emphasis">请逐行填写 SKU、中英文品名、数量与申报；至少保留一行。</span>
+      <span class="text-body-2 text-medium-emphasis">{{ $t('components.printLabelProducts.subtitle') }}</span>
     </template>
     <template #append>
       <VBtn
@@ -116,7 +122,7 @@ function lineNo(index) {
         prepend-icon="tabler-plus"
         @click="emit('add')"
       >
-        添加货品
+        {{ $t('components.printLabelProducts.add') }}
       </VBtn>
     </template>
 
@@ -139,7 +145,7 @@ function lineNo(index) {
           variant="outlined"
           density="compact"
           hide-details
-          placeholder="SKU"
+          :placeholder="$t('components.printLabelProducts.placeholders.sku')"
           autocomplete="off"
           class="print-label-products-table__field"
         />
@@ -151,7 +157,7 @@ function lineNo(index) {
           variant="outlined"
           density="compact"
           hide-details
-          placeholder="英文品名"
+          :placeholder="$t('components.printLabelProducts.placeholders.enName')"
           autocomplete="off"
           class="print-label-products-table__field"
         />
@@ -163,7 +169,7 @@ function lineNo(index) {
           variant="outlined"
           density="compact"
           hide-details
-          placeholder="中文品名"
+          :placeholder="$t('components.printLabelProducts.placeholders.cnName')"
           autocomplete="off"
           class="print-label-products-table__field"
         />

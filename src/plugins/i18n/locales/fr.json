@@ -35,7 +35,8 @@
       "personalization": "Personnalisation",
       "auth": "Autorisations",
       "funds": "Fonds",
-      "addresses": "Gestion des adresses"
+      "addresses": "Gestion des adresses",
+      "tiktok": "Service TikTok"
     }
   },
   "search": {
@@ -60,6 +61,2208 @@
     "error": {
       "invalidCredentials": "Échec de la connexion, veuillez vérifier votre compte ou votre mot de passe",
       "network": "Erreur réseau, veuillez réessayer plus tard"
+    }
+  },
+  "common": {
+    "actions": {
+      "addAddress": "Ajouter une adresse",
+      "backToList": "Retour à la liste",
+      "calculateRate": "Calculer le tarif",
+      "clear": "Effacer",
+      "edit": "Modifier",
+      "order": "Commander",
+      "preview": "Prévisualiser",
+      "selectFromAddressBook": "Choisir dans le carnet d'adresses"
+    },
+    "options": {
+      "notRequired": "Non requis"
+    },
+    "warehouseFallback": "Entrepôt {id}"
+  },
+  "domain": {
+    "dropShipping": {
+      "packageStatuses": {
+        "all": "Tous",
+        "notArrived": "Non arrivé",
+        "arrived": "Arrivé",
+        "arrivedNotReported": "Arrivé, non déclaré"
+      }
+    }
+  },
+  "layout": {
+    "footer": {
+      "company": "Atwindow Overseas Warehouse",
+      "product": "WMS",
+      "tagline": "Une plateforme leader d'entrepôts overseas"
+    },
+    "userMenu": {
+      "changePassword": "Modifier le mot de passe",
+      "logout": "Déconnexion"
+    }
+  },
+  "components": {
+    "queryPanel": {
+      "title": "Filtres de recherche",
+      "search": "Rechercher",
+      "reset": "Réinitialiser",
+      "expandAdvanced": "Afficher la recherche avancée",
+      "collapseAdvanced": "Masquer la recherche avancée",
+      "quickFilterAria": "Filtres rapides"
+    },
+    "upload": {
+      "label": "Importer",
+      "tips": "JPG/PNG/WebP,\n{max} Mo maximum",
+      "uploaded": "Importé",
+      "failed": "Échec de l'import",
+      "maxSize": "Le fichier ne peut pas dépasser {max} Mo"
+    },
+    "printLabelProducts": {
+      "title": "Informations articles",
+      "subtitle": "Renseignez le SKU, les noms anglais/chinois, la quantité et la valeur déclarée ligne par ligne. Conservez au moins une ligne.",
+      "add": "Ajouter un article",
+      "headers": {
+        "sku": "SKU",
+        "enName": "Nom anglais",
+        "cnName": "Nom chinois",
+        "qty": "Qté",
+        "weightPerItem": "Poids unitaire ({unit})",
+        "declaredValue": "Valeur déclarée ({currency})",
+        "actions": "Actions"
+      },
+      "requiredSuffix": " *",
+      "placeholders": {
+        "sku": "SKU",
+        "enName": "Nom anglais de l'article",
+        "cnName": "Nom chinois de l'article"
+      }
+    },
+    "addressForm": {
+      "required": "Obligatoire",
+      "context": {
+        "sender": "Adresse expéditeur",
+        "receiver": "Adresse destinataire"
+      },
+      "title": {
+        "create": "Ajouter une adresse",
+        "edit": "Modifier l'adresse"
+      },
+      "fields": {
+        "name": "Nom",
+        "address1": "Adresse ligne 1",
+        "address2": "Adresse ligne 2",
+        "street": "Rue / no maison",
+        "city": "Ville",
+        "province": "Province / État",
+        "postcode": "Code postal",
+        "country": "Pays / région",
+        "telephone": "Téléphone",
+        "company": "Société",
+        "email": "E-mail"
+      },
+      "hints": {
+        "optional": "Facultatif",
+        "street": "Facultatif (numéro ou complément de rue)"
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "create": "Créer"
+      }
+    },
+    "addressBookPicker": {
+      "close": "Fermer",
+      "countryLocked": "Le canal actuel est limité à un pays. Seules les adresses de cette région sont affichées.",
+      "searchLabel": "Mot-clé du nom",
+      "searchPlaceholder": "Saisissez un nom, puis appuyez sur Entrée ou recherchez",
+      "reset": "Réinitialiser",
+      "search": "Rechercher",
+      "select": "Sélectionner",
+      "emptyTitle": "Aucun enregistrement d'adresse",
+      "emptyHint": "Essayez d'effacer le mot-clé du nom ou ajoutez d'abord les contacts dans le carnet d'adresses WMS.",
+      "pagination": "{total} au total · {pageSize} par page"
+    },
+    "loadingOverlay": {
+      "defaultMessage": "Chargement..."
+    }
+  },
+  "pages": {
+    "dashboard": {
+      "notice": {
+        "defaultTitle": "Annonce",
+        "loading": "Chargement de l'annonce...",
+        "close": "Fermer",
+        "readAndHide": "Lu et ne plus afficher"
+      },
+      "hero": {
+        "overline": "Centre opérationnel",
+        "title": "Tableau de bord métier",
+        "subtitle": "Vue globale de l'exécution et des finances. Changez d'entrepôt ci-dessous pour consulter le dropshipping, le stock et les ventes SKU sur 7 jours.",
+        "overviewTime": "Aperçu {time}",
+        "refresh": "Actualiser"
+      },
+      "sections": {
+        "global": "Aperçu global",
+        "sevenDay": "Statistiques commandes 7 jours",
+        "finance": "Instantané financier",
+        "recentLogs": "Transactions récentes",
+        "recentInbound": "Activité d'entrée récente",
+        "warehouseInsight": "Analyse entrepôt",
+        "topSku": "Top ventes SKU sur 7 jours",
+        "lowStock": "Suivi stock faible",
+        "dropshipOrders": "Commandes dropshipping"
+      },
+      "kpis": {
+        "packages": {
+          "title": "Colis entrants",
+          "subtitle": "Flux total en entrepôt",
+          "hint": "En attente d'entrée {pending} · arrivés {arrived}"
+        },
+        "balance": {
+          "title": "Solde du compte",
+          "hint": "Entrées mensuelles {inflow} · sorties {outflow}"
+        },
+        "sevenDay": {
+          "title": "Commandes 7 jours (étiquettes + dropshipping)",
+          "subtitle": "Commandes",
+          "hint": "La répartition par statut est affichée dans les statistiques 7 jours ci-dessous"
+        },
+        "dropship": {
+          "title": "Commandes dropshipping",
+          "today": "Aujourd'hui {count}"
+        },
+        "sku": {
+          "title": "Types de SKU",
+          "stockQty": "Quantité en stock {count}"
+        },
+        "lowStock": {
+          "title": "SKU en stock faible",
+          "subtitle": "Sous le seuil d'alerte"
+        }
+      },
+      "sevenDay": {
+        "fallbackSubtitle": "Par statut · createtime des 7 derniers jours",
+        "dropshipTab": "Dropshipping",
+        "waybillTab": "Étiquettes",
+        "emptyWaybill": "Aucune commande d'étiquette sur les 7 derniers jours",
+        "emptyDropship": "Aucune commande dropshipping sur les 7 derniers jours",
+        "period": "Période : {start} ~ {end}",
+        "donutTotal": "Commandes",
+        "status": {
+          "pendingConfirm": "En attente de confirmation",
+          "confirmed": "Confirmé",
+          "processing": "En traitement",
+          "pendingPay": "Paiement en attente",
+          "pendingShip": "Expédition en attente",
+          "shipped": "Expédié",
+          "problem": "Commandes problématiques",
+          "problemShort": "Problème"
+        }
+      },
+      "finance": {
+        "subtitle": "Solde et mouvements de fonds récents",
+        "availableUsd": "USD · disponible maintenant",
+        "monthInflow": "Entrées mensuelles",
+        "monthInflowHint": "Total des recharges et autres crédits",
+        "monthOutflow": "Sorties mensuelles",
+        "monthOutflowHint": "Total des déductions de commandes et dépenses",
+        "balance": "Solde {amount}",
+        "emptyLogs": "Aucune transaction"
+      },
+      "recentInbound": {
+        "subtitle": "Résumé de suivi des colis",
+        "headers": {
+          "trackingNo": "No suivi",
+          "time": "Heure"
+        },
+        "empty": "Aucun enregistrement d'entrée"
+      },
+      "warehouse": {
+        "generatedAt": "Données entrepôt {time}",
+        "topSkuSubtitle": "Ventes agrégées par entrepôt actuel",
+        "topSkuSeries": "Ventes",
+        "topSkuEmpty": "Aucune donnée de vente",
+        "lowStockSubtitle": "Stock inférieur ou égal à la valeur d'alerte",
+        "warning": " / alerte ",
+        "lowStockEmpty": "Aucun enregistrement de stock faible",
+        "dropshipSubtitle": "20 derniers enregistrements",
+        "statusFallback": "Statut {status}",
+        "noWarehouse": "Aucun entrepôt disponible trouvé. Veuillez confirmer que les informations d'entrepôt sont maintenues dans le système."
+      },
+      "dropshipRecent": {
+        "headers": {
+          "reference": "No référence",
+          "trackingNo": "No suivi",
+          "fee": "Frais",
+          "shipTime": "Heure d'expédition",
+          "createTime": "Heure de création"
+        },
+        "empty": "Aucune commande dropshipping récente"
+      },
+      "messages": {
+        "overviewFailed": "Échec du chargement de l'aperçu",
+        "warehouseFailed": "Échec du chargement des données d'entrepôt",
+        "refreshed": "Données actualisées"
+      }
+    },
+    "printLabelBatchUpload": {
+      "hero": {
+        "title": "Expédition groupée",
+        "subtitle": "Importez un fichier .xls, .xlsx ou .csv pour créer des expéditions en masse. Le système créera un lot Shipping de façon asynchrone."
+      },
+      "upload": {
+        "title": "Importer un fichier",
+        "subtitle": "Formats .xls, .xlsx et .csv acceptés. Téléchargez d'abord le modèle. Après l'envoi, suivez la progression et les étiquettes dans Liste des commandes > Statut d'expédition groupée.",
+        "choose": "Choisir un fichier (.xls / .xlsx / .csv)",
+        "empty": "Aucun fichier sélectionné",
+        "templateDownload": "Télécharger le modèle :",
+        "templateName": "Modèle d'expédition groupée.xlsx"
+      },
+      "actions": {
+        "backToOrders": "Retour à la liste des commandes",
+        "submitImport": "Envoyer l'import"
+      },
+      "messages": {
+        "fileRequired": "Sélectionnez d'abord un fichier",
+        "fileTypeInvalid": "Seuls les fichiers .xls, .xlsx et .csv sont acceptés",
+        "batchCreated": "Lot {sn} (ID {id}) créé. L'analyse en arrière-plan est en cours.",
+        "uploadSuccess": "Import groupé envoyé avec succès",
+        "uploadFailed": "Échec de l'import groupé"
+      }
+    },
+    "printLabelShippingList": {
+      "title": "Liste des commandes",
+      "subtitle": "Renseignez les filtres puis cliquez sur Rechercher. Les changements de pagination actualisent automatiquement la liste.",
+      "actions": {
+        "batchStatus": "Statut d'expédition groupée",
+        "create": "Créer une étiquette",
+        "batchDetail": "Détails du lot",
+        "cancelShipment": "Annuler l'expédition"
+      },
+      "filters": {
+        "refNo": "Référence",
+        "fuzzy": "Recherche approximative",
+        "channel": "Canal",
+        "status": "Statut",
+        "createdDate": "Date de création",
+        "dateRange": "Sélectionner une période",
+        "trackingNo": "N° de suivi",
+        "allChannels": "Tous les canaux",
+        "unnamedChannel": "Canal sans nom"
+      },
+      "headers": {
+        "id": "ID",
+        "createdAt": "Créé le",
+        "orderNo": "N° de commande",
+        "refNo": "Référence",
+        "trackingNo": "N° de suivi",
+        "channelWithCode": "Canal (code)",
+        "fee": "Frais",
+        "status": "Statut",
+        "failReason": "Motif d'échec",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "all": "Tous",
+        "pending": "En attente",
+        "requesting": "En cours de demande",
+        "success": "Réussi",
+        "failed": "Échec",
+        "cancelled": "Annulé",
+        "cancelling": "Annulation en cours"
+      },
+      "tooltips": {
+        "view": "Voir",
+        "label": "Étiquette"
+      },
+      "pagination": {
+        "total": "Total {total}",
+        "perPage": "Par page",
+        "detailTotal": "Cette page {count} · Total {total}"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement de la liste des commandes",
+        "networkFailed": "Échec de la requête réseau",
+        "noLabelFile": "Aucun fichier d'étiquette disponible",
+        "invalidOrderId": "ID de commande invalide",
+        "invalidOrderIdentifier": "Identifiant de commande invalide",
+        "cancelConfirm": "Annuler cette expédition ?",
+        "cancelSubmitted": "Annulation envoyée",
+        "cancelFailed": "Échec de l'annulation",
+        "cancelling": "Annulation en cours..."
+      },
+      "batchDialog": {
+        "title": "Statut d'expédition groupée",
+        "subtitle": "Liste des imports groupés, détails et téléchargements ZIP des étiquettes",
+        "detailTitle": "Détails des commandes du lot",
+        "filterTitle": "Filtres",
+        "detailFilterTitle": "Filtre",
+        "close": "Fermer",
+        "closeDetail": "Fermer les détails",
+        "filters": {
+          "batchNo": "N° de lot",
+          "exact": "Correspondance exacte",
+          "status": "Statut d'expédition groupée"
+        },
+        "headers": {
+          "batchNo": "N° de lot",
+          "total": "Total",
+          "success": "Réussi",
+          "failed": "Échec",
+          "status": "Statut",
+          "createdAt": "Créé le",
+          "actions": "Actions",
+          "orderNo": "N° de commande",
+          "refNo": "Référence",
+          "trackingNo": "N° de suivi",
+          "failReason": "Motif d'échec"
+        },
+        "statuses": {
+          "all": "Tous",
+          "processing": "En traitement",
+          "completed": "Terminé",
+          "failed": "Échec",
+          "unknown": "Statut {status}"
+        },
+        "actions": {
+          "detail": "Détails",
+          "label": "Étiquette"
+        },
+        "aria": {
+          "batchActions": "Actions du lot {batch}",
+          "sourceFile": "Fichier source",
+          "labelZip": "ZIP des étiquettes"
+        },
+        "tooltips": {
+          "detail": "Voir les commandes de ce lot",
+          "sourceFile": "Ouvrir le tableur source importé",
+          "downloadZip": "Télécharger l'archive ZIP des étiquettes",
+          "openLabel": "Ouvrir l'étiquette dans une nouvelle fenêtre"
+        },
+        "empty": {
+          "loading": "Chargement...",
+          "noData": "Aucune donnée",
+          "hint": "Importez d'abord un fichier groupé, ou ajustez les filtres N° de lot / statut puis relancez la recherche.",
+          "noOrderData": "Aucune donnée de commande"
+        },
+        "messages": {
+          "loadBatchesFailed": "Échec du chargement de la liste des lots",
+          "networkFailed": "Échec de la requête réseau",
+          "noSourceFile": "Aucun chemin de fichier source disponible",
+          "loadBatchOrdersFailed": "Échec du chargement des commandes du lot",
+          "invalidBatchId": "ID de lot invalide",
+          "noLabelFile": "Aucun fichier d'étiquette disponible",
+          "getDownloadLinkFailed": "Échec de récupération du lien de téléchargement",
+          "noDownloadUrl": "L'API n'a pas renvoyé d'URL de téléchargement",
+          "downloadOpened": "Lien de téléchargement ouvert",
+          "batchNotFound": "Aucun lot correspondant trouvé"
+        }
+      }
+    },
+    "printLabelOrders": {
+      "title": "Liste des commandes (ancienne)",
+      "subtitle": "Renseignez les filtres puis cliquez sur Rechercher. Les changements de pagination actualisent automatiquement la liste.",
+      "legacyNotice": "Cette liste contient uniquement des données historiques et s'appelle désormais Liste des commandes (ancienne). Les nouvelles commandes sont affichées et traitées dans Liste des commandes. Contactez le support pour annuler d'anciennes commandes.",
+      "actions": {
+        "create": "Créer une étiquette",
+        "downloadLabel": "Télécharger l'étiquette"
+      },
+      "filters": {
+        "status": "Statut",
+        "channel": "Canal",
+        "recipient": "Destinataire",
+        "recipientPlaceholder": "Nom",
+        "createdAt": "Créé le",
+        "dateRange": "Sélectionner une période",
+        "refNoMultiline": "Référence (plusieurs lignes)",
+        "refNoPerLine": "Une référence par ligne",
+        "allChannels": "Tous les canaux",
+        "unnamedChannel": "Canal sans nom"
+      },
+      "statusFilters": {
+        "all": "Tous les statuts"
+      },
+      "statuses": {
+        "paidWaiting": "Payé, en attente d'étiquette",
+        "completed": "Étiquette créée",
+        "cancelled": "Annulé",
+        "cancelling": "Annulation en cours",
+        "failed": "Échec de création d'étiquette",
+        "orderedWaitingFee": "Commandé, en attente du débit des frais d'étiquette",
+        "exception": "Exception",
+        "unknown": "Statut({status})"
+      },
+      "headers": {
+        "createdAt": "Créé le",
+        "orderNo": "N° de commande",
+        "refNo": "Référence",
+        "line": "Ligne",
+        "trackingNo": "N° de suivi",
+        "skuQty": "SKU / Qté",
+        "totalWeight": "Poids total",
+        "shippingFee": "Frais d'expédition",
+        "errorInfo": "Info d'exception",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "tooltips": {
+        "detail": "Détails",
+        "downloadLabel": "Télécharger l'étiquette"
+      },
+      "aria": {
+        "copyTracking": "Copier le numéro de suivi"
+      },
+      "pagination": {
+        "total": "Total {total}"
+      },
+      "empty": {
+        "loading": "Chargement...",
+        "noOrderData": "Aucune donnée de commande",
+        "noPackageInfo": "Aucune information colis"
+      },
+      "messages": {
+        "noTracking": "Aucun numéro de suivi",
+        "trackingCopied": "Numéro de suivi copié",
+        "copyFailed": "Échec de la copie",
+        "missingOrderIdentifier": "Identifiant de commande manquant",
+        "detailLoadFailed": "Échec du chargement des détails",
+        "networkFailed": "Échec de la requête réseau",
+        "noLabelFile": "Aucun fichier d'étiquette disponible",
+        "loadFailed": "Échec du chargement de la liste des commandes"
+      },
+      "detail": {
+        "title": "Détails de l'expédition",
+        "orderNo": "N° de commande : {orderNo}",
+        "basicInfo": "Informations de base",
+        "refNo": "Référence",
+        "createdAt": "Créé le : {time}",
+        "status": "Statut",
+        "line": "Ligne",
+        "shippingFee": "Frais d'expédition",
+        "trackingNo": "N° de suivi",
+        "sender": "Expéditeur",
+        "recipient": "Destinataire",
+        "packageInfo": "Informations colis",
+        "packageNo": "Colis #{index}",
+        "packageMetrics": "Poids {weight} · Dimensions {length} × {width} × {height}",
+        "packageDeclaration": "Déclaré {value}"
+      }
+    },
+    "printLabelOrderNewDetail": {
+      "title": "Détails de l'expédition",
+      "readonly": "Lecture seule",
+      "subtitle": "Consultez le suivi logistique, les informations expéditeur/destinataire et les détails de règlement financier.",
+      "actions": {
+        "backToList": "Retour à la liste",
+        "printLabel": "Imprimer l'étiquette"
+      },
+      "alerts": {
+        "cancellingTitle": "Interception / annulation en cours",
+        "cancellingBody": "Cette commande est en cours d'annulation. Veuillez attendre 15-30 jours pour que le canal confirme le remboursement."
+      },
+      "labels": {
+        "trackingNumber": "N° de suivi",
+        "statusDescription": "Description du statut",
+        "channelName": "Nom du canal",
+        "customerRef": "Référence client",
+        "orderSn": "N° interne de commande",
+        "deductionStatus": "Statut de débit",
+        "failReason": "Motif d'échec",
+        "addresses": "Adresses",
+        "sender": "Expéditeur",
+        "recipient": "Destinataire",
+        "timeline": "Chronologie",
+        "orderCreated": "Commande créée",
+        "dataUpdated": "Données mises à jour",
+        "labelPrinted": "Étiquette générée/imprimée",
+        "orderCancelled": "Commande annulée",
+        "fees": "Détails des frais",
+        "customerFee": "Frais d'expédition client",
+        "packageContents": "Contenu du colis",
+        "skuCode": "Code SKU",
+        "skuCnName": "Nom CN",
+        "skuEnName": "Nom EN",
+        "skuQty": "Qté",
+        "skuValue": "Valeur déclarée",
+        "skuWeight": "Poids"
+      },
+      "statuses": {
+        "unknown": "Statut inconnu",
+        "pending": "En attente",
+        "requesting": "En cours de demande",
+        "success": "Réussi",
+        "failed": "Échec",
+        "cancelled": "Annulé",
+        "statusWithValue": "Statut {status}",
+        "deducted": "Débité",
+        "notDeducted": "Non débité"
+      },
+      "copyLabels": {
+        "content": "Contenu",
+        "trackingNumber": "N° de suivi",
+        "orderSn": "N° interne de commande"
+      },
+      "messages": {
+        "missingOrderIdentifier": "Identifiant de commande manquant",
+        "detailLoadFailed": "Échec du chargement des détails",
+        "networkFailed": "Échec de la requête réseau",
+        "copySuccess": "{label} copié",
+        "copyFailed": "Échec de la copie de {label}"
+      }
+    },
+    "dropShippingBegin": {
+      "stepsTitle": "Étapes du dropshipping",
+      "stepsSubtitle": "Soumettez d'abord une demande d'activation. Après approbation, les fonctions d'entrée stock et de commande seront disponibles.",
+      "steps": {
+        "register": {
+          "title": "Créer un compte",
+          "desc": "Terminez l'inscription du compte puis entrez dans le module dropshipping"
+        },
+        "apply": {
+          "title": "Soumettre la demande",
+          "desc": "Sélectionnez un entrepôt et renseignez le volume d'activité estimé"
+        },
+        "review": {
+          "title": "Vérifier et activer",
+          "desc": "L'équipe opérationnelle vérifie la demande puis active les droits de service"
+        },
+        "inbound": {
+          "title": "Créer une entrée stock",
+          "desc": "Soumettez une entrée stock et organisez l'arrivée des marchandises en entrepôt"
+        },
+        "order": {
+          "title": "Créer une commande",
+          "desc": "Créez et expédiez des commandes après activation du service"
+        }
+      },
+      "application": {
+        "title": "Demande de service",
+        "subtitle": "Indiquez l'entrepôt cible et le volume d'activité afin que la plateforme puisse vérifier et vous accompagner.",
+        "loadingWarehouses": "Chargement de la liste des entrepôts...",
+        "notice": "Après l'envoi, la demande passe en revue manuelle. Contactez les ventes ou le support pour suivre l'avancement."
+      },
+      "fields": {
+        "warehouse": "Entrepôt à activer",
+        "warehousePlaceholder": "Sélectionnez l'entrepôt nécessitant l'activation du service",
+        "weeklyShipments": "Expéditions hebdomadaires estimées",
+        "weeklyShipmentsPlaceholder": "Saisir la quantité",
+        "weeklyWeight": "Poids hebdomadaire estimé",
+        "weeklyWeightPlaceholder": "Saisir le poids",
+        "goodsType": "Type de marchandise",
+        "goodsTypePlaceholder": "Par exemple : vêtements, maison, électronique, produits du quotidien",
+        "saleType": "Canal de vente",
+        "saleTypePlaceholder": "Par exemple : eBay, Amazon, plateforme B2C indépendante"
+      },
+      "validation": {
+        "warehouseRequired": "Sélectionnez un entrepôt",
+        "shipmentsRequired": "Saisissez une quantité valide",
+        "weightRequired": "Saisissez un poids valide",
+        "goodsTypeRequired": "Saisissez le type de marchandise",
+        "saleTypeRequired": "Saisissez le canal de vente"
+      },
+      "units": {
+        "pieces": "pcs"
+      },
+      "actions": {
+        "submit": "Soumettre la demande d'activation"
+      },
+      "messages": {
+        "warehouseLoadFailed": "Échec du chargement des entrepôts",
+        "applySuccess": "Votre demande d'activation a été envoyée. Veuillez attendre la vérification et l'activation par l'équipe opérationnelle. Contactez le support ou votre responsable commercial pour toute question sur l'avancement.",
+        "submitFailed": "Échec de l'envoi",
+        "networkFailed": "Échec de la requête réseau"
+      }
+    },
+    "productBatch": {
+      "title": "Création groupée de produits",
+      "subtitle": "Importez un modèle Excel pour créer des produits en masse.",
+      "upload": {
+        "title": "Importer un fichier",
+        "subtitle": "Seuls les fichiers .xls et .xlsx sont acceptés. Téléchargez d'abord le modèle.",
+        "choose": "Choisir un fichier Excel",
+        "empty": "Aucun fichier sélectionné",
+        "templateDownload": "Télécharger le modèle :",
+        "templateName": "Modèle d'import produits.xls"
+      },
+      "actions": {
+        "backToList": "Retour à la liste",
+        "submitImport": "Envoyer l'import"
+      },
+      "messages": {
+        "fileRequired": "Sélectionnez d'abord un fichier Excel",
+        "fileTypeInvalid": "Seuls les fichiers .xls et .xlsx sont acceptés",
+        "submitSuccess": "Création groupée envoyée avec succès",
+        "submitFailed": "Échec de la création groupée"
+      }
+    },
+    "dropShippingPackageList": {
+      "title": "Liste des entrées stock",
+      "subtitle": "Filtrez, imprimez les étiquettes carton en lot et supprimez en lot. Changez rapidement le statut sous le panneau de recherche.",
+      "actions": {
+        "batchCreate": "Création groupée",
+        "create": "Créer une entrée stock",
+        "batchPrintBox": "Imprimer les étiquettes carton en lot",
+        "batchDelete": "Suppression groupée",
+        "cancelSelection": "Annuler la sélection",
+        "delete": "Supprimer"
+      },
+      "filters": {
+        "skuPlaceholder": "Saisir le code SKU",
+        "trackingNo": "N° de suivi",
+        "trackingNoPlaceholder": "Saisir le N° de suivi",
+        "createdAt": "Créé le"
+      },
+      "headers": {
+        "package": "Entrée stock",
+        "warehouse": "Entrepôt",
+        "sku": "SKU",
+        "qty": "Déclaré / reçu",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "selection": {
+        "selected": "{count} sélectionné(s)"
+      },
+      "tooltips": {
+        "detail": "Voir les détails",
+        "printBox": "Imprimer l'étiquette carton"
+      },
+      "pagination": {
+        "total": "Total {total} enregistrements"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement de la liste des entrées stock",
+        "networkFailed": "Échec de la requête réseau",
+        "deleteSuccess": "Suppression réussie",
+        "deleteFailed": "Échec de la suppression",
+        "selectDeleteRequired": "Sélectionnez d'abord les lignes à supprimer",
+        "batchDeleteSuccess": "Suppression groupée réussie",
+        "batchDeleteFailed": "Échec de la suppression groupée",
+        "printTaskCreated": "Tâche d'impression générée",
+        "printFailed": "Échec de l'impression",
+        "selectPrintRequired": "Sélectionnez d'abord les lignes à imprimer",
+        "batchPrintFailed": "Échec de l'impression groupée"
+      }
+    },
+    "dropShippingPackageBatch": {
+      "title": "Création groupée d'entrées stock",
+      "subtitle": "Choisissez éventuellement un entrepôt, importez Excel, puis le système créera les entrées stock en lot. Le PDF d'étiquette peut s'ouvrir automatiquement après réussite.",
+      "settings": {
+        "title": "Paramètres d'entrée stock",
+        "subtitle": "Si aucun entrepôt n'est sélectionné, les règles par défaut du système sont utilisées.",
+        "warehouse": "Entrepôt (facultatif)",
+        "warehouseAddress": "Adresse de réception de l'entrepôt"
+      },
+      "upload": {
+        "title": "Importer un fichier",
+        "subtitle": "Seuls les fichiers .xls / .xlsx sont acceptés. Les colonnes doivent correspondre au modèle d'entrée stock fourni par l'exploitation.",
+        "pickExcel": "Cliquer pour choisir Excel",
+        "noFile": "Aucun fichier sélectionné",
+        "templateDownload": "Téléchargement du modèle :",
+        "templateName": "Modèle de liste d'entrée stock groupée.{ext}"
+      },
+      "actions": {
+        "backToList": "Retour à la liste",
+        "submit": "Soumettre l'import"
+      },
+      "messages": {
+        "selectExcel": "Sélectionnez d'abord un fichier Excel",
+        "invalidExcel": "Seuls les fichiers .xls / .xlsx sont acceptés",
+        "success": "Création groupée réussie",
+        "failed": "Échec de la création groupée",
+        "uploadFailed": "Échec de l'import"
+      }
+    },
+    "dropShippingOrderList": {
+      "title": "Liste des commandes",
+      "subtitle": "Renseignez les filtres puis lancez la recherche. Changez rapidement le statut sous le bouton de recherche. Dépliez Recherche avancée pour l'entrepôt, le transport et les dates.",
+      "actions": {
+        "batchCreate": "Création groupée",
+        "create": "Créer une commande",
+        "export": "Exporter les commandes"
+      },
+      "status": {
+        "all": "Toutes les commandes",
+        "pendingConfirm": "En attente de confirmation",
+        "confirmed": "Confirmée",
+        "pendingPayment": "En attente de paiement",
+        "pendingShipment": "En attente d'expédition",
+        "overseasShipped": "Expédiée par l'entrepôt overseas",
+        "overseasSent": "Envoyée par l'entrepôt overseas",
+        "problem": "Commande en anomalie",
+        "refundedShipping": "Frais d'expédition remboursés",
+        "unknown": "Statut ({status})"
+      },
+      "transport": {
+        "all": "Tous les modes de transport",
+        "pickup": "Retrait",
+        "uspsNoPreOnline": "USPS (non pré-en ligne)",
+        "uspsT5": "USPS (T5)",
+        "uni": "UNI ("
+      },
+      "source": {
+        "all": "Toutes les sources",
+        "system": "Système",
+        "mabang": "Mabang",
+        "thirdPartyErp": "ERP tiers"
+      },
+      "remote": {
+        "all": "Tous",
+        "remote": "Zone éloignée",
+        "nonRemote": "Non éloignée"
+      },
+      "filters": {
+        "allWarehouses": "Tous les entrepôts",
+        "orderNo": "N° de commande",
+        "orderNoPlaceholder": "N° de commande ou référence",
+        "recipient": "Destinataire",
+        "recipientPlaceholder": "Nom du destinataire",
+        "skuPlaceholder": "Code SKU",
+        "trackingNo": "N° de suivi international",
+        "trackingNoPlaceholder": "N° international / suivi",
+        "warehouse": "Entrepôt",
+        "transport": "Mode de transport",
+        "source": "Source",
+        "remoteArea": "Zone éloignée",
+        "createdAt": "Créée le",
+        "shippedAt": "Expédiée le",
+        "questionReason": "Motif du problème",
+        "questionReasonPlaceholder": "Saisir le motif du problème"
+      },
+      "headers": {
+        "orderNo": "N° de commande",
+        "referenceNo": "Référence",
+        "recipient": "Destinataire",
+        "warehouse": "Entrepôt",
+        "sku": "SKU",
+        "trackingNo": "N° de suivi",
+        "fee": "Frais",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "tooltips": {
+        "detail": "Détails",
+        "copy": "Copier"
+      },
+      "pagination": {
+        "total": "Total {total}"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement de la liste des commandes",
+        "networkFailed": "Échec de la requête réseau",
+        "statusRequired": "Le statut est obligatoire. Sélectionnez d'abord un statut",
+        "exportSubmitted": "Tâche d'export soumise",
+        "exportFailed": "Échec de l'export"
+      }
+    },
+    "dropShippingOrderBatch": {
+      "title": "Création groupée de commandes",
+      "subtitle": "Sélectionnez un canal et un entrepôt, importez Excel (et éventuellement un ZIP d'étiquettes retrait), puis soumettez les commandes en lot.",
+      "transport": {
+        "autoTrial": "Sélection automatique du canal logistique (essai)",
+        "pickup": "Retrait",
+        "uspsT5": "USPS (T5)"
+      },
+      "settings": {
+        "title": "Canal et entrepôt",
+        "subtitle": "Identique à la création unitaire et appliqué à toutes les commandes de ce lot Excel.",
+        "transport": "Canal",
+        "warehouse": "Entrepôt"
+      },
+      "upload": {
+        "title": "Importer un fichier",
+        "subtitle": "L'Excel de commandes est obligatoire. Pour le retrait, vous pouvez aussi importer un ZIP d'étiquettes. Seuls .xls / .xlsx et .zip sont acceptés.",
+        "pickExcel": "Cliquer pour choisir l'Excel de commandes",
+        "pickZip": "Cliquer pour choisir le ZIP d'étiquettes retrait (facultatif)",
+        "noFile": "Aucun fichier sélectionné",
+        "templateDownload": "Téléchargement du modèle :",
+        "templateName": "Modèle dropshipping groupé.{ext}",
+        "templateNote": "Les colonnes Excel doivent correspondre au modèle fourni par l'exploitation."
+      },
+      "actions": {
+        "backToList": "Retour à la liste",
+        "submit": "Soumettre la création groupée"
+      },
+      "messages": {
+        "selectTransport": "Sélectionnez un canal",
+        "selectWarehouse": "Sélectionnez un entrepôt",
+        "selectExcel": "Sélectionnez d'abord un fichier Excel",
+        "invalidExcel": "Seuls les fichiers .xls / .xlsx sont acceptés",
+        "success": "Création groupée réussie",
+        "failed": "Échec de la création groupée"
+      }
+    },
+    "dropShippingOrderCreate": {
+      "eyebrow": "Dropshipping · Commande",
+      "title": {
+        "create": "Créer une commande",
+        "edit": "Modifier la commande",
+        "copy": "Copier la commande"
+      },
+      "subtitle": "Renseignez les informations du destinataire, le canal et les détails produit avant de soumettre la commande.",
+      "loading": {
+        "detail": "Chargement des détails de la commande...",
+        "initial": "Chargement des entrepôts, pays et produits...",
+        "default": "Chargement..."
+      },
+      "transport": {
+        "autoTrial": "Sélection automatique du canal logistique (essai)",
+        "pickup": "Retrait",
+        "uspsT5": "USPS (T5)"
+      },
+      "sections": {
+        "recipient": {
+          "title": "Informations destinataire",
+          "subtitle": "Utilisées pour générer l'étiquette",
+          "empty": "Sélectionnez une adresse destinataire existante dans le carnet d'adresses, ou cliquez sur Ajouter une adresse pour en créer une dans la fenêtre. Elle sera affichée ici en lecture seule après confirmation.",
+          "name": "Nom :",
+          "address1": "Adresse ligne 1 :",
+          "address2": "Adresse ligne 2 :",
+          "city": "Ville :",
+          "province": "État/Province :",
+          "postcode": "Code postal :",
+          "country": "Pays/Région :",
+          "phone": "Téléphone :"
+        },
+        "logistics": {
+          "title": "Informations logistiques",
+          "subtitle": "Canal, entrepôt et emballage",
+          "transport": "Canal",
+          "warehouse": "Entrepôt",
+          "carton": "Emballage",
+          "pickupAttachment": "Importer une pièce jointe (étiquette retrait)"
+        },
+        "order": {
+          "title": "Informations commande",
+          "subtitle": "Référence, remarque et détails produit",
+          "referenceNo": "Référence",
+          "remark": "Remarque (facultatif)",
+          "addProduct": "Ajouter un produit",
+          "cnName": "Nom chinois",
+          "qty": "Quantité",
+          "actions": "Actions",
+          "skuPlaceholder": "Sélectionner un SKU",
+          "productCount": "{count} lignes produit. Conservez au moins 1 ligne."
+        },
+        "summary": {
+          "title": "Résumé de soumission",
+          "warehouse": "Entrepôt expéditeur",
+          "transport": "Canal logistique",
+          "carton": "Emballage",
+          "validProducts": "Produits valides",
+          "validProductsCount": "{count} pcs",
+          "estimatedFee": "Frais d'expédition estimés",
+          "estimateNote": "À titre indicatif. Le montant final dépend de l'émission de la commande."
+        }
+      },
+      "addressDialog": {
+        "title": "Sélectionner l'adresse destinataire",
+        "subtitle": "Filtrez par nom sur le serveur. Cliquez sur Sélectionner ou double-cliquez une ligne pour remplir le formulaire."
+      },
+      "actions": {
+        "backToList": "Retour à la liste",
+        "chooseAddress": "Choisir dans le carnet d'adresses",
+        "addAddress": "Ajouter une adresse",
+        "estimate": "Estimer les frais",
+        "submitCreate": "Confirmer et soumettre la commande",
+        "submitCopy": "Soumettre la commande copiée",
+        "submitEdit": "Enregistrer les modifications"
+      },
+      "messages": {
+        "addressSaved": "Adresse enregistrée",
+        "saveFailed": "Échec de l'enregistrement",
+        "loadAddressFailed": "Échec du chargement des adresses",
+        "addressSelected": "Adresse destinataire renseignée",
+        "invalidLoadedReference": "La référence chargée contient des caractères invalides. La valeur d'origine est conservée. Ne la modifiez pas manuellement.",
+        "loadDetailFailed": "Échec du chargement des détails de la commande",
+        "selectWarehouse": "Sélectionnez l'entrepôt expéditeur",
+        "selectAddress": "Sélectionnez d'abord une adresse destinataire dans le carnet d'adresses",
+        "selectTransport": "Sélectionnez un canal",
+        "estimateUnsupported": "La sélection actuelle ne prend pas en charge l'estimation",
+        "validProductsRequired": "Renseignez d'abord des détails produit valides",
+        "estimatedFee": "Frais d'expédition estimés : {fee}",
+        "estimateFailed": "Échec de l'estimation",
+        "invalidReferenceBlocked": "La référence ne peut contenir que des lettres, chiffres et traits de soulignement. Soumission bloquée.",
+        "atLeastOneProduct": "Renseignez au moins une ligne produit valide",
+        "submitSuccess": "Enregistrement réussi",
+        "submitFailed": "Échec de l'enregistrement",
+        "attachmentUploaded": "Pièce jointe importée",
+        "attachmentUploadFailed": "Échec de l'import de la pièce jointe"
+      },
+      "rules": {
+        "transportRequired": "Sélectionnez un canal",
+        "warehouseRequired": "Sélectionnez un entrepôt",
+        "referenceRequired": "Saisissez une référence",
+        "referenceInvalid": "La référence ne peut contenir que des lettres, chiffres et traits de soulignement"
+      },
+      "sku": {
+        "availableStock": "Stock disponible : {stock}"
+      }
+    },
+    "dropShippingOrderDetail": {
+      "title": "Détails de la commande",
+      "readonly": "Lecture seule",
+      "subtitle": "Consultez le numéro système, l'adresse destinataire, le suivi logistique et le règlement de facturation.",
+      "actions": {
+        "backToList": "Retour à la liste",
+        "copyOrder": "Copier la commande"
+      },
+      "labels": {
+        "orderSn": "N° système",
+        "referenceNo": "Référence",
+        "temuOrderNo": "N° commande Temu (le cas échéant)",
+        "warehouse": "Entrepôt d'expédition",
+        "trackingNo": "N° de suivi",
+        "logisticsTitle": "Informations destinataire et logistiques",
+        "logistics": "Logistique et exigences",
+        "route": "Ligne d'expédition",
+        "totalQty": "Nombre total",
+        "totalWeight": "Poids total",
+        "declaredWeight": "Poids déclaré",
+        "recipient": "Destinataire",
+        "itemsTitle": "Détails produit (SKUs)",
+        "itemsSummary": "{types} types · {qty} pcs",
+        "cnName": "Nom chinois",
+        "qty": "Quantité",
+        "unmatchedProduct": "Aucun produit système correspondant",
+        "emptyItems": "Aucune donnée produit",
+        "totalQtyLabel": "Quantité totale",
+        "remark": "Remarque",
+        "questionReason": "Motif de la commande en anomalie",
+        "feesTitle": "Frais et règlement",
+        "shippingFee": "Frais d'expédition",
+        "deliveryFee": "Frais de livraison",
+        "handleFee": "Frais de traitement commande",
+        "materialFee": "Frais de consommables",
+        "packingFee": "Frais d'opération d'emballage",
+        "pickupFee": "Frais de sortie retrait",
+        "brandFee": "Frais de marque",
+        "productLabelFee": "Frais d'étiquette produit",
+        "totalFee": "Frais totaux",
+        "emptyFees": "Aucune information détaillée sur les frais",
+        "timelineTitle": "Chronologie",
+        "erpSource": "Source ERP"
+      },
+      "timeline": {
+        "created": "Commande créée",
+        "paid": "Paiement effectué",
+        "confirmed": "Nœud confirmé",
+        "printed": "Étiquette générée et imprimée",
+        "resent": "Réexpédition traitée",
+        "shipped": "Expédiée par l'entrepôt overseas",
+        "problem": "Marquée comme commande en anomalie"
+      },
+      "erp": {
+        "system": "Système",
+        "mabang": "Mabang",
+        "lingxing": "Lingxing",
+        "tiktok": "TikTok",
+        "temu": "Temu",
+        "thirdParty": "Tiers"
+      },
+      "copy": {
+        "orderSn": "N° système",
+        "trackingNo": "N° de suivi",
+        "success": "{label} copié",
+        "failed": "Échec de la copie de {label}"
+      },
+      "messages": {
+        "missingId": "ID commande manquant",
+        "loadFailed": "Échec du chargement de la commande",
+        "loadGenericFailed": "Échec du chargement"
+      }
+    },
+    "dropShippingOrderLabelList": {
+      "title": "Commandes de réétiquetage",
+      "actions": {
+        "create": "Créer une commande",
+        "openMainLabel": "Ouvrir le fichier d'étiquette principale",
+        "openBoxLabel": "Ouvrir le fichier d'étiquette carton"
+      },
+      "headers": {
+        "orderNo": "N° de commande",
+        "warehouse": "Entrepôt",
+        "name": "Nom",
+        "sku": "SKU",
+        "qty": "Pièces",
+        "fee": "Frais",
+        "status": "Statut",
+        "remark": "Remarque",
+        "adminRemark": "Remarque admin",
+        "createdAt": "Créée le",
+        "actions": "Actions"
+      },
+      "status": {
+        "notRelabeled": "Non réétiquetée",
+        "relabeled": "Réétiquetée",
+        "cancelled": "Annulée",
+        "pendingPayment": "En attente de paiement"
+      },
+      "summary": {
+        "skuQty": "Total des pièces SKU filtrées : {count}",
+        "totalFee": "Total des frais filtrés : {fee}"
+      },
+      "filters": {
+        "createdAt": "Créée le",
+        "adminRemark": "Remarque admin",
+        "adminRemarkPlaceholder": "Mot-clé de remarque admin",
+        "remark": "Remarque",
+        "remarkPlaceholder": "Mot-clé de remarque"
+      },
+      "tooltips": {
+        "detail": "Détails",
+        "edit": "Modifier"
+      },
+      "pagination": {
+        "total": "Total {total}"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement de la liste de réétiquetage",
+        "networkFailed": "Échec de la requête réseau",
+        "noFile": "Aucun fichier"
+      }
+    },
+    "dropShippingOrderLabelCreate": {
+      "eyebrow": "Dropshipping · Réétiquetage",
+      "title": {
+        "create": "Créer une commande de réétiquetage",
+        "edit": "Modifier la commande de réétiquetage"
+      },
+      "subtitle": "Renseignez l'adresse destinataire, l'entrepôt et les informations produit. Importez les fichiers d'étiquette et d'étiquette carton avant de soumettre.",
+      "loading": {
+        "detail": "Chargement des détails de la commande...",
+        "initial": "Chargement des entrepôts, pays et SKU...",
+        "default": "Chargement..."
+      },
+      "options": {
+        "relabel": "Réétiquetage",
+        "noRelabel": "Sans réétiquetage",
+        "required": "Requis",
+        "pickup": "Retrait (choisir si vous fournissez votre propre étiquette)"
+      },
+      "sections": {
+        "shipping": {
+          "title": "Transport et entrepôt",
+          "subtitle": "Type de commande et entrepôt",
+          "transport": "Mode de transport",
+          "warehouse": "Entrepôt d'expédition"
+        },
+        "product": {
+          "title": "Produit et étiquettes",
+          "subtitle": "SKU, quantité, code étiquette et fichiers",
+          "sku": "SKU",
+          "qty": "Quantité",
+          "labelCode": "Code étiquette",
+          "uploadLabel": "Importer l'étiquette",
+          "pickupRequired": "(obligatoire pour le retrait)",
+          "optional": "(facultatif)",
+          "uploadBox": "Importer l'étiquette carton"
+        },
+        "valueAdd": {
+          "title": "Services à valeur ajoutée",
+          "subtitle": "Emballage, signature et mode de transport",
+          "orderType": "Type de commande",
+          "carton": "Emballage",
+          "remark": "Remarque",
+          "optionalHint": "Facultatif"
+        },
+        "summary": {
+          "title": "Résumé de soumission",
+          "productSku": "SKU produit",
+          "qty": "Quantité"
+        }
+      },
+      "actions": {
+        "submitCreate": "Confirmer et soumettre la commande de réétiquetage",
+        "submitEdit": "Enregistrer les modifications",
+        "cancel": "Annuler"
+      },
+      "messages": {
+        "loadOrderFailed": "Échec du chargement de la commande",
+        "selectWarehouse": "Sélectionnez un entrepôt",
+        "completeProduct": "Renseignez le SKU, la quantité et le code étiquette",
+        "selectTransport": "Sélectionnez un mode de transport",
+        "uploadBoxRequired": "Importez le fichier d'étiquette carton",
+        "pickupLabelRequired": "Le retrait nécessite l'import du fichier d'étiquette d'expédition",
+        "submitSuccess": "Soumission réussie",
+        "submitFailed": "Échec de la soumission",
+        "labelUploaded": "Fichier d'étiquette importé",
+        "boxUploaded": "Fichier d'étiquette carton importé",
+        "uploadFailed": "Échec de l'import"
+      },
+      "rules": {
+        "transportRequired": "Sélectionnez un mode de transport",
+        "warehouseRequired": "Sélectionnez un entrepôt",
+        "skuRequired": "Sélectionnez ou saisissez un SKU",
+        "qtyRequired": "Saisissez la quantité",
+        "labelCodeRequired": "Saisissez le code étiquette"
+      },
+      "sku": {
+        "availableStock": "Stock disponible : {stock}"
+      }
+    },
+    "dropShippingOrderLabelDetail": {
+      "title": "Détails de la commande de réétiquetage",
+      "loading": "Chargement des détails de la commande de réétiquetage...",
+      "actions": {
+        "copyThis": "Copier cette commande",
+        "viewAttachment": "Voir la pièce jointe",
+        "viewBoxLabel": "Voir l'étiquette carton"
+      },
+      "labels": {
+        "warehouseInline": "Entrepôt :",
+        "recipientTitle": "Informations destinataire",
+        "shippingSubtitle": "Mode de transport, entrepôt et type de commande",
+        "signature": "Service de signature",
+        "labelFile": "Étiquette / étiquette d'expédition",
+        "boxLabel": "Étiquette carton",
+        "summaryTitle": "Résumé de commande"
+      },
+      "messages": {
+        "missingId": "ID commande manquant",
+        "loadFailed": "Échec du chargement de la commande de réétiquetage",
+        "loadGenericFailed": "Échec du chargement"
+      }
+    },
+    "dropShippingReturnOrderList": {
+      "title": "Liste des commandes de retour",
+      "subtitle": "Commandes de retour dropshipping. Utilisez les filtres de statut rapides sous les actions de recherche.",
+      "actions": {
+        "batchCreate": "Création par lot",
+        "create": "Créer une commande de retour"
+      },
+      "filters": {
+        "skuNamePlaceholder": "Nom du SKU"
+      },
+      "labels": {
+        "remote": "(distant)"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement des commandes de retour",
+        "networkFailed": "Échec de la requête réseau"
+      }
+    },
+    "dropShippingReturnOrderCreate": {
+      "eyebrow": "Dropshipping · Retours",
+      "title": {
+        "create": "Créer une commande de retour",
+        "edit": "Modifier la commande de retour",
+        "copy": "Copier la commande de retour"
+      },
+      "subtitle": "Soumettez une commande de retour après avoir saisi le destinataire, la ligne, l'état des articles et les produits.",
+      "loading": {
+        "detail": "Chargement des détails de la commande de retour..."
+      },
+      "quality": {
+        "good": "Bon état",
+        "bad": "Défectueux"
+      },
+      "sections": {
+        "logistics": {
+          "pickupAttachment": "Téléverser la pièce jointe (fichier principal)"
+        },
+        "order": {
+          "title": "Informations de retour",
+          "subtitle": "Référence, état, remarque et produits",
+          "quality": "État",
+          "qualityWarehouse": "État / entrepôt",
+          "productCount": "{count} produits au total. Conservez au moins 1 produit."
+        },
+        "summary": {
+          "returnWarehouse": "Entrepôt de retour",
+          "validProducts": "Produits valides",
+          "validProductsCount": "{count} articles",
+          "estimatedFee": "Frais de retour estimés"
+        }
+      },
+      "actions": {
+        "submitCreate": "Confirmer et soumettre le retour"
+      },
+      "messages": {
+        "addressSavedAndFilled": "Adresse enregistrée et renseignée dans le formulaire",
+        "invalidLoadedReference": "La référence chargée contient des caractères non valides. La valeur d'origine est conservée ; ne la modifiez pas manuellement.",
+        "loadDetailFailed": "Échec du chargement des détails de la commande de retour",
+        "productDetailsRequired": "Veuillez d'abord renseigner les produits",
+        "estimatedFee": "Frais estimés : {fee}",
+        "invalidReferenceBlocked": "La référence ne peut contenir que des lettres, chiffres et traits de soulignement. L'envoi a été bloqué.",
+        "atLeastOneProduct": "Veuillez renseigner au moins un produit valide"
+      }
+    },
+    "dropShippingReturnOrderBatch": {
+      "title": "Créer des commandes de retour par lot",
+      "subtitle": "Sélectionnez le canal d'expédition et l'entrepôt, puis téléversez Excel et éventuellement un ZIP d'étiquettes de retrait.",
+      "settings": {
+        "title": "Canal et entrepôt",
+        "subtitle": "Identique à une commande de retour unique. Ces paramètres s'appliquent aux commandes de cet Excel.",
+        "transport": "Canal d'expédition",
+        "warehouse": "Entrepôt"
+      },
+      "upload": {
+        "title": "Téléverser les fichiers",
+        "subtitle": "L'Excel de retour est requis. Les retraits peuvent aussi inclure un ZIP d'étiquettes. Seuls .xls / .xlsx et .zip sont pris en charge.",
+        "pickExcel": "Choisir l'Excel de retour",
+        "pickZip": "Choisir le ZIP d'étiquettes de retrait (facultatif)",
+        "noFile": "Aucun fichier sélectionné",
+        "templateDownload": "Télécharger le modèle :",
+        "templateName": "Modèle commandes de retour par lot.{ext}",
+        "templateNote": "Les colonnes Excel doivent suivre le modèle par lot fourni par l'exploitation."
+      },
+      "actions": {
+        "submit": "Soumettre la création de retours par lot"
+      },
+      "messages": {
+        "selectTransport": "Veuillez sélectionner un canal d'expédition",
+        "selectWarehouse": "Veuillez sélectionner un entrepôt",
+        "selectExcel": "Veuillez d'abord sélectionner un fichier Excel",
+        "invalidExcel": "Seuls les fichiers .xls / .xlsx sont pris en charge",
+        "success": "Création par lot réussie",
+        "failed": "Échec de la création par lot"
+      }
+    },
+    "dropShippingReturnOrderDetail": {
+      "title": "Détails de la commande de retour",
+      "loading": "Chargement des détails de la commande de retour...",
+      "actions": {
+        "copyOrder": "Copier la commande de retour"
+      },
+      "messages": {
+        "missingId": "ID de retour manquant",
+        "loadFailed": "Échec du chargement de la commande de retour",
+        "loadGenericFailed": "Échec du chargement"
+      }
+    },
+    "dropShippingReturnPackageList": {
+      "title": "Colis de retour",
+      "subtitle": "API /package/returnKucun, groupée par numéro de suivi.",
+      "quality": {
+        "all": "Tous les états"
+      },
+      "headers": {
+        "declared": "Déclaré",
+        "counted": "Compté",
+        "quality": "État",
+        "weightKg": "Poids (kg)"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement des colis de retour",
+        "networkFailed": "Échec de la requête réseau"
+      }
+    },
+    "dataCenterSalesAnalysis": {
+      "title": "Analyse des ventes",
+      "subtitle": "Identique à la vue ventes de la liste des commandes : synthèse du stock et des ventes par SKU / entrepôt. L'évaluation du stock est plus précise après filtrage par entrepôt.",
+      "actions": {
+        "exportExcel": "Exporter Excel"
+      },
+      "filters": {
+        "skuCode": "Code SKU",
+        "skuCodePlaceholder": "Saisir le code SKU"
+      },
+      "headers": {
+        "index": "N°",
+        "productCnName": "Nom chinois du produit",
+        "stockQty": "Stock",
+        "salesQty": "Ventes",
+        "inventoryRatio": "Ratio de stock",
+        "inventoryStatus": "Évaluation du stock"
+      },
+      "status": {
+        "normal": "Normal",
+        "low": "Stock faible",
+        "high": "Stock élevé",
+        "out": "Rupture"
+      },
+      "tooltips": {
+        "ratioLine1": "Ratio de stock = stock ÷ ventes",
+        "ratioLine2": "Période statistique : du 1er du mois dernier au 1er de ce mois",
+        "statusNormal": "Normal : 0,3 ≤ ratio ≤ 3,0",
+        "statusLow": "Stock faible : ratio inférieur à 0,3 et stock supérieur à 0",
+        "statusHigh": "Stock élevé : ratio supérieur à 3,0 ou aucune sortie",
+        "statusOut": "Rupture : stock ≤ 0 et sorties existantes",
+        "statusNote": "Remarque : lancez la requête après avoir filtré par entrepôt"
+      },
+      "messages": {
+        "exportLoadFailed": "Échec de la récupération des données d'export",
+        "exportNoData": "Aucune donnée à exporter avec les filtres actuels",
+        "exportSuccess": "{count} lignes exportées ({max} lignes maximum par export)",
+        "exportFailed": "Échec de l'export",
+        "loadFailed": "Échec du chargement des ventes",
+        "networkFailed": "Échec de la requête réseau"
+      }
+    },
+    "dataCenterInventoryData": {
+      "title": "Données de stock",
+      "subtitle": "Consultez les quantités en stock, les seuils d'alerte et les stocks par zone selon le SKU / entrepôt. Requête paginée après filtrage.",
+      "filters": {
+        "productCnName": "Nom chinois du produit",
+        "productCnNamePlaceholder": "Rechercher le nom chinois",
+        "skuPlaceholder": "SKU anglais",
+        "recordId": "ID enregistrement",
+        "recordIdPlaceholder": "ID exact"
+      },
+      "headers": {
+        "stock": "Stock",
+        "warningValue": "Seuil d'alerte",
+        "zone1": "Zone 1",
+        "zone2": "Zone 2",
+        "zone3": "Zone 3",
+        "updatedAt": "Date de mise à jour",
+        "warehouseId": "ID entrepôt",
+        "zone1Qty": "Quantité zone 1",
+        "zone2Qty": "Quantité zone 2",
+        "zone3Qty": "Quantité zone 3",
+        "imageUrl": "Lien image"
+      },
+      "tooltips": {
+        "zone1": "Quantité en stock dans la zone 1 de l'entrepôt",
+        "zone2": "Quantité en stock dans la zone 2 de l'entrepôt",
+        "zone3": "Quantité en stock dans la zone 3 de l'entrepôt"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement des données de stock",
+        "lowStock": "Sous le seuil"
+      }
+    },
+    "dataCenterReturnInventory": {
+      "title": "Stock des retours",
+      "filters": {
+        "skuPlaceholder": "Saisir le SKU"
+      },
+      "headers": {
+        "arrived31To60": "31-60 jours en entrepôt",
+        "arrived61To90": "61-90 jours en entrepôt",
+        "arrivedOver90": "Plus de 90 jours en entrepôt",
+        "storageBillingTime": "Date de facturation stockage"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement du stock des retours"
+      }
+    },
+    "accountPersonalization": {
+      "title": "Configuration automatique des canaux",
+      "subtitle": "Stratégie de sélection automatique avec repli à trois niveaux.",
+      "loading": "Chargement de la configuration...",
+      "optionalDisabled": "Non configuré (désactivé)",
+      "alert": "Quand les commandes importées utilisent la sélection automatique, le système essaie le canal principal, puis secondaire, puis de secours jusqu'à réussite.",
+      "steps": {
+        "primary": "1. Mode d'expédition principal",
+        "secondary": "2. Mode d'expédition secondaire",
+        "fallback": "3. Mode d'expédition de secours"
+      },
+      "fields": {
+        "switch": "Interrupteur de fonction (activé / désactivé)",
+        "primary": "Mode d'expédition principal",
+        "secondary": "Mode d'expédition secondaire",
+        "fallback": "Mode d'expédition de secours"
+      },
+      "status": {
+        "enabled": "Actuel : activé",
+        "disabled": "Actuel : désactivé"
+      },
+      "placeholders": {
+        "primary": "Sélectionner le mode principal (requis)",
+        "secondary": "Sélectionner le mode secondaire (facultatif)",
+        "fallback": "Sélectionner le mode de secours (facultatif)"
+      },
+      "hints": {
+        "primary": "Le système essaie d'abord ce canal.",
+        "secondary": "Si le canal principal échoue, le système réessaie avec ce canal.",
+        "fallback": "Utilisé après l'échec des deux premiers niveaux comme protection finale."
+      },
+      "actions": {
+        "save": "Enregistrer la configuration"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement de la configuration",
+        "networkFailed": "Échec de la requête réseau",
+        "primaryRequired": "Veuillez sélectionner le mode d'expédition principal",
+        "saveSuccess": "Enregistré avec succès",
+        "saveFailed": "Échec de l'enregistrement"
+      }
+    },
+    "accountAuthManagement": {
+      "developerTitle": "Informations d'intégration développeur",
+      "appKey": "App Key (identifiant d'application)",
+      "appSecret": "App Secret (secret d'application)",
+      "title": "Gestion des autorisations",
+      "subtitle": "Page erp-open migrée : autorisations ERP/plateforme, nouvelle autorisation et détails d'autorisation TEMU.",
+      "platforms": {
+        "mabang": "Mabang ERP",
+        "thirdParty": "ERP tiers (Lingxing, Saihu, etc.)",
+        "tiktok": "TikTok",
+        "temu": "TEMU"
+      },
+      "actions": {
+        "copy": "Copier",
+        "add": "Ajouter une autorisation",
+        "openLegacy": "Ouvrir l'ancien",
+        "cancel": "Annuler",
+        "authorize": "Aller à l'autorisation",
+        "copied": "Copié"
+      },
+      "headers": {
+        "platform": "Plateforme/ERP",
+        "seller": "Nom de boutique/compte",
+        "authTime": "Heure d'autorisation",
+        "status": "Statut"
+      },
+      "status": {
+        "normal": "Normal",
+        "expired": "Expiré"
+      },
+      "dialog": {
+        "addTitle": "Ajouter une autorisation",
+        "platformLabel": "Sélectionner une plateforme",
+        "platformPlaceholder": "Sélectionner la plateforme à autoriser",
+        "platformRequired": "Veuillez sélectionner une plateforme",
+        "temuTitle": "Informations d'autorisation TEMU",
+        "temuAlert": "Copiez les informations suivantes et renseignez-les sur la plateforme TEMU pour terminer l'association.",
+        "ownerId": "ID propriétaire",
+        "authCode": "Code d'autorisation",
+        "authKey": "Clé d'autorisation"
+      },
+      "messages": {
+        "copySuccess": "Copié avec succès",
+        "copyFailed": "Échec de la copie. Veuillez copier manuellement",
+        "copyUnsupported": "Ce navigateur ne prend pas en charge la copie automatique. Veuillez copier manuellement",
+        "loadFailed": "Échec du chargement de la liste",
+        "networkFailed": "Échec de la requête réseau",
+        "operationFailed": "Échec de l'opération",
+        "operationSuccess": "Opération réussie",
+        "authorizeInNewWindow": "Terminez l'autorisation dans la nouvelle fenêtre, puis actualisez la liste",
+        "requestFailed": "Échec de la requête. Veuillez vérifier le réseau"
+      },
+      "empty": "Aucune donnée d'autorisation",
+      "loading": "Chargement..."
+    },
+    "accountFundOverview": {
+      "title": "Gestion financière",
+      "accountBalance": "Solde du compte",
+      "depositUsd": "Dépôt d'étiquetage (USD)",
+      "types": {
+        "all": "Tout",
+        "income": "Revenu",
+        "expense": "Dépense"
+      },
+      "currencies": {
+        "rmb": "RMB",
+        "usd": "USD",
+        "eur": "EUR"
+      },
+      "actions": {
+        "recharge": "Recharger",
+        "export": "Exporter les détails de facture",
+        "submitRecharge": "Soumettre la demande de recharge",
+        "scanPay": "Scanner pour payer"
+      },
+      "filters": {
+        "type": "Type",
+        "keyword": "No commande / no suivi",
+        "remark": "Mot-clé de remarque",
+        "time": "Heure de transaction"
+      },
+      "placeholders": {
+        "keyword": "Saisir un mot-clé",
+        "remark": "Saisir une remarque",
+        "time": "Sélectionner une période",
+        "transferProof": "Saisir le numéro d'ordre de virement bancaire",
+        "amount": "Saisir le montant"
+      },
+      "headers": {
+        "createTime": "Heure de création",
+        "orderNo": "No commande",
+        "trackingNo": "No suivi",
+        "tradeType": "Type de transaction",
+        "incomeExpense": "Revenu/dépense",
+        "amountUsd": "Montant de transaction (USD)",
+        "amountEur": "Montant de transaction (EUR)",
+        "remark": "Remarque"
+      },
+      "recharge": {
+        "title": "Recharge du compte",
+        "tabs": {
+          "rmb": "Recharge manuelle (¥)",
+          "usd": "Recharge manuelle ($)",
+          "eur": "Recharge manuelle (€)",
+          "auto": "Recharge automatique"
+        },
+        "bank": {
+          "transferAccount": "Compte de virement : China Zheshang Bank",
+          "accountName": "Nom du compte : Pan Weiwen (PAN WEIWEN)",
+          "accountNo": "No compte : 6223095840810042306",
+          "zelle": "Compte Zelle",
+          "contactService": "Contactez le service client pour obtenir le compte",
+          "airwallex": "Compte Airwallex"
+        },
+        "fields": {
+          "currency": "Devise de recharge",
+          "amount": "Montant de recharge",
+          "arrival": "Montant reçu",
+          "proof": "Justificatif de virement",
+          "paymentMethod": "Mode de paiement",
+          "customAmount": "Autre montant",
+          "usdArrival": "Montant reçu en USD"
+        },
+        "payment": {
+          "alipay": "Alipay",
+          "wechat": "WeChat"
+        },
+        "autoAlert": "Recharge automatique jusqu'à 5000 RMB, instantanée et pratique.",
+        "payableAmount": "Montant à payer :",
+        "yuan": "RMB"
+      },
+      "wxPay": {
+        "title": "Paiement WeChat",
+        "submitted": "Soumis avec succès, en attente du paiement...",
+        "instruction": "Confirmez le montant et scannez avec WeChat pour payer la commande rapidement",
+        "qrAlt": "Code QR de paiement WeChat",
+        "noQr": "Aucune image de code QR n'a été renvoyée. Contactez le service client pour le paiement.",
+        "account": "Compte : {value}",
+        "orderNo": "No commande : {value}",
+        "amount": "Montant : {value} RMB"
+      },
+      "messages": {
+        "copied": "Copié dans le presse-papiers",
+        "copyFailed": "Échec de la copie. Veuillez copier manuellement",
+        "copyUnsupported": "La copie automatique n'est pas prise en charge dans cet environnement",
+        "loadFailed": "Échec du chargement de la liste financière",
+        "rateFailed": "Échec de récupération du taux de change",
+        "rateUpdateFailed": "Échec de mise à jour du taux de change",
+        "incompleteRecharge": "Veuillez compléter les informations de recharge",
+        "amountRequired": "Veuillez sélectionner ou saisir un montant de recharge",
+        "submitFailed": "Échec de soumission de la recharge",
+        "payPageOpened": "Page de paiement ouverte. Veuillez finaliser le paiement",
+        "submitSuccess": "Demande de recharge soumise avec succès",
+        "wxQrFailed": "Échec de récupération du code QR de paiement WeChat",
+        "wxPaid": "Paiement WeChat réussi. Solde mis à jour",
+        "exportConditionRequired": "Sélectionnez les critères d'exportation (type ou période)",
+        "exportSubmitted": "Tâche d'exportation soumise",
+        "exportFailed": "Échec de l'exportation"
+      }
+    },
+    "accountAddressManagement": {
+      "title": "Gestion des adresses",
+      "subtitle": "Basculez entre les adresses expéditeur et destinataire pour afficher le carnet correspondant.",
+      "tabs": {
+        "sender": "Adresse expéditeur",
+        "receiver": "Adresse destinataire"
+      },
+      "headers": {
+        "name": "Nom",
+        "telephone": "Téléphone",
+        "company": "Société",
+        "actions": "Actions"
+      },
+      "actions": {
+        "add": "Ajouter une adresse",
+        "edit": "Modifier"
+      },
+      "messages": {
+        "countryLoadFailed": "Échec du chargement de la liste des pays",
+        "listLoadFailed": "Échec du chargement de la liste d'adresses",
+        "networkFailed": "Échec de la requête réseau",
+        "editSuccess": "Modifié avec succès",
+        "createSuccess": "Créé avec succès",
+        "saveFailed": "Échec de l'enregistrement"
+      }
+    },
+    "accountSettings": {
+      "tabs": {
+        "account": "Informations du compte",
+        "security": "Modifier le mot de passe"
+      },
+      "account": {
+        "title": "Informations du compte",
+        "fields": {
+          "username": "Nom d'utilisateur",
+          "userCode": "Code utilisateur",
+          "realName": "Nom réel",
+          "email": "E-mail",
+          "mobile": "Mobile",
+          "loginIp": "IP de connexion"
+        },
+        "messages": {
+          "loadFailed": "Échec du chargement des informations utilisateur",
+          "networkFailed": "Échec de la requête réseau"
+        }
+      },
+      "security": {
+        "title": "Modifier le mot de passe",
+        "fields": {
+          "currentPassword": "Mot de passe actuel",
+          "newPassword": "Nouveau mot de passe",
+          "confirmPassword": "Confirmer le nouveau mot de passe"
+        },
+        "requirementsTitle": "Exigences du mot de passe",
+        "requirements": {
+          "length": "Au moins 8 caractères ; plus long est préférable",
+          "lowercase": "Doit contenir des lettres minuscules",
+          "complexity": "Doit contenir au moins un chiffre, symbole ou espace"
+        },
+        "actions": {
+          "save": "Enregistrer",
+          "clear": "Effacer"
+        },
+        "messages": {
+          "currentRequired": "Veuillez saisir le mot de passe actuel",
+          "newRequired": "Veuillez saisir le nouveau mot de passe",
+          "mismatch": "Les deux nouveaux mots de passe ne correspondent pas",
+          "tooShort": "Le nouveau mot de passe doit contenir au moins 8 caractères",
+          "updated": "Mot de passe mis à jour",
+          "failed": "Échec de la modification",
+          "requestFailed": "Échec de la requête. Veuillez confirmer que l'API de modification de mot de passe est configurée"
+        }
+      }
+    },
+    "productList": {
+      "title": "Liste des produits",
+      "batchCreate": "Création groupée",
+      "create": "Créer un produit",
+      "exportExcel": "Exporter Excel",
+      "filters": {
+        "sku": "SKU",
+        "skuPlaceholder": "Saisir le SKU",
+        "name": "Nom du produit",
+        "namePlaceholder": "Saisir le nom du produit",
+        "category": "Catégorie produit",
+        "allCategories": "Toutes les catégories"
+      },
+      "headers": {
+        "sku": "SKU",
+        "name": "Nom du produit",
+        "brand": "Marque anglaise",
+        "weight": "Poids (KG)",
+        "lwh": "L*l*H (CM)",
+        "origin": "Origine",
+        "category": "Catégorie",
+        "stock": "Stock total",
+        "image": "Image",
+        "status": "Statut",
+        "actions": "Actions",
+        "imageUrl": "Lien image"
+      },
+      "actions": {
+        "batchPrint": "Impression groupée ({count})",
+        "view": "Voir",
+        "edit": "Modifier",
+        "print": "Imprimer",
+        "delete": "Supprimer"
+      },
+      "previewTitle": "Aperçu de l'image",
+      "noImage": "Aucune image",
+      "total": "Total {total}",
+      "messages": {
+        "categoryLoadFailed": "Échec du chargement des catégories produit",
+        "listLoadFailed": "Échec du chargement de la liste produits",
+        "exportFetchFailed": "Échec de récupération des données d'export",
+        "exportNoData": "Aucune donnée à exporter avec les filtres actuels",
+        "exportSuccess": "{count} lignes exportées ({max} maximum par export)",
+        "exportFailed": "Échec de l'export",
+        "statusToggleFailed": "Échec du changement de statut",
+        "statusUpdated": "Statut mis à jour",
+        "deleteSuccess": "Suppression réussie",
+        "deleteFailed": "Échec de la suppression",
+        "printFailed": "Échec de l'impression",
+        "batchPrintEmpty": "Sélectionnez des lignes avant l'impression groupée",
+        "batchPrintFailed": "Échec de l'impression groupée",
+        "deleteConfirm": "Cette action est irréversible. Continuer ?"
+      }
+    },
+    "productCreate": {
+      "titles": {
+        "create": "Créer un produit",
+        "edit": "Modifier le produit",
+        "detail": "Détails du produit"
+      },
+      "subtitles": {
+        "create": "Renseignez les informations produit puis enregistrez pour créer",
+        "edit": "Mettez à jour les informations produit puis enregistrez",
+        "detail": "Consultez les données de base, spécifications, images et sous-SKU"
+      },
+      "overlay": "Chargement...",
+      "sections": {
+        "basic": "Informations de base",
+        "basicSubtitle": "Gérer les noms, la marque et le SKU du produit.",
+        "spec": "Spécifications",
+        "specSubtitle": "Poids, dimensions et attributs de base du produit.",
+        "attributes": "Attributs produit",
+        "attributesSubtitle": "Informations douanières et tarifaires.",
+        "images": "Images et sous-SKU",
+        "imagesSubtitle": "Importez une image principale claire. Les sous-SKU servent aux variantes.",
+        "description": "Descriptions",
+        "descriptionSubtitle": "Ajoutez des descriptions chinoises et anglaises."
+      },
+      "fields": {
+        "sku": "SKU produit",
+        "barcode": "Code-barres",
+        "cnName": "Nom chinois du produit",
+        "enName": "Nom anglais du produit",
+        "cnBrand": "Marque chinoise",
+        "enBrand": "Marque anglaise",
+        "weight": "Poids",
+        "length": "Longueur",
+        "width": "Largeur",
+        "height": "Hauteur",
+        "unit": "Unité",
+        "category": "Catégorie produit",
+        "battery": "Batterie",
+        "status": "Statut produit",
+        "hsCode": "Code HS",
+        "origin": "Origine",
+        "declaredValue": "Valeur déclarée",
+        "price1": "Prix de vente 1",
+        "price2": "Prix de vente 2",
+        "price3": "Prix de vente 3",
+        "cnDesc": "Description chinoise",
+        "enDesc": "Description anglaise"
+      },
+      "placeholders": {
+        "sku": "Saisir le SKU (lettres/chiffres)",
+        "barcode": "Saisir le code-barres",
+        "cnName": "Saisir le nom chinois",
+        "enName": "Saisir le nom anglais",
+        "cnBrand": "Saisir la marque chinoise",
+        "enBrand": "Saisir la marque anglaise",
+        "hsCode": "Saisir le code HS",
+        "origin": "Exemple : Chine",
+        "subSku": "Saisir le sous-SKU"
+      },
+      "options": {
+        "metric": "Métrique (kg/cm)",
+        "imperial": "Impérial (lb/in)",
+        "batteryNo": "Sans batterie",
+        "batteryYes": "Contient une batterie",
+        "enabled": "Activé",
+        "disabled": "Désactivé"
+      },
+      "images": {
+        "upload": "Importer",
+        "tips": "JPG/PNG/WebP, 5 Mo maximum",
+        "main": "Principale",
+        "image": "Image"
+      },
+      "actions": {
+        "addSubSku": "Ajouter un sous-SKU",
+        "save": "Enregistrer le produit",
+        "back": "Retour"
+      },
+      "subSkuLabel": "Sous-SKU {index}",
+      "categoryFallback": "Catégorie #{id}",
+      "messages": {
+        "missingId": "ID produit manquant, impossible de charger les détails",
+        "loadDetailFailed": "Échec du chargement des détails produit",
+        "uploadFailed": "Échec de l'import d'image",
+        "imageType": "Seules les images jpg/png/gif/webp sont acceptées",
+        "imageSize": "L'image ne peut pas dépasser 5 Mo",
+        "skuRequired": "{label} est obligatoire",
+        "skuInvalid": "{label} accepte uniquement lettres, chiffres, tirets et tirets bas",
+        "skuTooLong": "{label} ne peut pas dépasser {max} caractères",
+        "cnNameRequired": "Saisissez le nom chinois du produit",
+        "enNameRequired": "Saisissez le nom anglais du produit",
+        "enBrandRequired": "Saisissez la marque anglaise",
+        "sizeRequired": "Complétez le poids et les dimensions",
+        "imageRequired": "Importez au moins une image produit",
+        "saveSuccess": "Enregistré avec succès",
+        "saveFailed": "Échec de l'enregistrement"
+      }
+    },
+    "dropShippingPackageCreate": {
+      "hero": {
+        "eyebrow": "Dropshipping · Entrée stock",
+        "createTitle": "Créer une entrée stock",
+        "editTitle": "Modifier l'entrée stock",
+        "subtitle": "Renseignez l'entrepôt, la logistique et les articles pour soumettre une demande d'entrée."
+      },
+      "overlay": {
+        "detail": "Chargement des détails de l'entrée stock...",
+        "initial": "Chargement des données entrepôt, adresse et produits...",
+        "default": "Chargement..."
+      },
+      "express": {
+        "courier": "Express",
+        "truck": "Camion",
+        "sea": "Maritime",
+        "air": "Aérien"
+      },
+      "sections": {
+        "base": "Informations de base et logistiques",
+        "baseSubtitle": "Choisissez l'entrepôt, le transport et la date d'arrivée",
+        "warehouseAddress": "Adresse de réception entrepôt",
+        "sender": "Informations expéditeur",
+        "senderSubtitle": "Utilisées pour les retours et l'impression d'étiquettes",
+        "products": "Détails produits",
+        "productsSubtitle": "Renseignez les SKU et quantités à entrer",
+        "summary": "Résumé de soumission"
+      },
+      "fields": {
+        "warehouse": "Entrepôt d'entrée",
+        "express": "Mode de transport",
+        "boxes": "Cartons",
+        "reference": "Référence",
+        "eta": "Arrivée estimée",
+        "country": "Pays",
+        "sender": "Expéditeur",
+        "phone": "Téléphone",
+        "address": "Adresse détaillée",
+        "sku": "SKU / Produit",
+        "qty": "Qté",
+        "products": "Détails produits"
+      },
+      "actions": {
+        "reloadAddress": "Recharger l'adresse par défaut",
+        "addProduct": "Ajouter un produit",
+        "saveEdit": "Enregistrer les modifications",
+        "submit": "Soumettre l'entrée stock",
+        "cancel": "Annuler"
+      },
+      "skuPlaceholder": "Choisir un SKU (recherche prise en charge)",
+      "availableStock": "Stock disponible : {stock}",
+      "productCount": "{count} lignes produit. Conservez au moins 1 ligne.",
+      "summaryItems": "{count} articles",
+      "messages": {
+        "skuLoadFailed": "Échec du chargement des SKU",
+        "countryLoadFailed": "Échec du chargement des pays",
+        "invalidLoadedReference": "La référence chargée contient des caractères invalides. La valeur d'origine est conservée. Ne la modifiez pas manuellement.",
+        "loadDetailFailed": "Échec du chargement des détails",
+        "referenceInvalid": "La référence accepte uniquement lettres, chiffres et tirets bas. Envoi bloqué.",
+        "productRequired": "Renseignez au moins une ligne produit valide",
+        "saveSuccess": "Enregistré avec succès",
+        "saveFailed": "Échec de l'enregistrement",
+        "warehouseRequired": "Choisissez un entrepôt",
+        "expressRequired": "Choisissez un mode de transport",
+        "boxesRequired": "Saisissez un nombre de cartons valide",
+        "referenceRequired": "Saisissez une référence",
+        "referenceRule": "La référence accepte uniquement lettres, chiffres et tirets bas",
+        "countryRequired": "Choisissez le pays expéditeur",
+        "senderRequired": "Saisissez le nom de l'expéditeur",
+        "phoneRequired": "Saisissez le téléphone expéditeur",
+        "addressRequired": "Saisissez l'adresse expéditeur"
+      }
+    },
+    "dropShippingPackageDetail": {
+      "hero": {
+        "eyebrow": "Dropshipping · Entrée stock",
+        "title": "Détails de l'entrée stock",
+        "readonly": "Lecture seule",
+        "subtitle": "Consultez la logistique, l'adresse expéditeur et les détails produits."
+      },
+      "actions": {
+        "pdf": "PDF étiquette carton",
+        "downloadPdf": "Télécharger le PDF étiquette carton"
+      },
+      "sections": {
+        "tracking": "N° de suivi",
+        "warehouse": "Entrepôt d'entrée",
+        "createdAt": "Créé le",
+        "inboundDate": "Date d'entrée",
+        "remark": "Remarque",
+        "logisticsAddress": "Informations logistiques et adresse",
+        "logistics": "Informations logistiques",
+        "eta": "Arrivée estimée",
+        "warehouseAddress": "Adresse de réception entrepôt",
+        "sender": "Informations expéditeur",
+        "products": "Détails produits (SKUs)",
+        "summary": "Résumé d'entrée"
+      },
+      "table": {
+        "sku": "SKU",
+        "declaredQty": "Qté déclarée",
+        "actualQty": "Qté réelle",
+        "totalQty": "Quantité totale",
+        "to": "à"
+      },
+      "empty": {
+        "logisticsTime": "Aucune information de temps logistique",
+        "warehouseAddress": "Aucune adresse entrepôt disponible",
+        "products": "Aucune donnée produit"
+      },
+      "chips": {
+        "productSummary": "{kinds} types · {qty} pcs",
+        "kindCount": "{count} types",
+        "pieceCount": "{count} pcs"
+      },
+      "messages": {
+        "missingId": "ID d'entrée stock manquant",
+        "loadInboundFailed": "Échec du chargement de l'entrée stock",
+        "loadFailed": "Échec du chargement"
+      }
+    },
+    "tiktokService": {
+      "title": "Service TikTok Shop",
+      "subtitle": "Gérez les boutiques TikTok Shop, les mappings d'entrepôt et les logs de récupération des commandes",
+      "authShop": "Autoriser une boutique",
+      "usSite": "Site États-Unis (US)",
+      "ukSite": "Site Royaume-Uni (UK)",
+      "tabs": {
+        "shops": "Boutiques et entrepôts",
+        "logs": "Logs de récupération commandes"
+      },
+      "token": {
+        "expired": "Expiré",
+        "normal": "Normal",
+        "access": "Access Token : {status}",
+        "refresh": "Refresh Token : {status}",
+        "accessExpire": "Expiration Access Token : {time}",
+        "refreshExpire": "Expiration Refresh Token : {time}",
+        "updatedAt": "Dernière mise à jour : {time}"
+      },
+      "shops": {
+        "empty": "Aucune boutique TikTok Shop liée",
+        "goAuth": "Aller à la gestion des autorisations",
+        "bindWarehouse": "Lier un entrepôt",
+        "noBinding": "Aucune liaison entrepôt. Cliquez sur Lier un entrepôt en haut à droite pour ajouter.",
+        "tkWarehouse": "Entrepôt TK",
+        "wmsWarehouse": "Entrepôt WMS",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "logs": {
+        "queryByOrder": "Rechercher par commande",
+        "refresh": "Actualiser",
+        "shop": "Boutique",
+        "allShops": "Toutes les boutiques",
+        "type": "Type",
+        "description": "Affiche les tâches, détails de commandes et contrôles de stock du plus récent au plus ancien pour suivre le traitement par fetch_id.",
+        "total": "Total {total}",
+        "noData": "Aucune donnée de log",
+        "event": "Événement",
+        "logType": "Type de log",
+        "orderInfo": "Informations commande",
+        "summary": "Résumé",
+        "time": "Heure",
+        "status": "Statut : {status}",
+        "orderedAt": "Commande : {time}",
+        "updatedAt": "Mise à jour : {time}",
+        "errorCode": "Code erreur : {code}",
+        "createdAt": "Créé le",
+        "mainFetch": "Tâche principale",
+        "relatedFetch": "Tâche liée #{id}",
+        "allStatus": "Tous les statuts",
+        "fetchSummary": "{count} commandes récupérées pour {status}",
+        "itemSummary": "Les détails de commande sont journalisés. Utilisez le statut pour poursuivre l'analyse.",
+        "inventoryOk": "Contrôle de stock validé",
+        "noPackage": "Aucun colis correspondant à cette commande",
+        "errorSummary": "Une exception est survenue pendant la récupération",
+        "historyTitle": "Historique de récupération pour la commande {order}",
+        "syncStatus": "Statut de synchronisation",
+        "recordTime": "Heure d'enregistrement",
+        "noRecords": "Aucun enregistrement"
+      },
+      "selfCheck": {
+        "button": "Auto-verification commande TikTok",
+        "title": "Auto-verification commande TikTok",
+        "shopLabel": "Boutique",
+        "shopPlaceholder": "Choisissez une boutique",
+        "shopOption": "{name} (Shop ID: {shopId})",
+        "orderIdLabel": "Numero de commande TikTok",
+        "orderIdPlaceholder": "Saisir tk_order_id",
+        "run": "Lancer l'auto-verification",
+        "fetchable": "Recuperable : cette commande remplit les conditions",
+        "notFetchable": "Non recuperable : cette commande ne remplit pas encore les conditions",
+        "orderIdValue": "tk_order_id: {id}",
+        "passed": "Valide",
+        "failed": "Echec",
+        "currentStatus": "Statut actuel : {status}",
+        "expectedStatus": "Statut attendu : {status}",
+        "checkKeys": {
+          "order_exists": "Verification d'existence de commande",
+          "shipping_type_supported": "Verification du type d'expedition",
+          "status_eligible": "Verification d'eligibilite du statut",
+          "warehouse_id_present": "Verification du champ entrepot",
+          "warehouse_bound": "Verification de liaison d'entrepot",
+          "package_ready": "Verification des donnees colis",
+          "sku_valid": "Verification de validite SKU",
+          "inventory_ok": "Verification de suffisance du stock",
+          "not_processed": "Verification de non-traitement"
+        },
+        "missingTitle": "Details de stock insuffisant",
+        "sku": "SKU",
+        "required": "Requis",
+        "available": "Disponible",
+        "reason": "Raison"
+      },
+      "dialogs": {
+        "addBinding": "Ajouter une liaison entrepôt",
+        "editBinding": "Modifier la liaison entrepôt",
+        "tkWarehousePlaceholder": "Choisir un entrepôt TikTok",
+        "wmsWarehousePlaceholder": "Choisir un entrepôt WMS",
+        "confirmBind": "Confirmer la liaison",
+        "saveEdit": "Enregistrer les modifications",
+        "queryTitle": "Rechercher par numéro de commande TikTok",
+        "orderId": "Numéro de commande TikTok",
+        "orderPlaceholder": "Saisir l'ID commande TK",
+        "query": "Rechercher",
+        "close": "Fermer"
+      },
+      "options": {
+        "enabled": "Activé",
+        "disabled": "Désactivé",
+        "all": "Tout",
+        "fetch": "Tâche de récupération",
+        "fetchOption": "Tâche de récupération (fetch)",
+        "item": "Détail commande",
+        "itemOption": "Détail commande (item)",
+        "error": "Échec de récupération",
+        "errorOption": "Enregistrement d'échec (error)",
+        "noPackage": "Aucun colis",
+        "noPackageOption": "Aucun colis (no_package)",
+        "inventoryOk": "Stock OK",
+        "inventoryOkOption": "Stock OK (inventory_ok)",
+        "inventoryFail": "Stock insuffisant",
+        "inventoryFailOption": "Stock insuffisant (inventory_fail)"
+      },
+      "messages": {
+        "shopsFailed": "Échec de récupération des boutiques",
+        "bindingsFailed": "Échec de récupération des liaisons entrepôt",
+        "tkWarehousesFailed": "Échec de récupération des entrepôts TK",
+        "networkFailed": "Échec de la requête réseau",
+        "requestFailed": "Échec de la requête",
+        "bindSuccess": "Liaison réussie",
+        "updateSuccess": "Mise à jour réussie",
+        "operationFailed": "Échec de l'opération",
+        "requestError": "Erreur de requête",
+        "logsNoUser": "ID utilisateur introuvable, impossible de consulter les logs",
+        "logsFailed": "Échec de récupération des logs",
+        "queryFailed": "Échec de la recherche",
+        "selfCheckOrderRequired": "Veuillez saisir un numero de commande TikTok",
+        "selfCheckShopRequired": "Veuillez choisir une boutique",
+        "selfCheckFailed": "Auto-verification echouee, veuillez reessayer plus tard",
+        "tkWarehouseRequired": "Choisissez un entrepôt TK",
+        "wmsWarehouseRequired": "Choisissez un entrepôt WMS"
+      }
+    },
+    "printLabelCreate": {
+      "hero": {
+        "title": "Créer une expédition",
+        "subtitle": "Après avoir choisi un canal, sélectionnez les adresses expéditeur/destinataire dans le carnet d'adresses ou ajoutez/modifiez-les dans la fenêtre. Renseignez le colis et les articles pour calculer le tarif. Le mode comparaison permet de comparer plusieurs canaux."
+      },
+      "globalNotice": {
+        "insurance": "Pour protéger votre envoi et souscrire une assurance, veuillez contacter le service client."
+      },
+      "overlay": {
+        "ordering": "Création de l'étiquette..."
+      },
+      "channel": {
+        "title": "Choix du canal",
+        "subtitle": "Le canal choisi détermine la devise, les règles de déclaration et les restrictions pays.",
+        "compareMode": "Mode comparaison",
+        "compareModeAlert": "Le mode comparaison est activé : vous pouvez sélectionner plusieurs canaux.",
+        "alertTitle": "Notice du canal",
+        "defaultAlertTitle": "Notice de commande"
+      },
+      "basic": {
+        "title": "Informations de base",
+        "subtitle": "La référence et les unités sont utilisées pour le calcul du tarif et la commande.",
+        "referenceLabel": "Référence",
+        "referencePlaceholder": "Lettres, chiffres et tirets bas uniquement. 15 caractères ou plus recommandés",
+        "referenceHint": "Seuls les lettres, chiffres et tirets bas sont autorisés. Les caractères invalides sont retirés après perte de focus ou fin de composition IME.",
+        "unitLabel": "Unités poids/dimensions",
+        "unitAria": "Unités de poids et de dimensions",
+        "metricUnit": "Métrique (g / cm)",
+        "imperialUnit": "Impérial (lb / in)"
+      },
+      "address": {
+        "senderTitle": "Informations expéditeur",
+        "receiverTitle": "Informations destinataire",
+        "senderEmpty": "Sélectionnez une adresse expéditeur existante dans le carnet d'adresses ou ajoutez-en une dans la fenêtre. Une fois confirmée, elle est en lecture seule ici. Utilisez Modifier ou choisissez une autre adresse pour la changer.",
+        "senderBeianOnly": "Les canaux selectionnes incluent un canal qui exige une adresse expediteur enregistree. Veuillez choisir une adresse enregistree depuis le carnet d'adresses. L'ajout ou la modification manuelle n'est pas autorise.",
+        "receiverEmpty": "Sélectionnez une adresse destinataire existante dans le carnet d'adresses ou ajoutez-en une dans la fenêtre. Une fois confirmée, elle est en lecture seule ici. Utilisez Modifier ou choisissez une autre adresse pour la changer.",
+        "senderCountryLock": "Ce canal limite le pays expéditeur à : {country}",
+        "receiverCountryLock": "Ce canal limite le pays destinataire à : {country}",
+        "fields": {
+          "name": "Nom :",
+          "address1": "Adresse ligne 1 :",
+          "address2": "Adresse ligne 2 :",
+          "street": "Rue :",
+          "city": "Ville :",
+          "province": "État/Province :",
+          "postCode": "Code postal :",
+          "country": "Pays/Région :",
+          "telephone": "Téléphone :",
+          "company": "Société :"
+        }
+      },
+      "package": {
+        "title": "Informations colis",
+        "subtitle": "Saisissez le poids réel et les dimensions extérieures pour la facturation et le contrôle volumétrique.",
+        "weight": "Poids ({unit})",
+        "length": "Longueur ({unit})",
+        "width": "Largeur ({unit})",
+        "height": "Hauteur ({unit})"
+      },
+      "rate": {
+        "title": "Résultat tarifaire",
+        "subtitle": "Calculez après avoir rempli le formulaire. Le mode comparaison affiche les devis de plusieurs canaux du moins cher au plus cher.",
+        "emptyCompare": "Remplissez le formulaire puis cliquez sur Calculer le tarif pour voir les résultats multi-canaux",
+        "emptySingle": "Remplissez le formulaire puis cliquez sur Calculer le tarif pour voir le devis",
+        "loading": "Recherche des tarifs, veuillez patienter...",
+        "quoteReturned": "Un devis a été retourné. Confirmez les frais ci-dessous ou sélectionnez une route.",
+        "chooseRoute": "Sélectionnez une route avant de commander",
+        "noRoutes": "Aucune route sélectionnable n'a été retournée pour ce devis",
+        "unnamedRoute": "Route sans nom",
+        "compareSummary": "{count} devis de canaux retournés, triés du moins cher au plus cher",
+        "resultChip": "Résultat du calcul",
+        "bestDeal": "Meilleur prix",
+        "noQuote": "Aucun devis retourné",
+        "routeCount": "{count} routes sélectionnables",
+        "standardQuote": "Devis route standard",
+        "standardRoute": "Route standard"
+      },
+      "dialogs": {
+        "senderAddressTitle": "Choisir l'adresse expéditeur",
+        "receiverAddressTitle": "Choisir l'adresse destinataire",
+        "addressBookSubtitle": "Filtrez par nom côté serveur. Cliquez sur Sélectionner ou double-cliquez une ligne pour remplir le formulaire."
+      },
+      "submit": {
+        "now": "Commander maintenant"
+      },
+      "messages": {
+        "referenceRequired": "Saisissez une référence",
+        "referenceInvalidSubmit": "La référence accepte uniquement lettres, chiffres et tirets bas. Envoi bloqué.",
+        "referenceInvalid": "La référence accepte uniquement lettres, chiffres et tirets bas",
+        "rateTitleFallback": "Résultat tarifaire",
+        "keepCompareChannel": "Conservez au moins un canal en mode comparaison",
+        "selectChannel": "Sélectionnez un canal",
+        "senderRequired": "Complétez les informations expéditeur obligatoires : nom, adresse ligne 1, ville, état/province, code postal et téléphone",
+        "receiverRequired": "Complétez les informations destinataire obligatoires : nom, adresse ligne 1, ville, état/province, code postal et téléphone",
+        "addressMustBeLocked": "Confirmez les adresses expéditeur et destinataire via le carnet d'adresses ou l'ajout d'adresse avant de calculer ou commander",
+        "senderBeianRequired": "Les canaux selectionnes incluent un canal qui exige une adresse expediteur enregistree. Veuillez d'abord choisir une adresse enregistree depuis le carnet d'adresses.",
+        "senderBeianAddressOnly": "Les canaux selectionnes incluent un canal qui exige une adresse expediteur enregistree. L'adresse expediteur ne peut etre choisie que depuis le carnet d'adresses.",
+        "senderAddressResetForChannelChange": "Les exigences du canal ont change. L'ancienne adresse expediteur a ete effacee. Veuillez choisir une adresse conforme aux nouvelles exigences.",
+        "packageRequired": "Saisissez le poids et les dimensions du colis : longueur, largeur et hauteur",
+        "productRequired": "Ajoutez au moins un article",
+        "productLine": "Ligne article {line}",
+        "productSkuRequired": "{line} : saisissez le SKU",
+        "productEnNameRequired": "{line} : saisissez le nom anglais",
+        "productCnNameRequired": "{line} : saisissez le nom chinois",
+        "productQtyPositive": "{line} : la quantité doit être supérieure à 0",
+        "productWeightPositive": "{line} : le poids doit être supérieur à 0",
+        "productValueRequired": "{line} : saisissez une valeur déclarée valide",
+        "selectRateChannel": "Sélectionnez au moins un canal pour le calcul tarifaire",
+        "rateFailed": "Échec du calcul tarifaire. Vérifiez le formulaire et réessayez.",
+        "compareNoData": "La demande de comparaison a réussi, mais aucun devis affichable n'a été retourné",
+        "compareSuccess": "Tarifs comparatifs récupérés",
+        "routeMissingAfterRate": "Ce canal nécessite une route, mais aucune route sélectionnable n'a été retournée. Vérifiez l'adresse et le colis.",
+        "rateSuccess": "Tarif récupéré",
+        "networkRetry": "Échec de la requête réseau. Veuillez réessayer.",
+        "addressListFailed": "Échec du chargement de la liste d'adresses",
+        "networkFailed": "Échec de la requête réseau",
+        "addressFilled": "Adresse renseignée",
+        "requiredField": "Obligatoire",
+        "saveFailed": "Échec de l'enregistrement",
+        "saveSuccess": "Enregistré avec succès",
+        "keepOneProduct": "Conservez au moins une ligne article",
+        "providerInvalid": "Configuration du canal invalide, commande impossible",
+        "orderSuccess": "Commande créée. La génération de l'étiquette est en cours. Consultez la liste des commandes.",
+        "unauthorized": "Connexion expirée. Veuillez vous reconnecter.",
+        "orderFailed": "Échec de la commande",
+        "compareModeSubmitBlocked": "Le mode comparaison sert uniquement au calcul. Désactivez-le et choisissez un seul canal pour commander.",
+        "rateBeforeOrder": "Calculez le tarif et sélectionnez une route avant de commander avec ce canal",
+        "noRouteForOrder": "Ce canal n'a retourné aucune route sélectionnable et ne peut pas être commandé maintenant",
+        "selectRouteBeforeOrder": "Sélectionnez une route avant d'envoyer la commande",
+        "compareOrderConfirm": "Confirmer la commande via le canal « {channel} » ?\nRoute : {route} · Frais : {fee} {currency}",
+        "submitConfirm": "Confirmer la commande via le canal « {channel} » (QID : {qid}) ?{route}",
+        "selectedRoute": "\nRoute sélectionnée : {route} / {fee} {currency}"
+      }
     }
   },
   "$vuetify": {
@@ -104,6 +2307,7 @@
       "clear": "dégager",
       "appendAction": "ajouter une action",
       "prependAction": "préfixer l'action",
+      "counterSize": "Taille du compteur",
       "otp": "otp"
     },
     "fileInput": {

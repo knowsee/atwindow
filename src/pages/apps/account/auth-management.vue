@@ -18,13 +18,14 @@ const authResult = ref(null)
 const formRef = ref()
 const snack = ref({ show: false, text: '', color: 'info' })
 const form = ref({ erpId: null })
+const { t } = useI18n({ useScope: 'global' })
 
-const platformOptions = [
-  { title: '马帮ERP', value: 1 },
-  { title: '第三方ERP (领星、赛狐等)', value: 3 },
-  { title: 'TikTok', value: 2 },
-  { title: 'TEMU', value: 5 },
-]
+const platformOptions = computed(() => [
+  { title: t('pages.accountAuthManagement.platforms.mabang'), value: 1 },
+  { title: t('pages.accountAuthManagement.platforms.thirdParty'), value: 3 },
+  { title: t('pages.accountAuthManagement.platforms.tiktok'), value: 2 },
+  { title: t('pages.accountAuthManagement.platforms.temu'), value: 5 },
+])
 
 const oldErpOpenUrl = computed(() => {
   const raw = import.meta.env.VITE_OLD_ERP_OPEN_URL
@@ -50,7 +51,7 @@ function getStatusChipColor(isExpire) {
 }
 
 function getStatusText(isExpire) {
-  return Number(isExpire) === 0 ? '正常' : '已过期'
+  return Number(isExpire) === 0 ? t('pages.accountAuthManagement.status.normal') : t('pages.accountAuthManagement.status.expired')
 }
 
 async function copyText(text) {
@@ -64,7 +65,7 @@ async function copyText(text) {
     else
       throw new Error('clipboard-unavailable')
 
-    toast('复制成功', 'success')
+    toast(t('pages.accountAuthManagement.messages.copySuccess'), 'success')
   }
   catch {
     try {
@@ -78,10 +79,10 @@ async function copyText(text) {
       const copied = document.execCommand('copy')
 
       document.body.removeChild(input)
-      toast(copied ? '复制成功' : '复制失败，请手动复制', copied ? 'success' : 'error')
+      toast(copied ? t('pages.accountAuthManagement.messages.copySuccess') : t('pages.accountAuthManagement.messages.copyFailed'), copied ? 'success' : 'error')
     }
     catch {
-      toast('当前浏览器不支持自动复制，请手动复制', 'error')
+      toast(t('pages.accountAuthManagement.messages.copyUnsupported'), 'error')
     }
   }
 }
@@ -110,11 +111,11 @@ async function loadList() {
       }
     }
     else {
-      toast(res?.msg || '获取列表失败', 'error')
+      toast(res?.msg || t('pages.accountAuthManagement.messages.loadFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountAuthManagement.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -136,7 +137,7 @@ async function submitAuth() {
     })
 
     if (Number(res?.code) !== 1) {
-      toast(res?.msg || '操作失败', 'error')
+      toast(res?.msg || t('pages.accountAuthManagement.messages.operationFailed'), 'error')
 
       return
     }
@@ -152,15 +153,15 @@ async function submitAuth() {
     const authUrl = res?.data?.url
     if (authUrl) {
       window.open(authUrl, '_blank', 'noopener')
-      toast('请在新窗口中完成授权，完成后请刷新列表', 'warning')
+      toast(t('pages.accountAuthManagement.messages.authorizeInNewWindow'), 'warning')
     }
     else {
-      toast(res?.msg || '操作成功', 'success')
+      toast(res?.msg || t('pages.accountAuthManagement.messages.operationSuccess'), 'success')
       await loadList()
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '请求出错，请检查网络', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountAuthManagement.messages.requestFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -190,7 +191,7 @@ onMounted(loadList)
     >
       <VCardItem class="pb-3 pt-5 px-6">
         <template #title>
-          <span class="text-h6 font-weight-medium">开发者对接信息</span>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.accountAuthManagement.developerTitle') }}</span>
         </template>
       </VCardItem>
       <VDivider />
@@ -201,7 +202,7 @@ onMounted(loadList)
             md="6"
           >
             <div class="text-caption text-medium-emphasis mb-2">
-              App Key (应用标识)
+              {{ $t('pages.accountAuthManagement.appKey') }}
             </div>
             <VSheet
               border
@@ -215,7 +216,7 @@ onMounted(loadList)
                 prepend-icon="tabler-copy"
                 @click="copyText(authInfo.app_key)"
               >
-                复制
+                {{ $t('pages.accountAuthManagement.actions.copy') }}
               </VBtn>
             </VSheet>
           </VCol>
@@ -224,7 +225,7 @@ onMounted(loadList)
             md="6"
           >
             <div class="text-caption text-medium-emphasis mb-2">
-              App Secret (应用密钥)
+              {{ $t('pages.accountAuthManagement.appSecret') }}
             </div>
             <VSheet
               border
@@ -238,7 +239,7 @@ onMounted(loadList)
                 prepend-icon="tabler-copy"
                 @click="copyText(authInfo.app_secret)"
               >
-                复制
+                {{ $t('pages.accountAuthManagement.actions.copy') }}
               </VBtn>
             </VSheet>
           </VCol>
@@ -249,10 +250,10 @@ onMounted(loadList)
     <VCard class="rounded-lg">
       <VCardItem class="pb-3 pt-5 px-6">
         <template #title>
-          <span class="text-h5 font-weight-medium">授权管理</span>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.accountAuthManagement.title') }}</span>
         </template>
         <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">旧版 `erp-open` 页面迁移：ERP/平台授权列表、新增授权及 TEMU 授权信息展示。</span>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.accountAuthManagement.subtitle') }}</span>
         </template>
         <template #append>
           <div class="d-flex gap-2 flex-wrap justify-end">
@@ -262,7 +263,7 @@ onMounted(loadList)
               prepend-icon="tabler-plus"
               @click="dialogVisible = true"
             >
-              新增授权
+              {{ $t('pages.accountAuthManagement.actions.add') }}
             </VBtn>
             <VBtn
               v-if="oldErpOpenUrl"
@@ -271,7 +272,7 @@ onMounted(loadList)
               prepend-icon="tabler-external-link"
               @click="openLegacyErpAuth"
             >
-              打开旧版
+              {{ $t('pages.accountAuthManagement.actions.openLegacy') }}
             </VBtn>
           </div>
         </template>
@@ -285,16 +286,16 @@ onMounted(loadList)
           <thead>
             <tr>
               <th class="text-left">
-                平台/ERP
+                {{ $t('pages.accountAuthManagement.headers.platform') }}
               </th>
               <th class="text-left">
-                店铺/账号名称
+                {{ $t('pages.accountAuthManagement.headers.seller') }}
               </th>
               <th class="text-left">
-                授权时间
+                {{ $t('pages.accountAuthManagement.headers.authTime') }}
               </th>
               <th class="text-center">
-                状态
+                {{ $t('pages.accountAuthManagement.headers.status') }}
               </th>
             </tr>
           </thead>
@@ -304,7 +305,7 @@ onMounted(loadList)
                 colspan="4"
                 class="text-center py-6"
               >
-                正在加载...
+                {{ $t('pages.accountAuthManagement.loading') }}
               </td>
             </tr>
             <tr
@@ -332,7 +333,7 @@ onMounted(loadList)
                 colspan="4"
                 class="text-center text-medium-emphasis py-8"
               >
-                暂无授权数据
+                {{ $t('pages.accountAuthManagement.empty') }}
               </td>
             </tr>
           </tbody>
@@ -346,18 +347,18 @@ onMounted(loadList)
       @after-leave="resetForm"
     >
       <VCard>
-        <VCardItem title="新增授权" />
+        <VCardItem :title="$t('pages.accountAuthManagement.dialog.addTitle')" />
         <VDivider />
         <VCardText class="pt-5">
           <VForm ref="formRef">
             <AppSelect
               v-model="form.erpId"
-              label="选择平台"
-              placeholder="请选择需要授权的平台"
+              :label="$t('pages.accountAuthManagement.dialog.platformLabel')"
+              :placeholder="$t('pages.accountAuthManagement.dialog.platformPlaceholder')"
               :items="platformOptions"
               item-title="title"
               item-value="value"
-              :rules="[v => !!v || '请选择平台']"
+              :rules="[v => !!v || $t('pages.accountAuthManagement.dialog.platformRequired')]"
             />
           </VForm>
         </VCardText>
@@ -367,14 +368,14 @@ onMounted(loadList)
             variant="text"
             @click="dialogVisible = false"
           >
-            取消
+            {{ $t('pages.accountAuthManagement.actions.cancel') }}
           </VBtn>
           <VBtn
             color="primary"
             :loading="submitting"
             @click="submitAuth"
           >
-            前往授权
+            {{ $t('pages.accountAuthManagement.actions.authorize') }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -385,7 +386,7 @@ onMounted(loadList)
       width="500"
     >
       <VCard>
-        <VCardItem title="TEMU 授权信息" />
+        <VCardItem :title="$t('pages.accountAuthManagement.dialog.temuTitle')" />
         <VDivider />
         <VCardText class="pt-5">
           <VAlert
@@ -393,7 +394,7 @@ onMounted(loadList)
             variant="tonal"
             class="mb-4"
           >
-            请复制以下信息并填写到 TEMU 平台完成绑定。
+            {{ $t('pages.accountAuthManagement.dialog.temuAlert') }}
           </VAlert>
 
           <VList
@@ -403,7 +404,7 @@ onMounted(loadList)
           >
             <VListItem>
               <VListItemTitle class="text-caption text-medium-emphasis mb-1">
-                货主 ID
+                {{ $t('pages.accountAuthManagement.dialog.ownerId') }}
               </VListItemTitle>
               <VListItemSubtitle class="auth-code">
                 {{ authResult?.user_code || '-' }}
@@ -411,7 +412,7 @@ onMounted(loadList)
             </VListItem>
             <VListItem>
               <VListItemTitle class="text-caption text-medium-emphasis mb-1">
-                授权码
+                {{ $t('pages.accountAuthManagement.dialog.authCode') }}
               </VListItemTitle>
               <VListItemSubtitle class="auth-code">
                 {{ authResult?.app_secret || '-' }}
@@ -419,7 +420,7 @@ onMounted(loadList)
             </VListItem>
             <VListItem>
               <VListItemTitle class="text-caption text-medium-emphasis mb-1">
-                授权 KEY
+                {{ $t('pages.accountAuthManagement.dialog.authKey') }}
               </VListItemTitle>
               <VListItemSubtitle class="auth-code">
                 {{ authResult?.app_key || '-' }}
@@ -433,7 +434,7 @@ onMounted(loadList)
             color="primary"
             @click="resultVisible = false"
           >
-            我已复制
+            {{ $t('pages.accountAuthManagement.actions.copied') }}
           </VBtn>
         </VCardActions>
       </VCard>

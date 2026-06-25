@@ -1,5 +1,6 @@
 <script setup>
 import { $api } from '@/utils/api'
+import { DOWNLOAD_TEMPLATES } from '@/utils/constants'
 import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
 
 definePage({
@@ -10,6 +11,7 @@ definePage({
 })
 
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 const fileInputRef = ref()
 const selectedFile = ref(null)
 const submitting = ref(false)
@@ -35,16 +37,21 @@ function onFileChange(event) {
 
 const ALLOWED_EXT = ['xls', 'xlsx', 'csv']
 
+const templateFiles = computed(() => DOWNLOAD_TEMPLATES.SHIPPING_BATCH.files.map(file => ({
+  ...file,
+  displayName: file.ext === 'xlsx' ? t('pages.printLabelBatchUpload.upload.templateName') : file.name,
+})))
+
 async function submitUpload() {
   if (!selectedFile.value) {
-    toast('请先选择文件', 'warning')
+    toast(t('pages.printLabelBatchUpload.messages.fileRequired'), 'warning')
 
     return
   }
 
   const ext = selectedFile.value.name.split('.').pop()?.toLowerCase()
   if (!ALLOWED_EXT.includes(ext || '')) {
-    toast('仅支持 .xls / .xlsx / .csv 文件', 'warning')
+    toast(t('pages.printLabelBatchUpload.messages.fileTypeInvalid'), 'warning')
 
     return
   }
@@ -68,16 +75,16 @@ async function submitUpload() {
       const sn = res?.data?.batch_sn
       const id = res?.data?.batch_id
 
-      toast(sn ? `已创建批次 ${sn}（ID ${id}），后台解析中` : (res?.msg || '批量上传提交成功'), 'success')
+      toast(sn ? t('pages.printLabelBatchUpload.messages.batchCreated', { sn, id }) : (res?.msg || t('pages.printLabelBatchUpload.messages.uploadSuccess')), 'success')
       setTimeout(() => goShippingList(), 700)
 
       return
     }
 
-    toast(res?.msg || '批量上传失败', 'error')
+    toast(res?.msg || t('pages.printLabelBatchUpload.messages.uploadFailed'), 'error')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '批量上传失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.printLabelBatchUpload.messages.uploadFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -93,10 +100,10 @@ async function submitUpload() {
     <div class="print-label-batch__inner pb-12">
       <div class="print-label-batch__hero mb-6">
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          批量出单
+          {{ $t('pages.printLabelBatchUpload.hero.title') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-          上传 .xls / .xlsx / .csv 后批量导入，系统将异步创建 Shipping 批次。
+          {{ $t('pages.printLabelBatchUpload.hero.subtitle') }}
         </p>
       </div>
 
@@ -110,8 +117,8 @@ async function submitUpload() {
       </VSnackbar>
 
       <PrintLabelSectionCard
-        title="上传文件"
-        subtitle="支持 .xls / .xlsx / .csv，建议先下载模板填写；提交后在「订单列表 → 批量出单状态」查看进度与面单。"
+        :title="$t('pages.printLabelBatchUpload.upload.title')"
+        :subtitle="$t('pages.printLabelBatchUpload.upload.subtitle')"
       >
         <template #append>
           <VBtn
@@ -120,7 +127,7 @@ async function submitUpload() {
             class="text-none"
             @click="goShippingList"
           >
-            返回订单列表
+            {{ $t('pages.printLabelBatchUpload.actions.backToOrders') }}
           </VBtn>
         </template>
 
@@ -145,7 +152,7 @@ async function submitUpload() {
               class="text-primary mb-2"
             />
             <div class="text-subtitle-2">
-              点击选择文件（.xls / .xlsx / .csv）
+              {{ $t('pages.printLabelBatchUpload.upload.choose') }}
             </div>
             <div
               v-if="selectedFile"
@@ -157,28 +164,22 @@ async function submitUpload() {
               v-else
               class="text-caption text-medium-emphasis mt-2"
             >
-              未选择文件
+              {{ $t('pages.printLabelBatchUpload.upload.empty') }}
             </div>
           </div>
         </VSheet>
 
         <div class="mt-3 text-body-2 d-flex flex-wrap align-center gap-x-4 gap-y-1">
-          <span>模板下载：</span>
+          <span>{{ $t('pages.printLabelBatchUpload.upload.templateDownload') }}</span>
           <a
-            href="/download/批量出单模板.xlsx"
+            v-for="file in templateFiles"
+            :key="file.path"
+            :href="file.path"
             class="text-primary"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferrer"
           >
-            批量出单模板.xlsx
-          </a>
-          <a
-            href="/download/批量出单模板.csv"
-            class="text-primary"
-            target="_blank"
-            rel="noopener"
-          >
-            批量出单模板.csv
+            {{ file.displayName }}
           </a>
         </div>
       </PrintLabelSectionCard>
@@ -195,7 +196,7 @@ async function submitUpload() {
             prepend-icon="tabler-upload"
             @click="submitUpload"
           >
-            提交导入
+            {{ $t('pages.printLabelBatchUpload.actions.submitImport') }}
           </VBtn>
         </VCardText>
       </VCard>
@@ -211,7 +212,6 @@ async function submitUpload() {
 .print-label-batch__inner {
   max-inline-size: 1440px;
   margin-inline: auto;
-  padding: 1.5rem;
 }
 
 .print-label-batch-upload {

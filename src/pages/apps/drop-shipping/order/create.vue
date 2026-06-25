@@ -1,8 +1,11 @@
 <script setup>
+import AddressBookPickerDialog from '@/components/address/AddressBookPickerDialog.vue'
+import AddressFormDialog from '@/components/address/AddressFormDialog.vue'
+import FormPageLoadingOverlay from '@/components/FormPageLoadingOverlay.vue'
 import { $api, $apiJson } from '@/utils/api'
 import { getPreferredWarehouseId, resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
-import { loadCountryOptions, loadWarehouseOptions } from '@/views/apps/drop-shipping/useDropShippingShared'
-import FormPageLoadingOverlay from '@/components/FormPageLoadingOverlay.vue'
+import { loadCartonOptions, loadCountryOptions, loadWarehouseOptions } from '@/views/apps/drop-shipping/useDropShippingShared'
+import { DROP_SHIPPING_CHANNELS } from '@/views/apps/print-label/printLabelConfig'
 import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
 
 definePage({
@@ -16,15 +19,16 @@ const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
 
-/** 创建页：等待仓库/国家/SKU 等首屏接口 */
+/** Wait for first-screen warehouse, country, and SKU requests. */
 const initialLoading = ref(true)
 const submitting = ref(false)
 const estimating = ref(false)
+const estimatedFeeLabel = ref(null)
 const snack = ref({ show: false, text: '', color: 'info' })
 const formRef = ref()
+const { t } = useI18n({ useScope: 'global' })
 
 const mode = computed(() => String(route.query.mode || 'create'))
-const isDetail = computed(() => mode.value === 'detail')
 const isCopy = computed(() => mode.value === 'copy')
 const sourceId = computed(() => Number(route.query.id || 0) || null)
 const editingId = computed(() => (mode.value === 'edit' ? sourceId.value : null))
@@ -35,72 +39,45 @@ const countryOptions = ref([])
 const skuOptions = ref([])
 const addrDialog = ref(false)
 const addrLoading = ref(false)
-const addrRows = ref([])
+const addrList = ref([])
 const addrTotal = ref(0)
-const addrPage = ref(1)
+const addrCurrentPage = ref(1)
 const addrPageSize = ref(10)
+const addrPageCount = computed(() => Math.max(1, Math.ceil(addrTotal.value / addrPageSize.value)))
 const addrSearchName = ref('')
+
+const addrFormDialog = ref(false)
+const addrFormSubmitting = ref(false)
+
+const addrFormData = ref({
+  name: '', address: '', address2: '', streetno: '', city: '', province: '',
+  postcode: '', country: '', telephone: '', company: '', email: '',
+})
 
 const pageBlocking = computed(() => loading.value || initialLoading.value)
 
 const pageOverlayMessage = computed(() => {
   if (loading.value)
-    return '正在读取订单详情...'
+    return t('pages.dropShippingOrderCreate.loading.detail')
 
   if (initialLoading.value)
-    return '正在加载仓库、国家与货品数据...'
+    return t('pages.dropShippingOrderCreate.loading.initial')
 
-  return '正在加载...'
+  return t('pages.dropShippingOrderCreate.loading.default')
 })
 
-const pageTitle = computed(() => {
-  if (isDetail.value && sourceId.value) {
-    const refText = String(form.value.cankaohao || '').trim()
+const cartonOptions = ref([{ title: t('common.options.notRequired'), value: 0, price: 0 }])
 
-    return `正在查看 【${refText || '—'}】`
-  }
-  if (editingId.value)
-    return '编辑订单'
-  if (isCopy.value)
-    return '复制订单'
+const transportTitleKeys = {
+  99999: 'pages.dropShippingOrderCreate.transport.autoTrial',
+  200: 'pages.dropShippingOrderCreate.transport.pickup',
+  27: 'pages.dropShippingOrderCreate.transport.uspsT5',
+}
 
-  return '创建订单'
-})
-
-const pageSubtitle = computed(() => {
-  if (isDetail.value)
-    return '以下为只读信息，不可修改。'
-
-  return '填写收件信息、线路与货品明细后提交订单。'
-})
-
-const transportOptions = [
-  { title: '自动渠道选择（试运行）', value: 99999 },
-  { title: '自提', value: 200 },
-  { title: 'USPS（T5）', value: 27 },
-  { title: 'SPEEDX', value: 53 },
-  { title: 'Amazon', value: 56 },
-  { title: 'UPS Ground（限重1-150磅，2-6个工作日签收）', value: 50 },
-  { title: 'Fedex（限重1-150磅，2-6个工作日签收）', value: 59 },
-  { title: 'Gofo', value: 210 },
-  { title: 'UNI（重量≤13.5kg，最小尺寸:10*15cm，单边不得超过50cm，三边之和不得超过120cm）', value: 211 },
-  { title: 'NEXTDAY（限重50磅）', value: 213 },
-  { title: 'USPS-Y（限重5磅）', value: 214 },
-]
-
-const cartonOptions = [
-  { title: '不需要', value: 0 },
-  { title: '纸箱 - (15(in) * 15(in) * 24(in)) = 4$', value: 12 },
-  { title: '纸箱 - (16(in) * 18(in) * 12(in)) = 4$', value: 19 },
-  { title: '纸箱 - (16(in) * 12(in) * 6(in)) = 1.5$', value: 27 },
-  { title: '纸箱 - (22(in) * 18(in) * 12(in)) = 5$', value: 20 },
-  { title: '纸箱 - (24(in) * 18(in) * 12(in)) = 5$', value: 21 },
-  { title: '气泡袋 - (28(cm) * 22(cm)) = 0.6$', value: 22 },
-  { title: '气泡袋 - (23(cm) * 13(cm)) = 0.5$', value: 23 },
-  { title: '快递袋 - (61(cm) * 61(cm)) = 0.6$', value: 24 },
-  { title: '快递袋 - (34(cm) * 26(cm)) = 0.5$', value: 25 },
-  { title: '快递袋 - (23(cm) * 16(cm)) = 0.4$', value: 26 },
-]
+const transportOptions = computed(() => DROP_SHIPPING_CHANNELS.map(item => ({
+  ...item,
+  title: transportTitleKeys[item.value] ? t(transportTitleKeys[item.value]) : item.title,
+})))
 
 const form = ref({
   cankaohao: '',
@@ -125,6 +102,32 @@ const form = ref({
 
 const isSelfPickup = computed(() => Number(form.value.transportType) === 200)
 
+const currentWarehouseName = computed(() =>
+  warehouseOptions.value.find(w => Number(w.value) === Number(form.value.warehouseId))?.title || '—',
+)
+
+const currentTransportName = computed(() =>
+  transportOptions.value.find(item => Number(item.value) === Number(form.value.transportType))?.title || '—',
+)
+
+const currentCartonName = computed(() =>
+  cartonOptions.value.find(c => Number(c.value) === Number(form.value.cartonType))?.title || t('common.options.notRequired'),
+)
+
+const currentCartonPrice = computed(() =>
+  cartonOptions.value.find(c => Number(c.value) === Number(form.value.cartonType))?.price ?? 0,
+)
+
+const validProductCount = computed(() =>
+  form.value.products.filter(r => String(r.enSku || r.id || '').trim() && Number(r.goodsNum) > 0).length,
+)
+
+function isValidCankaohao(v) {
+  const s = String(v || '').trim()
+  
+  return !!s && /^\w+$/.test(s)
+}
+
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
 }
@@ -143,16 +146,21 @@ function removeProduct(index) {
   form.value.products.splice(index, 1)
 }
 
-async function loadSkuOptions() {
-  const res = await $api('/package/getSku', { method: 'POST', body: {} })
+async function loadSkuOptions(wId = form.value.warehouseId) {
+  const reqBody = {}
+  if (wId) {
+    reqBody['warehouse_id'] = wId
+  }
+  const res = await $api('/package/getSku', { method: 'POST', body: reqBody })
   if (Number(res?.code) !== 1 || !Array.isArray(res?.data))
     return []
 
   return res.data.map(item => ({
-    title: `${item.en_sku || ''} ${item.cn_name ? `(${item.cn_name})` : ''}`.trim(),
+    title: `${item.en_sku || ''} ${item.cn_name ? `(${item.cn_name})` : ''} (${t('pages.dropShippingOrderCreate.sku.availableStock', { stock: item.available_stock || 0 })})`.trim(),
     value: item.en_sku,
     enSku: item.en_sku || '',
     cnName: item.cn_name || '',
+    availableStock: item.available_stock || 0,
   })).filter(item => item.value)
 }
 
@@ -178,16 +186,62 @@ function syncSkuMeta(row) {
 
 function openAddrDialog() {
   addrDialog.value = true
-  addrPage.value = 1
-  loadAddrPage()
+  addrCurrentPage.value = 1
+  loadAddrList()
 }
 
-async function loadAddrPage() {
+function closeAddrDialog() {
+  addrDialog.value = false
+}
+
+function openAddrFormDialog() {
+  addrFormData.value = {
+    name: '', address: '', address2: '', streetno: '', city: '', province: '',
+    postcode: '', country: '', telephone: '', company: '', email: '',
+  }
+  addrFormDialog.value = true
+}
+
+async function saveNewAddress() {
+  addrFormSubmitting.value = true
+  try {
+    const res = await $api('/order/addAddr', {
+      method: 'POST',
+      body: { type: 2, ...addrFormData.value },
+    })
+
+    if (Number(res?.code) === 1) {
+      toast(t('pages.dropShippingOrderCreate.messages.addressSaved'), 'success')
+      addrFormDialog.value = false
+
+      form.value.receiver.id = String(res?.data?.receive_addr_id || '')
+      form.value.receiver.name = addrFormData.value.name || ''
+      form.value.receiver.telephone = addrFormData.value.telephone || ''
+      form.value.receiver.country = addrFormData.value.country || ''
+      form.value.receiver.province = addrFormData.value.province || ''
+      form.value.receiver.city = addrFormData.value.city || ''
+      form.value.receiver.address = addrFormData.value.address || ''
+      form.value.receiver.address2 = addrFormData.value.address2 || ''
+      form.value.receiver.postcode = addrFormData.value.postcode || ''
+    }
+    else {
+      toast(res?.msg || t('pages.dropShippingOrderCreate.messages.saveFailed'), 'error')
+    }
+  }
+  catch (e) {
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderCreate.messages.saveFailed'), 'error')
+  }
+  finally {
+    addrFormSubmitting.value = false
+  }
+}
+
+async function loadAddrList() {
   addrLoading.value = true
   try {
     const body = {
       type: 2,
-      'current_page': addrPage.value,
+      'current_page': addrCurrentPage.value,
       'per_page_num': addrPageSize.value,
     }
 
@@ -197,31 +251,36 @@ async function loadAddrPage() {
     const res = await $api('/order/queryAddr', { method: 'POST', body })
 
     if (Number(res?.code) === 1 && res?.data) {
-      addrRows.value = Array.isArray(res.data.data) ? res.data.data : []
+      addrList.value = Array.isArray(res.data.data) ? res.data.data : []
       addrTotal.value = Number(res.data.count) || 0
     }
     else {
-      addrRows.value = []
+      addrList.value = []
       addrTotal.value = 0
-      toast(res?.msg || '加载地址失败', 'error')
+      toast(res?.msg || t('pages.dropShippingOrderCreate.messages.loadAddressFailed'), 'error')
     }
   }
   catch (e) {
-    addrRows.value = []
+    addrList.value = []
     addrTotal.value = 0
-    toast(e?.data?.msg || e?.message || '加载地址失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderCreate.messages.loadAddressFailed'), 'error')
   }
   finally {
     addrLoading.value = false
   }
 }
 
-function searchAddrDialog() {
-  addrPage.value = 1
-  loadAddrPage()
+function searchAddr() {
+  addrCurrentPage.value = 1
+  loadAddrList()
 }
 
-function selectAddressRow(row) {
+function resetAddrSearch() {
+  addrSearchName.value = ''
+  searchAddr()
+}
+
+function selectAddr(row) {
   form.value.receiver.id = String(row.id || '')
   form.value.receiver.name = row.name || ''
   form.value.receiver.country = row.country || ''
@@ -232,7 +291,7 @@ function selectAddressRow(row) {
   form.value.receiver.postcode = row.postcode || ''
   form.value.receiver.telephone = row.telephone || ''
   addrDialog.value = false
-  toast('已填入收件地址', 'success')
+  toast(t('pages.dropShippingOrderCreate.messages.addressSelected'), 'success')
 }
 
 function buildPayload() {
@@ -244,15 +303,6 @@ function buildPayload() {
     remark: form.value.remark.trim(),
     'fnsku_file_xb': isSelfPickup.value ? form.value.fnskuFileXb.trim() : '',
     'receive_addr_id': Number(form.value.receiver.id || 0),
-    'rec-people-id': Number(form.value.receiver.id || 0),
-    'rec_people_country': form.value.receiver.country,
-    'rec_people_name': form.value.receiver.name.trim(),
-    'rec_people_province': form.value.receiver.province.trim(),
-    'rec_people_city': form.value.receiver.city.trim(),
-    'rec_people_address': form.value.receiver.address.trim(),
-    'rec_people_address2': form.value.receiver.address2.trim(),
-    'rec_people_postCode': form.value.receiver.postcode.trim(),
-    'rec_people_telephone': form.value.receiver.telephone.trim(),
     'product_info': form.value.products.map(row => ({
       'en_sku': String(row.enSku || row.id || '').trim(),
       'goods_num': Number(row.goodsNum),
@@ -278,10 +328,13 @@ async function loadDetail(withLoading = true) {
       const addr = res.data.receive_addr || {}
       const products = Array.isArray(res.data.product_info) ? res.data.product_info : []
 
+      const fetchedTransportType = Number(orderInfo.transport_type || 0)
+      const isValidTransport = transportOptions.value.some(item => Number(item.value) === fetchedTransportType)
+
       form.value = {
         cankaohao: orderInfo.cankaohao || '',
         warehouseId: Number(orderInfo.warehouse_id || 0) || null,
-        transportType: Number(orderInfo.transport_type || 0) || null,
+        transportType: isValidTransport ? fetchedTransportType : 99999,
         cartonType: Number(orderInfo.carton_type || 1),
         remark: orderInfo.remark || '',
         fnskuFileXb: orderInfo.fnsku_file_xb || orderInfo.ht_pdf || '',
@@ -305,13 +358,18 @@ async function loadDetail(withLoading = true) {
           }))
           : [{ id: '', enSku: '', cnName: '', goodsNum: 1 }],
       }
+
+      // Keep the backend value if a loaded reference number does not pass current validation.
+      const loadedRef = String(orderInfo.cankaohao || '').trim()
+      if (loadedRef && !/^\w+$/.test(loadedRef))
+        toast(t('pages.dropShippingOrderCreate.messages.invalidLoadedReference'), 'warning')
     }
     else {
-      toast(res?.msg || '加载订单详情失败', 'error')
+      toast(res?.msg || t('pages.dropShippingOrderCreate.messages.loadDetailFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '加载订单详情失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderCreate.messages.loadDetailFailed'), 'error')
   }
   finally {
     if (withLoading)
@@ -320,27 +378,67 @@ async function loadDetail(withLoading = true) {
 }
 
 async function estimateCost() {
-  const payload = buildPayload()
-  if (!payload.product_info.length) {
-    toast('请先填写货品明细', 'warning')
+  if (!form.value.warehouseId) {
+    toast(t('pages.dropShippingOrderCreate.messages.selectWarehouse'), 'warning')
+    
+    return
+  }
+  if (!form.value.receiver.id) {
+    toast(t('pages.dropShippingOrderCreate.messages.selectAddress'), 'warning')
+    
+    return
+  }
+  if (!form.value.transportType) {
+    toast(t('pages.dropShippingOrderCreate.messages.selectTransport'), 'warning')
+    
+    return
+  }
+  if (Number(form.value.transportType) === 99999 || Number(form.value.transportType) === 200) {
+    toast(t('pages.dropShippingOrderCreate.messages.estimateUnsupported'), 'warning')
+    
+    return
+  }
+  
+  const items = form.value.products
+    .filter(p => (p.enSku || p.id) && p.goodsNum > 0)
+    .map(p => ({
+      sku: p.enSku || p.id,
+      'sku_num': Number(p.goodsNum),
+    }))
+
+  if (!items.length) {
+    toast(t('pages.dropShippingOrderCreate.messages.validProductsRequired'), 'warning')
     
     return
   }
 
   estimating.value = true
   try {
-    const res = await $api('/order/addGuSuan', {
+    const body = {
+      'warehouse_id': Number(form.value.warehouseId),
+      'recipient_address_id': Number(form.value.receiver.id),
+      provider: Number(form.value.transportType),
+      cankaohao: form.value.cankaohao.trim(),
+      items,
+    }
+
+    const res = await $apiJson('/ordernewapi/shippingRateCompare', {
       method: 'POST',
-      body: payload,
+      body,
     })
 
-    if (Number(res?.code) === 1)
-      toast(`预估费用：${res?.data?.money || 0}`, 'success')
-    else
-      toast(res?.msg || '估算失败', 'error')
+    if (Number(res?.code) === 1 && res?.data) {
+      const bestFee = res.data.rates?.[0]?.totalFee ?? res.data.raw?.totalFee ?? 0
+
+      estimatedFeeLabel.value = bestFee
+      toast(t('pages.dropShippingOrderCreate.messages.estimatedFee', { fee: bestFee }), 'success')
+    }
+    else {
+      toast(res?.msg || t('pages.dropShippingOrderCreate.messages.estimateFailed'), 'error')
+    }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '估算失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderCreate.messages.estimateFailed'), 'error')
   }
   finally {
     estimating.value = false
@@ -349,19 +447,27 @@ async function estimateCost() {
 
 async function submitForm() {
   const { valid } = await formRef.value.validate()
-  if (!valid || isDetail.value)
+  if (!valid)
     return
+
+  // Re-check the reference number in case field rules were bypassed.
+  const rawRef = String(form.value.cankaohao || '').trim()
+  if (!isValidCankaohao(rawRef)) {
+    toast(t('pages.dropShippingOrderCreate.messages.invalidReferenceBlocked'), 'error')
+    
+    return
+  }
 
   const payload = buildPayload()
   if (!payload.product_info.length) {
-    toast('请至少填写一条有效货品明细', 'warning')
+    toast(t('pages.dropShippingOrderCreate.messages.atLeastOneProduct'), 'warning')
     
     return
   }
 
   submitting.value = true
   try {
-    const endpoint = editingId.value ? '/order/edit' : '/order/add'
+    const endpoint = editingId.value ? '/order/edit' : '/ordernew/orderDfAdd'
     const body = editingId.value ? { ...payload, id: editingId.value } : payload
 
     const res = await $apiJson(endpoint, {
@@ -370,26 +476,31 @@ async function submitForm() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '保存成功', 'success')
+      toast(res?.msg || t('pages.dropShippingOrderCreate.messages.submitSuccess'), 'success')
       setTimeout(goList, 500)
     }
     else {
-      toast(res?.msg || '保存失败', 'error')
+      toast(res?.msg || t('pages.dropShippingOrderCreate.messages.submitFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '保存失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderCreate.messages.submitFailed'), 'error')
   }
   finally {
     submitting.value = false
   }
 }
 
-watch(() => form.value.warehouseId, v => {
+watch(() => form.value.warehouseId, async v => {
   if (!warehousePersistReady.value)
     return
   setPreferredWarehouseId(v)
+  skuOptions.value = await loadSkuOptions(v)
 })
+
+watch(() => [form.value.warehouseId, form.value.transportType, form.value.receiver.id, form.value.products], () => {
+  estimatedFeeLabel.value = null
+}, { deep: true })
 
 onMounted(async () => {
   const shouldPreload = !!sourceId.value
@@ -403,7 +514,8 @@ onMounted(async () => {
         form.value.warehouseId = cachedWarehouseId
     }
 
-    warehouseOptions.value = await loadWarehouseOptions()
+    warehouseOptions.value = await loadWarehouseOptions(t)
+    cartonOptions.value = await loadCartonOptions(t)
     countryOptions.value = await loadCountryOptions()
     skuOptions.value = await loadSkuOptions()
     await loadDetail(!shouldPreload)
@@ -438,20 +550,26 @@ onMounted(async () => {
 
     <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-6">
       <div>
+        <div class="text-overline text-primary mb-1">
+          {{ $t('pages.dropShippingOrderCreate.eyebrow') }}
+        </div>
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          {{ pageTitle }}
+          {{ editingId ? $t('pages.dropShippingOrderCreate.title.edit') : isCopy ? $t('pages.dropShippingOrderCreate.title.copy') : $t('pages.dropShippingOrderCreate.title.create') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-          {{ pageSubtitle }}
+          {{ $t('pages.dropShippingOrderCreate.subtitle') }}
         </p>
       </div>
-      <VBtn
-        variant="tonal"
-        prepend-icon="tabler-arrow-left"
-        @click="goList"
-      >
-        返回列表
-      </VBtn>
+      <div class="d-flex flex-wrap gap-2">
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-arrow-left"
+          class="text-none"
+          @click="goList"
+        >
+          {{ $t('pages.dropShippingOrderCreate.actions.backToList') }}
+        </VBtn>
+      </div>
     </div>
 
     <FormPageLoadingOverlay
@@ -459,447 +577,442 @@ onMounted(async () => {
       :message="pageOverlayMessage"
     >
       <VForm ref="formRef">
-        <PrintLabelSectionCard
-          title="收件人信息"
-          subtitle="用于生成面单"
-          class="mb-4"
-        >
-          <template #append>
-            <VBtn
-              color="primary"
-              variant="tonal"
-              size="small"
-              prepend-icon="tabler-address-book"
-              class="text-none"
-              :disabled="isDetail || pageBlocking"
-              @click="openAddrDialog"
-            >
-              选择地址
-            </VBtn>
-          </template>
-          <VRow>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.receiver.name"
-                label="收件人"
-                :rules="[v => !!String(v || '').trim() || '请输入收件人']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.receiver.telephone"
-                label="联系电话"
-                :rules="[v => !!String(v || '').trim() || '请输入联系电话']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="form.receiver.country"
-                :items="countryOptions"
-                item-title="title"
-                item-value="value"
-                label="国家"
-                :rules="[v => !!v || '请选择国家']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.receiver.province"
-                label="省/州"
-                :rules="[v => !!String(v || '').trim() || '请输入省/州']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.receiver.city"
-                label="城市"
-                :rules="[v => !!String(v || '').trim() || '请输入城市']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.receiver.postcode"
-                label="邮编"
-                :rules="[v => !!String(v || '').trim() || '请输入邮编']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="8"
-            >
-              <AppTextField
-                v-model="form.receiver.address"
-                label="地址1"
-                :rules="[v => !!String(v || '').trim() || '请输入地址']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.receiver.address2"
-                label="地址2"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-          </VRow>
-        </PrintLabelSectionCard>
-
-        <PrintLabelSectionCard
-          title="物流信息"
-          subtitle="线路、仓库与包装"
-          class="mb-4"
-        >
-          <VRow>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="form.transportType"
-                :items="transportOptions"
-                item-title="title"
-                item-value="value"
-                label="线路"
-                :rules="[v => !!v || '请选择线路']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="form.warehouseId"
-                :items="warehouseOptions"
-                item-title="title"
-                item-value="value"
-                label="仓库"
-                :rules="[v => !!v || '请选择仓库']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppSelect
-                v-model="form.cartonType"
-                :items="cartonOptions"
-                item-title="title"
-                item-value="value"
-                label="包装材料"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              v-if="isSelfPickup"
-              cols="12"
-              md="4"
-            >
-              <div class="text-caption text-medium-emphasis mb-2">
-                上传附件（主文件）
-              </div>
-              <OrderFileUploadCard
-                v-model="form.fnskuFileXb"
-                :disabled="isDetail || pageBlocking"
-                @uploaded="toast('附件上传成功', 'success')"
-                @error="msg => toast(msg || '附件上传失败', 'error')"
-              />
-            </VCol>
-          </VRow>
-        </PrintLabelSectionCard>
-
-        <PrintLabelSectionCard
-          title="订单信息"
-          subtitle="参考单号、备注与货品信息"
-          class="mb-4"
-        >
-          <VRow>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.cankaohao"
-                label="参考单号"
-                :rules="[v => !!String(v || '').trim() || '请输入参考单号']"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <AppTextField
-                v-model="form.remark"
-                label="备注"
-                :disabled="isDetail || pageBlocking"
-              />
-            </VCol>
-          </VRow>
-          <template #append>
-            <VBtn
-              color="primary"
-              size="small"
-              variant="tonal"
-              prepend-icon="tabler-plus"
-              :disabled="isDetail || pageBlocking"
-              @click="addProduct"
-            >
-              添加货品
-            </VBtn>
-          </template>
-          <div class="text-subtitle-1 font-weight-medium mt-2 mb-2">
-            货品信息
-          </div>
-          <VTable
-            density="comfortable"
-            class="mt-2 package-product-table"
+        <VRow>
+          <VCol
+            cols="12"
+            lg="8"
           >
-            <thead>
-              <tr>
-                <th class="text-left">
-                  SKU
-                </th>
-                <th class="text-left">
-                  英文名称
-                </th>
-                <th class="text-left">
-                  中文名称
-                </th>
-                <th class="text-left">
-                  数量
-                </th>
-                <th class="text-center">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(row, idx) in form.products"
-                :key="idx"
+            <PrintLabelSectionCard
+              :title="$t('pages.dropShippingOrderCreate.sections.recipient.title')"
+              :subtitle="$t('pages.dropShippingOrderCreate.sections.recipient.subtitle')"
+              class="mb-4"
+            >
+              <template #append>
+                <div class="d-flex flex-wrap gap-2">
+                  <VBtn
+                    size="small"
+                    variant="tonal"
+                    prepend-icon="tabler-address-book"
+                    class="text-none"
+                    :disabled="pageBlocking"
+                    @click="openAddrDialog"
+                  >
+                    {{ $t('pages.dropShippingOrderCreate.actions.chooseAddress') }}
+                  </VBtn>
+                  <VBtn
+                    size="small"
+                    variant="tonal"
+                    prepend-icon="tabler-plus"
+                    class="text-none"
+                    :disabled="pageBlocking"
+                    @click="openAddrFormDialog"
+                  >
+                    {{ $t('pages.dropShippingOrderCreate.actions.addAddress') }}
+                  </VBtn>
+                </div>
+              </template>
+              <VAlert
+                v-if="!form.receiver.id"
+                type="info"
+                variant="tonal"
+                density="compact"
+                class="mb-0"
               >
-                <td class="package-product-table__cell-sku">
-                  <AppAutocomplete
-                    v-model="row.id"
-                    :items="skuOptions"
+                {{ $t('pages.dropShippingOrderCreate.sections.recipient.empty') }}
+              </VAlert>
+              <VSheet
+                v-else
+                border
+                rounded="lg"
+                class="pa-4 bg-surface"
+              >
+                <div
+                  class="text-body-2 d-flex flex-column gap-2"
+                  style="font-size: 0.875rem;"
+                >
+                  <div><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.name') }}</span>{{ form.receiver.name || '—' }}</div>
+                  <div><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.address1') }}</span>{{ form.receiver.address || '—' }}</div>
+                  <div><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.address2') }}</span>{{ form.receiver.address2 || '—' }}</div>
+                  <div class="d-flex flex-wrap gap-4">
+                    <span><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.city') }}</span>{{ form.receiver.city || '—' }}</span>
+                    <span><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.province') }}</span>{{ form.receiver.province || '—' }}</span>
+                    <span><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.postcode') }}</span>{{ form.receiver.postcode || '—' }}</span>
+                  </div>
+                  <div><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.country') }}</span>{{ countryOptions.find(c => String(c.value) === String(form.receiver.country))?.title || form.receiver.country || '—' }}</div>
+                  <div><span class="text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.recipient.phone') }}</span>{{ form.receiver.telephone || '—' }}</div>
+                </div>
+              </VSheet>
+            </PrintLabelSectionCard>
+
+            <PrintLabelSectionCard
+              :title="$t('pages.dropShippingOrderCreate.sections.logistics.title')"
+              :subtitle="$t('pages.dropShippingOrderCreate.sections.logistics.subtitle')"
+              class="mb-4"
+            >
+              <VRow>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.transportType"
+                    :items="transportOptions"
                     item-title="title"
                     item-value="value"
-                    placeholder="请选择 SKU（支持搜索）"
-                    density="compact"
-                    hide-details
-                    :custom-filter="skuSearchFilter"
-                    auto-select-first
-                    :disabled="isDetail || pageBlocking"
-                    @update:model-value="syncSkuMeta(row)"
+                    :label="$t('pages.dropShippingOrderCreate.sections.logistics.transport')"
+                    :rules="[v => !!v || $t('pages.dropShippingOrderCreate.rules.transportRequired')]"
+                    :disabled="pageBlocking"
                   />
-                </td>
-                <td class="package-product-table__cell-text">
-                  <AppTextField
-                    v-model="row.enSku"
-                    density="compact"
-                    hide-details
-                    readonly
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.warehouseId"
+                    :items="warehouseOptions"
+                    item-title="title"
+                    item-value="value"
+                    :label="$t('pages.dropShippingOrderCreate.sections.logistics.warehouse')"
+                    :rules="[v => !!v || $t('pages.dropShippingOrderCreate.rules.warehouseRequired')]"
+                    :disabled="pageBlocking"
                   />
-                </td>
-                <td class="package-product-table__cell-text">
-                  <AppTextField
-                    v-model="row.cnName"
-                    density="compact"
-                    hide-details
-                    readonly
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.cartonType"
+                    :items="cartonOptions"
+                    item-title="title"
+                    item-value="value"
+                    :label="$t('pages.dropShippingOrderCreate.sections.logistics.carton')"
+                    :disabled="pageBlocking"
                   />
-                </td>
-                <td class="package-product-table__cell-qty">
-                  <AppTextField
-                    v-model="row.goodsNum"
-                    type="number"
-                    density="compact"
-                    hide-details
-                    :disabled="isDetail || pageBlocking"
+                </VCol>
+                <VCol
+                  v-if="isSelfPickup"
+                  cols="12"
+                >
+                  <div class="text-caption text-medium-emphasis mb-2">
+                    {{ $t('pages.dropShippingOrderCreate.sections.logistics.pickupAttachment') }}
+                  </div>
+                  <OrderFileUploadCard
+                    v-model="form.fnskuFileXb"
+                    :disabled="pageBlocking"
+                    @uploaded="toast($t('pages.dropShippingOrderCreate.messages.attachmentUploaded'), 'success')"
+                    @error="msg => toast(msg || $t('pages.dropShippingOrderCreate.messages.attachmentUploadFailed'), 'error')"
                   />
-                </td>
-                <td class="text-center package-product-table__cell-action">
-                  <IconBtn
-                    color="error"
-                    :disabled="isDetail || form.products.length <= 1"
-                    @click="removeProduct(idx)"
-                  >
-                    <VIcon icon="tabler-trash" />
-                  </IconBtn>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
-          <div class="text-caption text-medium-emphasis mt-2">
-            共 {{ form.products.length }} 条货品，至少保留 1 条。
-          </div>
-        </PrintLabelSectionCard>
-      </VForm>
+                </VCol>
+              </VRow>
+            </PrintLabelSectionCard>
 
-      <VCard
-        class="mt-6 rounded-lg border"
-        variant="flat"
-      >
-        <VCardText class="d-flex justify-end flex-wrap gap-3 py-5 px-6">
-          <VBtn
-            color="primary"
-            prepend-icon="tabler-send"
-            :loading="submitting"
-            :disabled="isDetail || pageBlocking"
-            @click="submitForm"
+            <PrintLabelSectionCard
+              :title="$t('pages.dropShippingOrderCreate.sections.order.title')"
+              :subtitle="$t('pages.dropShippingOrderCreate.sections.order.subtitle')"
+              class="mb-4"
+            >
+              <VRow class="mb-2">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="form.cankaohao"
+                    :label="$t('pages.dropShippingOrderCreate.sections.order.referenceNo')"
+                    :rules="[
+                      v => !!String(v || '').trim() || $t('pages.dropShippingOrderCreate.rules.referenceRequired'),
+                      v => /^[A-Za-z0-9_]+$/.test(String(v || '').trim()) || $t('pages.dropShippingOrderCreate.rules.referenceInvalid'),
+                    ]"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <AppTextField
+                    v-model="form.remark"
+                    :label="$t('pages.dropShippingOrderCreate.sections.order.remark')"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+              </VRow>
+              <template #append>
+                <VBtn
+                  color="primary"
+                  size="small"
+                  variant="tonal"
+                  prepend-icon="tabler-plus"
+                  class="text-none"
+                  :disabled="pageBlocking"
+                  @click="addProduct"
+                >
+                  {{ $t('pages.dropShippingOrderCreate.sections.order.addProduct') }}
+                </VBtn>
+              </template>
+              <VTable
+                density="comfortable"
+                class="product-table"
+              >
+                <thead>
+                  <tr>
+                    <th class="text-left">
+                      SKU
+                    </th>
+                    <th class="text-left">
+                      {{ $t('pages.dropShippingOrderCreate.sections.order.cnName') }}
+                    </th>
+                    <th class="text-left">
+                      {{ $t('pages.dropShippingOrderCreate.sections.order.qty') }}
+                    </th>
+                    <th class="text-center">
+                      {{ $t('pages.dropShippingOrderCreate.sections.order.actions') }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(row, idx) in form.products"
+                    :key="idx"
+                  >
+                    <td class="product-table__cell-sku">
+                      <AppAutocomplete
+                        v-model="row.id"
+                        :items="skuOptions"
+                        item-title="title"
+                        item-value="value"
+                        :placeholder="$t('pages.dropShippingOrderCreate.sections.order.skuPlaceholder')"
+                        density="compact"
+                        hide-details
+                        :custom-filter="skuSearchFilter"
+                        auto-select-first
+                        :disabled="pageBlocking"
+                        @update:model-value="syncSkuMeta(row)"
+                      />
+                    </td>
+                    <td class="product-table__cell-text">
+                      <AppTextField
+                        v-model="row.cnName"
+                        density="compact"
+                        hide-details
+                        readonly
+                        :disabled="pageBlocking"
+                      />
+                    </td>
+                    <td class="product-table__cell-qty">
+                      <AppTextField
+                        v-model="row.goodsNum"
+                        type="number"
+                        density="compact"
+                        hide-details
+                        :disabled="pageBlocking"
+                      />
+                    </td>
+                    <td class="text-center product-table__cell-action">
+                      <IconBtn
+                        color="error"
+                        :disabled="pageBlocking || form.products.length <= 1"
+                        @click="removeProduct(idx)"
+                      >
+                        <VIcon icon="tabler-trash" />
+                      </IconBtn>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+              <div class="text-caption text-medium-emphasis mt-2">
+                {{ $t('pages.dropShippingOrderCreate.sections.order.productCount', { count: form.products.length }) }}
+              </div>
+            </PrintLabelSectionCard>
+          </VCol>
+
+          <VCol
+            cols="12"
+            lg="4"
           >
-            提交订单
-          </VBtn>
-        </VCardText>
-      </VCard>
+            <div class="create-sidebar">
+              <VCard
+                class="rounded-lg border"
+                elevation="0"
+                color="surface"
+              >
+                <VCardItem class="px-5 pt-5 pb-3">
+                  <VCardTitle class="text-subtitle-1 font-weight-semibold d-flex align-center gap-2">
+                    <VIcon
+                      icon="tabler-file-invoice"
+                      size="20"
+                      color="primary"
+                    />
+                    {{ $t('pages.dropShippingOrderCreate.sections.summary.title') }}
+                  </VCardTitle>
+                </VCardItem>
+                <VDivider class="mx-5 mb-4" />
+                <VCardText class="px-5 pb-4 pt-0">
+                  <div class="d-flex flex-column gap-4">
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.summary.warehouse') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ currentWarehouseName }}</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.summary.transport') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ currentTransportName }}</span>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.summary.carton') }}</span>
+                      <div class="d-flex align-center gap-2">
+                        <span class="text-subtitle-2 font-weight-medium">{{ currentCartonName }}</span>
+                        <VChip
+                          v-if="currentCartonPrice"
+                          color="error"
+                          size="x-small"
+                          variant="flat"
+                        >
+                          +${{ currentCartonPrice }}
+                        </VChip>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-space-between align-center">
+                      <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderCreate.sections.summary.validProducts') }}</span>
+                      <span class="text-subtitle-2 font-weight-medium">{{ $t('pages.dropShippingOrderCreate.sections.summary.validProductsCount', { count: validProductCount }) }}</span>
+                    </div>
+                  </div>
+                </VCardText>
+                
+                <div
+                  v-if="estimatedFeeLabel != null"
+                  class="mx-5 mb-5 rounded-lg px-5 py-4 d-flex flex-column align-center"
+                  style="background: rgba(var(--v-theme-success), 0.05); border: 1px solid rgba(var(--v-theme-success), 0.12);"
+                >
+                  <div class="text-caption text-success font-weight-medium mb-1">
+                    {{ $t('pages.dropShippingOrderCreate.sections.summary.estimatedFee') }}
+                  </div>
+                  <div class="text-h3 font-weight-bold text-success mb-1">
+                    ${{ estimatedFeeLabel }}
+                  </div>
+                  <div
+                    class="text-caption text-center"
+                    style="color: rgba(var(--v-theme-success), 0.8);"
+                  >
+                    {{ $t('pages.dropShippingOrderCreate.sections.summary.estimateNote') }}
+                  </div>
+                </div>
+                
+                <VDivider class="mx-5" />
+                <VCardText class="px-5 py-4 d-flex flex-column gap-3">
+                  <VBtn
+                    block
+                    color="secondary"
+                    variant="tonal"
+                    prepend-icon="tabler-calculator"
+                    class="text-none rounded-lg"
+                    :loading="estimating"
+                    :disabled="pageBlocking"
+                    @click="estimateCost"
+                  >
+                    {{ $t('pages.dropShippingOrderCreate.actions.estimate') }}
+                  </VBtn>
+                  <VBtn
+                    block
+                    color="primary"
+                    prepend-icon="tabler-send"
+                    class="text-none rounded-lg"
+                    size="large"
+                    :loading="submitting"
+                    :disabled="pageBlocking"
+                    @click="submitForm"
+                  >
+                    {{ isCopy ? $t('pages.dropShippingOrderCreate.actions.submitCopy') : editingId ? $t('pages.dropShippingOrderCreate.actions.submitEdit') : $t('pages.dropShippingOrderCreate.actions.submitCreate') }}
+                  </VBtn>
+                </VCardText>
+              </VCard>
+            </div>
+          </VCol>
+        </VRow>
+      </VForm>
     </FormPageLoadingOverlay>
 
-    <VDialog
+    <AddressBookPickerDialog
       v-model="addrDialog"
-      max-width="900"
-      scrollable
-    >
-      <VCard>
-        <VCardTitle class="text-h6">
-          选择收件地址
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <div class="d-flex flex-wrap gap-2 mb-4">
-            <AppTextField
-              v-model="addrSearchName"
-              label="按姓名筛选"
-              density="compact"
-              hide-details
-              style="min-inline-size: 200px;"
-              @keyup.enter="searchAddrDialog"
-            />
-            <VBtn
-              variant="tonal"
-              size="small"
-              class="text-none"
-              @click="searchAddrDialog"
-            >
-              查询
-            </VBtn>
-          </div>
-          <VDataTable
-            :headers="[
-              { title: '姓名', key: 'name' },
-              { title: '地址', key: 'address' },
-              { title: '邮编', key: 'postcode', width: '120' },
-              { title: '操作', key: 'actions', sortable: false, width: '100', align: 'center' },
-            ]"
-            :items="addrRows"
-            :loading="addrLoading"
-            density="comfortable"
-            class="text-body-2"
-          >
-            <template #item.address="{ item }">
-              <span
-                class="text-truncate d-inline-block"
-                style="max-inline-size: 360px;"
-                :title="item.address"
-              >{{ item.address || '—' }}</span>
-            </template>
-            <template #item.actions="{ item }">
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="primary"
-                class="text-none"
-                @click="selectAddressRow(item)"
-              >
-                选择
-              </VBtn>
-            </template>
-            <template #bottom>
-              <div class="d-flex align-center justify-end gap-2 pa-3">
-                <VPagination
-                  v-model="addrPage"
-                  :length="Math.max(1, Math.ceil(addrTotal / addrPageSize))"
-                  :total-visible="7"
-                  size="small"
-                  @update:model-value="loadAddrPage"
-                />
-              </div>
-            </template>
-          </VDataTable>
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn
-            variant="text"
-            @click="addrDialog = false"
-          >
-            关闭
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+      v-model:search-name="addrSearchName"
+      v-model:current-page="addrCurrentPage"
+      content-class="print-label-addr-dialog-wrap"
+      :title="$t('pages.dropShippingOrderCreate.addressDialog.title')"
+      :subtitle="$t('pages.dropShippingOrderCreate.addressDialog.subtitle')"
+      :items="addrList"
+      :total="addrTotal"
+      :loading="addrLoading"
+      :page-size="addrPageSize"
+      :page-count="addrPageCount"
+      @close="closeAddrDialog"
+      @search="searchAddr"
+      @reset-search="resetAddrSearch"
+      @select="selectAddr"
+      @load-page="loadAddrList"
+    />
+
+    <AddressFormDialog
+      v-model="addrFormDialog"
+      v-model:form="addrFormData"
+      :addr-type="2"
+      :country-items="countryOptions"
+      :submitting="addrFormSubmitting"
+      @submit="saveNewAddress"
+    />
   </VContainer>
 </template>
 
 <style scoped>
-.package-product-table {
+.product-table {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-radius: 0.75rem;
   overflow: hidden;
+  background: rgb(var(--v-theme-surface));
 }
 
-.package-product-table :deep(thead th) {
+.product-table :deep(thead th) {
   font-weight: 600;
-  background: rgba(var(--v-theme-on-surface), 0.04);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   white-space: nowrap;
+  padding: 0.875rem 1rem;
 }
 
-.package-product-table :deep(tbody td) {
+.product-table :deep(tbody td) {
   vertical-align: middle;
   padding-block: 0.625rem !important;
+  border-bottom: 1px dashed rgba(var(--v-border-color), 0.6);
+  padding-inline: 1rem;
 }
 
-.package-product-table__cell-sku {
-  min-width: 22rem;
+.product-table :deep(tbody tr:last-child td) {
+  border-bottom: none;
 }
 
-.package-product-table__cell-text {
-  min-width: 14rem;
+.product-table__cell-sku {
+  min-width: 18rem;
 }
 
-.package-product-table__cell-qty {
-  min-width: 9rem;
+.product-table__cell-text {
+  min-width: 10rem;
 }
 
-.package-product-table__cell-action {
-  min-width: 4.75rem;
+.product-table__cell-qty {
+  min-width: 7rem;
+}
+
+.product-table__cell-action {
+  min-width: 4.5rem;
+}
+
+@media (min-width: 1280px) {
+  .create-sidebar {
+    position: sticky;
+    top: 5rem;
+  }
 }
 </style>

@@ -2,7 +2,7 @@
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
 import { $api } from '@/utils/api'
 import { resolveBackendFileUrl } from '@/utils/backendFileUrl'
-import { DS_STATUS_ITEMS, normalizeRangeText } from '@/views/apps/drop-shipping/useDropShippingShared'
+import { createDsStatusItems, normalizeRangeText } from '@/views/apps/drop-shipping/useDropShippingShared'
 
 definePage({
   meta: {
@@ -21,8 +21,9 @@ const itemsPerPage = ref(20)
 const selectedIds = ref([])
 const printingId = ref(null)
 const snack = ref({ show: false, text: '', color: 'info' })
+const { t } = useI18n({ useScope: 'global' })
 
-/** 与仪表盘等入口的 query：status、tracking_no（或 trackingNo）对齐 */
+/** Align with dashboard and other entry query params: status, tracking_no, or trackingNo. */
 function parseRouteQueryToFilters(q) {
   const base = {
     status: 1,
@@ -46,16 +47,16 @@ function parseRouteQueryToFilters(q) {
 
 const filters = ref(parseRouteQueryToFilters(route.query))
 
-const headers = [
-  { title: '创建时间', key: 'createtime', width: '150', minWidth: '150' },
-  { title: '仓库', key: 'warehouse_name', width: '140', minWidth: '120' },
-  { title: '运单号', key: 'tracking_no', width: '200', minWidth: '160', maxWidth: '260' },
-  { title: 'SKU', key: 'sku', width: '220', minWidth: '160', maxWidth: '320' },
-  { title: '申报件数', key: 'sku_num', width: '100', minWidth: '88', maxWidth: '160' },
-  { title: '实收件数', key: 'real_sku_num', width: '100', minWidth: '88', maxWidth: '160' },
-  { title: '状态', key: 'statusStr', width: '120', minWidth: '110' },
-  { title: '操作', key: 'actions', sortable: false, minWidth: '260', width: '280', align: 'end', fixed: 'end' },
-]
+const quickStatusItems = computed(() => createDsStatusItems(t))
+
+const headers = computed(() => [
+  { title: t('pages.dropShippingPackageList.headers.package'), key: 'pkg_info', minWidth: '230' },
+  { title: t('pages.dropShippingPackageList.headers.warehouse'), key: 'warehouse_name', width: '140', minWidth: '120' },
+  { title: t('pages.dropShippingPackageList.headers.sku'), key: 'sku', minWidth: '180', maxWidth: '300' },
+  { title: t('pages.dropShippingPackageList.headers.qty'), key: 'qty', width: '130', minWidth: '180', align: 'center' },
+  { title: t('pages.dropShippingPackageList.headers.status'), key: 'statusStr', width: '110', minWidth: '100', align: 'center' },
+  { title: t('pages.dropShippingPackageList.headers.actions'), key: 'actions', sortable: false, width: '130', align: 'center', fixed: 'end' },
+])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
 
@@ -63,7 +64,21 @@ function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
 }
 
-/** 后端常用 &lt;br&gt; 拼接多值；不用 v-html，改为换行 + pre-line 展示 */
+function resolveStatusColor(str) {
+  const s = String(str || '')
+  if (s.includes('\u5f02\u5e38') || s.includes('\u95ee\u9898'))
+    return 'error'
+  if (s.includes('\u5df2\u5230\u5e93') && !s.includes('\u672a\u4e0a\u62a5'))
+    return 'success'
+  if (s.includes('\u672a\u4e0a\u62a5') || s.includes('\u5f85\u4e0a\u67b6'))
+    return 'info'
+  if (s.includes('\u672a\u5230\u5e93') || s.includes('\u5f85\u6536\u8d27'))
+    return 'warning'
+
+  return 'primary'
+}
+
+/** Backend often joins multiple values with <br>; render as newlines instead of v-html. */
 function normalizeCellBreaks(val) {
   if (val == null)
     return ''
@@ -76,6 +91,34 @@ function cellDisplay(val) {
   const s = normalizeCellBreaks(val)
 
   return s || '—'
+}
+
+/** Merge sku/sku_num/real_sku_num/cn_name arrays into row objects. */
+function buildSkuRows(item) {
+  const skus = Array.isArray(item.sku) ? item.sku : []
+  const cnNames = Array.isArray(item.cn_name) ? item.cn_name : []
+  const declared = Array.isArray(item.sku_num) ? item.sku_num : []
+  const actual = Array.isArray(item.real_sku_num) ? item.real_sku_num : []
+  const len = Math.max(skus.length, 1)
+
+  return Array.from({ length: len }, (_, i) => ({
+    sku: skus[i] ?? '',
+    cnName: cnNames[i] ?? null,
+    declared: declared[i] ?? null,
+    actual: actual[i] ?? null,
+  }))
+}
+
+function totalDeclared(item) {
+  const arr = Array.isArray(item.sku_num) ? item.sku_num : []
+
+  return arr.reduce((s, n) => s + Number(n || 0), 0)
+}
+
+function totalActual(item) {
+  const arr = Array.isArray(item.real_sku_num) ? item.real_sku_num : []
+
+  return arr.reduce((s, n) => s + Number(n || 0), 0)
 }
 
 function buildBody() {
@@ -120,12 +163,12 @@ async function loadList() {
 
     rows.value = []
     total.value = 0
-    toast(res?.msg || '加载入库列表失败', 'error')
+    toast(res?.msg || t('pages.dropShippingPackageList.messages.loadFailed'), 'error')
   }
   catch (e) {
     rows.value = []
     total.value = 0
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageList.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -173,21 +216,21 @@ async function deleteOne(id) {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '删除成功', 'success')
+      toast(res?.msg || t('pages.dropShippingPackageList.messages.deleteSuccess'), 'success')
       loadList()
     }
     else {
-      toast(res?.msg || '删除失败', 'error')
+      toast(res?.msg || t('pages.dropShippingPackageList.messages.deleteFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '删除失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageList.messages.deleteFailed'), 'error')
   }
 }
 
 async function batchDelete() {
   if (!selectedIds.value.length) {
-    toast('请先勾选要删除的数据', 'warning')
+    toast(t('pages.dropShippingPackageList.messages.selectDeleteRequired'), 'warning')
     
     return
   }
@@ -199,16 +242,16 @@ async function batchDelete() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '批量删除成功', 'success')
+      toast(res?.msg || t('pages.dropShippingPackageList.messages.batchDeleteSuccess'), 'success')
       selectedIds.value = []
       loadList()
     }
     else {
-      toast(res?.msg || '批量删除失败', 'error')
+      toast(res?.msg || t('pages.dropShippingPackageList.messages.batchDeleteFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '批量删除失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageList.messages.batchDeleteFailed'), 'error')
   }
 }
 
@@ -225,14 +268,14 @@ async function requestPrintBoxLabel(idList) {
   if (Number(res?.code) === 1) {
     const url = res?.data?.pdf_url
 
-    toast(res?.msg || '打印任务已生成', 'success')
+    toast(res?.msg || t('pages.dropShippingPackageList.messages.printTaskCreated'), 'success')
     if (url)
       window.open(resolveBackendFileUrl(url), '_blank', 'noopener')
 
     return true
   }
 
-  toast(res?.msg || '打印失败', 'error')
+  toast(res?.msg || t('pages.dropShippingPackageList.messages.printFailed'), 'error')
 
   return false
 }
@@ -246,7 +289,7 @@ async function printBoxLabel(id) {
     await requestPrintBoxLabel([id])
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '打印失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageList.messages.printFailed'), 'error')
   }
   finally {
     printingId.value = null
@@ -255,7 +298,7 @@ async function printBoxLabel(id) {
 
 async function batchPrint() {
   if (!selectedIds.value.length) {
-    toast('请先勾选要打印的数据', 'warning')
+    toast(t('pages.dropShippingPackageList.messages.selectPrintRequired'), 'warning')
 
     return
   }
@@ -263,7 +306,7 @@ async function batchPrint() {
     await requestPrintBoxLabel(selectedIds.value)
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '批量打印失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingPackageList.messages.batchPrintFailed'), 'error')
   }
 }
 
@@ -288,300 +331,546 @@ watch(
 </script>
 
 <template>
-  <VContainer
-    fluid
-    class="pa-4 pa-sm-6"
+  <VSnackbar
+    v-model="snack.show"
+    :color="snack.color"
+    location="top"
+    :timeout="2600"
   >
-    <VSnackbar
-      v-model="snack.show"
-      :color="snack.color"
-      location="top"
-      :timeout="2600"
-    >
-      {{ snack.text }}
-    </VSnackbar>
+    {{ snack.text }}
+  </VSnackbar>
 
-    <VCard class="rounded-lg">
-      <VCardItem class="pb-4 pt-6 px-6">
-        <template #title>
-          <span class="text-h5 font-weight-medium">入库列表</span>
-        </template>
-        <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">支持筛选、批量打印箱唛与批量删除；状态在查询按钮下方快捷切换。</span>
-        </template>
-        <template #append>
-          <div class="d-flex flex-wrap gap-2 justify-end">
-            <VBtn
-              color="primary"
-              size="small"
-              prepend-icon="tabler-plus"
-              @click="goCreate"
-            >
-              创建入库单
-            </VBtn>
-            <VBtn
-              color="primary"
-              size="small"
-              variant="tonal"
-              prepend-icon="tabler-upload"
-              @click="goBatch"
-            >
-              批量创建
-            </VBtn>
-          </div>
-        </template>
-      </VCardItem>
-      <VDivider />
-      <VCardText class="pa-4 pa-sm-6">
-        <AppQueryPanel
-          :loading="loading"
-          actions-position="bottom"
-          class="mb-4"
-          :quick-filter-items="DS_STATUS_ITEMS"
-          :quick-filter="filters.status"
-          @search="searchList"
-          @reset="resetFilters"
-          @update:quick-filter="onQuickStatusChange"
-        >
-          <VRow dense>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppTextField
-                v-model="filters.sku"
-                label="SKU"
-                placeholder="输入SKU"
-                hide-details
-                density="compact"
-                @keyup.enter="searchList"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppTextField
-                v-model="filters.trackingNo"
-                label="运单号"
-                placeholder="输入运单号"
-                hide-details
-                density="compact"
-                @keyup.enter="searchList"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <AppDateTimePicker
-                v-model="filters.timeRange"
-                label="创建时间"
-                hide-details
-                density="compact"
-                :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
-              />
-            </VCol>
-          </VRow>
-        </AppQueryPanel>
-
-        <VAlert
-          v-if="selectedIds.length"
+  <VCard class="rounded-lg ds-pkg-list">
+    <VCardItem class="pb-3 pt-5 px-6">
+      <template #prepend>
+        <VAvatar
           color="primary"
           variant="tonal"
-          class="mb-4"
+          rounded
+          size="42"
         >
-          <div class="d-flex align-center justify-space-between flex-wrap gap-3">
-            <span class="text-body-2">已勾选 {{ selectedIds.length }} 条数据</span>
-            <div class="d-flex align-center gap-2 flex-wrap">
-              <VBtn
-                color="primary"
-                variant="flat"
-                size="small"
-                prepend-icon="tabler-printer"
-                @click="batchPrint"
-              >
-                批量打印
-              </VBtn>
-              <VBtn
-                color="error"
-                variant="tonal"
-                size="small"
-                prepend-icon="tabler-trash"
-                @click="batchDelete"
-              >
-                批量删除
-              </VBtn>
-            </div>
-          </div>
-        </VAlert>
+          <VIcon
+            icon="tabler-package-import"
+            size="24"
+          />
+        </VAvatar>
+      </template>
+      <template #title>
+        <span class="text-h5 font-weight-bold">{{ $t('pages.dropShippingPackageList.title') }}</span>
+      </template>
+      <template #subtitle>
+        <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingPackageList.subtitle') }}</span>
+      </template>
+      <template #append>
+        <div class="d-flex flex-wrap gap-2 justify-end">
+          <VBtn
+            color="primary"
+            size="small"
+            variant="tonal"
+            prepend-icon="tabler-table-import"
+            @click="goBatch"
+          >
+            {{ $t('pages.dropShippingPackageList.actions.batchCreate') }}
+          </VBtn>
+          <VBtn
+            color="primary"
+            size="small"
+            prepend-icon="tabler-plus"
+            @click="goCreate"
+          >
+            {{ $t('pages.dropShippingPackageList.actions.create') }}
+          </VBtn>
+        </div>
+      </template>
+    </VCardItem>
 
-        <VDataTableServer
-          v-model="selectedIds"
-          :headers="headers"
-          :items="rows"
-          :loading="loading"
-          :items-length="total"
-          item-value="id"
-          show-select
-          density="comfortable"
-          hover
-          class="text-body-2 package-list-table"
+    <VDivider />
+
+    <VCardText class="px-4 pt-4 pb-0">
+      <AppQueryPanel
+        :loading="loading"
+        actions-position="bottom"
+        class="mb-4"
+        :quick-filter-items="quickStatusItems"
+        :quick-filter="filters.status"
+        @search="searchList"
+        @reset="resetFilters"
+        @update:quick-filter="onQuickStatusChange"
+      >
+        <VRow dense>
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <AppTextField
+              v-model="filters.sku"
+              label="SKU"
+              :placeholder="$t('pages.dropShippingPackageList.filters.skuPlaceholder')"
+              hide-details
+              density="compact"
+              prepend-inner-icon="tabler-search"
+              @keyup.enter="searchList"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <AppTextField
+              v-model="filters.trackingNo"
+              :label="$t('pages.dropShippingPackageList.filters.trackingNo')"
+              :placeholder="$t('pages.dropShippingPackageList.filters.trackingNoPlaceholder')"
+              hide-details
+              density="compact"
+              prepend-inner-icon="tabler-barcode"
+              @keyup.enter="searchList"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <AppDateTimePicker
+              v-model="filters.timeRange"
+              :label="$t('pages.dropShippingPackageList.filters.createdAt')"
+              hide-details
+              density="compact"
+              :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
+            />
+          </VCol>
+        </VRow>
+      </AppQueryPanel>
+
+      <Transition name="slide-down">
+        <div
+          v-if="selectedIds.length"
+          class="batch-action-bar mb-4 px-4 py-3 rounded-lg d-flex align-center justify-space-between flex-wrap gap-3"
         >
-          <template #item.createtime="{ item }">
-            <span class="package-cell package-cell--nowrap">{{ item.createtime || '—' }}</span>
-          </template>
-          <template #item.warehouse_name="{ item }">
-            <span class="package-cell package-cell--multiline">{{ cellDisplay(item.warehouse_name) }}</span>
-          </template>
-          <template #item.tracking_no="{ item }">
-            <span class="package-cell package-cell--tracking">{{ cellDisplay(item.tracking_no) }}</span>
-          </template>
-          <template #item.sku="{ item }">
-            <span class="package-cell package-cell--multiline">{{ cellDisplay(item.sku) }}</span>
-          </template>
-          <template #item.sku_num="{ item }">
-            <span class="package-cell package-cell--nums">{{ cellDisplay(item.sku_num) }}</span>
-          </template>
-          <template #item.real_sku_num="{ item }">
-            <span class="package-cell package-cell--nums">{{ cellDisplay(item.real_sku_num) }}</span>
-          </template>
-          <template #item.statusStr="{ item }">
-            <VChip
-              size="small"
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="primary"
               variant="tonal"
-              :color="String(item.statusStr || '').includes('异常') ? 'error' : 'primary'"
+              size="28"
+              rounded="circle"
             >
-              {{ item.statusStr || '-' }}
-            </VChip>
-          </template>
+              <VIcon
+                icon="tabler-checkbox"
+                size="16"
+              />
+            </VAvatar>
+            <span class="text-body-2 font-weight-medium">
+              {{ $t('pages.dropShippingPackageList.selection.selected', { count: selectedIds.length }) }}
+            </span>
+          </div>
+          <div class="d-flex align-center gap-2">
+            <VBtn
+              color="primary"
+              variant="flat"
+              size="small"
+              prepend-icon="tabler-printer"
+              class="text-none"
+              @click="batchPrint"
+            >
+              {{ $t('pages.dropShippingPackageList.actions.batchPrintBox') }}
+            </VBtn>
+            <VBtn
+              color="error"
+              variant="tonal"
+              size="small"
+              prepend-icon="tabler-trash"
+              class="text-none"
+              @click="batchDelete"
+            >
+              {{ $t('pages.dropShippingPackageList.actions.batchDelete') }}
+            </VBtn>
+            <VBtn
+              variant="text"
+              size="small"
+              color="secondary"
+              class="text-none"
+              @click="selectedIds = []"
+            >
+              {{ $t('pages.dropShippingPackageList.actions.cancelSelection') }}
+            </VBtn>
+          </div>
+        </div>
+      </Transition>
+    </VCardText>
 
-          <template #item.actions="{ item }">
-            <div class="package-list-actions d-flex align-center justify-end flex-wrap gap-1">
-              <VTooltip
-                location="top"
-                text="查看详情"
-              >
-                <template #activator="{ props: tipProps }">
-                  <VBtn
-                    v-bind="tipProps"
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    class="text-none px-2"
-                    min-width="0"
-                    prepend-icon="tabler-eye"
-                    @click="router.push({ name: 'apps-drop-shipping-package-create', query: { id: item.id, mode: 'detail' } })"
-                  >
-                    查看
-                  </VBtn>
-                </template>
-              </VTooltip>
-              <VTooltip
-                location="top"
-                text="打印箱唛 PDF"
-              >
-                <template #activator="{ props: tipProps }">
-                  <VBtn
-                    v-bind="tipProps"
-                    size="small"
-                    variant="tonal"
-                    color="secondary"
-                    class="text-none px-2"
-                    min-width="0"
-                    prepend-icon="tabler-printer"
-                    :loading="printingId === item.id"
-                    @click="printBoxLabel(item.id)"
-                  >
-                    箱唛
-                  </VBtn>
-                </template>
-              </VTooltip>
-              <VTooltip
-                location="top"
-                text="删除本条"
-              >
-                <template #activator="{ props: tipProps }">
-                  <VBtn
-                    v-bind="tipProps"
-                    size="small"
-                    variant="tonal"
-                    color="error"
-                    class="text-none px-2"
-                    min-width="0"
-                    prepend-icon="tabler-trash"
-                    @click="deleteOne(item.id)"
-                  >
-                    删除
-                  </VBtn>
-                </template>
-              </VTooltip>
-            </div>
-          </template>
+    <VDataTableServer
+      v-model="selectedIds"
+      :headers="headers"
+      :items="rows"
+      :loading="loading"
+      :items-length="total"
+      item-value="id"
+      show-select
+      density="comfortable"
+      hover
+      class="ds-pkg-list__table"
+    >
+      <template #item.pkg_info="{ item }">
+        <div
+          class="pkg-info-cell"
+          @click="router.push({ name: 'apps-drop-shipping-package-detail', query: { id: item.id } })"
+        >
+          <div class="pkg-info-cell__tracking ds-mono">
+            {{ item.tracking_no || item.order_sn || '—' }}
+          </div>
+          <div
+            v-if="item.tracking_no && item.order_sn"
+            class="pkg-info-cell__sn"
+          >
+            {{ item.order_sn }}
+          </div>
+          <div class="pkg-info-cell__time">
+            <VIcon
+              icon="tabler-clock"
+              size="12"
+              class="me-1"
+            />
+            {{ item.createtime || '—' }}
+          </div>
+        </div>
+      </template>
 
-          <template #bottom>
-            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
-              <span class="text-body-2 text-medium-emphasis">共 {{ total }} 条</span>
-              <div class="d-flex align-center gap-3">
-                <AppSelect
-                  :model-value="itemsPerPage"
-                  :items="[20, 50, 100]"
-                  style="inline-size: 96px;"
-                  density="compact"
-                  hide-details
-                  @update:model-value="itemsPerPage = Number($event)"
+      <template #item.warehouse_name="{ item }">
+        <div
+          v-if="item.warehouse_name"
+          class="d-flex align-center gap-1"
+        >
+          <VIcon
+            icon="tabler-building-warehouse"
+            size="14"
+            color="medium-emphasis"
+          />
+          <span class="text-body-2">{{ cellDisplay(item.warehouse_name) }}</span>
+        </div>
+        <span
+          v-else
+          class="text-medium-emphasis"
+        >—</span>
+      </template>
+
+      <template #item.sku="{ item }">
+        <div class="sku-list">
+          <div
+            v-for="(row, i) in buildSkuRows(item)"
+            :key="i"
+            class="sku-row"
+          >
+            <span class="sku-row__code ds-mono">{{ row.sku || '—' }}</span>
+            <span
+              v-if="row.cnName"
+              class="sku-row__cn"
+            >{{ row.cnName }}</span>
+          </div>
+        </div>
+      </template>
+
+      <template #item.qty="{ item }">
+        <div
+          v-if="buildSkuRows(item).length === 1"
+          class="qty-compare d-flex align-center justify-center gap-1"
+        >
+          <span class="qty-compare__val text-medium-emphasis">{{ buildSkuRows(item)[0].declared ?? '—' }}</span>
+          <VIcon
+            icon="tabler-arrow-narrow-right"
+            size="14"
+            color="medium-emphasis"
+          />
+          <span
+            class="qty-compare__val font-weight-semibold"
+            :class="buildSkuRows(item)[0].actual !== buildSkuRows(item)[0].declared ? 'text-warning' : 'text-success'"
+          >{{ buildSkuRows(item)[0].actual ?? '—' }}</span>
+          <VIcon
+            v-if="buildSkuRows(item)[0].actual != null && buildSkuRows(item)[0].actual !== buildSkuRows(item)[0].declared"
+            icon="tabler-alert-triangle"
+            size="13"
+            color="warning"
+          />
+        </div>
+        <div
+          v-else
+          class="qty-compare-multi"
+        >
+          <div
+            v-for="(row, i) in buildSkuRows(item)"
+            :key="i"
+            class="qty-row d-flex align-center justify-center gap-1"
+          >
+            <span class="qty-compare__val text-medium-emphasis">{{ row.declared ?? '—' }}</span>
+            <VIcon
+              icon="tabler-arrow-narrow-right"
+              size="12"
+              color="medium-emphasis"
+            />
+            <span
+              class="qty-compare__val font-weight-semibold"
+              :class="row.actual !== row.declared ? 'text-warning' : 'text-success'"
+            >{{ row.actual ?? '—' }}</span>
+          </div>
+          <VDivider class="my-1" />
+          <div class="qty-row d-flex align-center justify-center gap-1">
+            <span class="text-caption text-medium-emphasis">{{ totalDeclared(item) }}</span>
+            <VIcon
+              icon="tabler-arrow-narrow-right"
+              size="12"
+              color="medium-emphasis"
+            />
+            <span
+              class="text-caption font-weight-bold"
+              :class="totalActual(item) !== totalDeclared(item) ? 'text-warning' : 'text-success'"
+            >{{ totalActual(item) }}</span>
+          </div>
+        </div>
+      </template>
+
+      <template #item.statusStr="{ item }">
+        <div class="d-flex justify-center">
+          <VChip
+            size="small"
+            variant="tonal"
+            :color="resolveStatusColor(item.statusStr)"
+          >
+            {{ item.statusStr || '—' }}
+          </VChip>
+        </div>
+      </template>
+
+      <template #item.actions="{ item }">
+        <div class="d-flex align-center justify-center gap-1">
+          <VTooltip :text="$t('pages.dropShippingPackageList.tooltips.detail')">
+            <template #activator="{ props: tipProps }">
+              <IconBtn
+                v-bind="tipProps"
+                size="small"
+                color="primary"
+                @click="router.push({ name: 'apps-drop-shipping-package-detail', query: { id: item.pid || item.id } })"
+              >
+                <VIcon
+                  icon="tabler-eye"
+                  size="18"
                 />
-                <VPagination
-                  v-model="page"
-                  :length="pageLength"
-                  :total-visible="7"
+              </IconBtn>
+            </template>
+          </VTooltip>
+          <VTooltip :text="$t('pages.dropShippingPackageList.tooltips.printBox')">
+            <template #activator="{ props: tipProps }">
+              <IconBtn
+                v-bind="tipProps"
+                size="small"
+                color="secondary"
+                :loading="printingId === item.id"
+                @click="printBoxLabel(item.id)"
+              >
+                <VIcon
+                  icon="tabler-printer"
+                  size="18"
                 />
-              </div>
-            </div>
-          </template>
-        </VDataTableServer>
-      </VCardText>
-    </VCard>
-  </VContainer>
+              </IconBtn>
+            </template>
+          </VTooltip>
+          <VMenu location="bottom end">
+            <template #activator="{ props: menuProps }">
+              <IconBtn
+                v-bind="menuProps"
+                size="small"
+                color="secondary"
+              >
+                <VIcon
+                  icon="tabler-dots-vertical"
+                  size="18"
+                />
+              </IconBtn>
+            </template>
+            <VList density="compact">
+              <VListItem
+                :title="$t('pages.dropShippingPackageList.actions.delete')"
+                prepend-icon="tabler-trash"
+                base-color="error"
+                @click="deleteOne(item.id)"
+              />
+            </VList>
+          </VMenu>
+        </div>
+      </template>
+
+      <template #bottom>
+        <VDivider />
+        <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+          <span class="text-body-2 text-medium-emphasis">
+            {{ $t('pages.dropShippingPackageList.pagination.total', { total }) }}
+          </span>
+          <div class="d-flex align-center gap-3">
+            <AppSelect
+              :model-value="itemsPerPage"
+              :items="[20, 50, 100]"
+              style="inline-size: 100px;"
+              density="compact"
+              hide-details
+              @update:model-value="itemsPerPage = Number($event)"
+            />
+            <VPagination
+              v-model="page"
+              :length="pageLength"
+              :total-visible="5"
+              size="small"
+              active-color="primary"
+            />
+          </div>
+        </div>
+      </template>
+    </VDataTableServer>
+  </VCard>
 </template>
 
 <style scoped>
-.package-list-table {
-  --package-cell-line-height: 1.45;
-}
-
-.package-list-table :deep(.v-data-table__th),
-.package-list-table :deep(.v-data-table__td) {
-  vertical-align: top;
-}
-
-.package-cell {
-  display: inline-block;
-  max-inline-size: 100%;
-  line-height: var(--package-cell-line-height);
-}
-
-.package-cell--nowrap {
+/* Table basics */
+.ds-pkg-list__table :deep(.v-data-table__thead .v-data-table__th) {
+  font-weight: 600 !important;
   white-space: nowrap;
+  letter-spacing: 0.02em;
+  font-size: 0.75rem;
+  text-transform: uppercase;
 }
 
-.package-cell--multiline {
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+.ds-pkg-list__table :deep(tbody .v-data-table__td) {
+  vertical-align: middle;
+  padding-block: 0.75rem !important;
 }
 
-.package-cell--tracking {
+/* Main inbound-order info cell */
+.pkg-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  cursor: pointer;
+}
+
+.pkg-info-cell:hover .pkg-info-cell__tracking {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pkg-info-cell__tracking {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.9);
   white-space: pre-line;
   overflow-wrap: anywhere;
   word-break: break-all;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  transition: color 0.15s;
 }
 
-.package-cell--nums {
+.pkg-info-cell__sn {
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.55);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.pkg-info-cell__time {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  color: rgba(var(--v-theme-on-surface), 0.55);
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  white-space: nowrap;
+}
+
+/* Multi-line SKU list */
+.sku-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sku-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.sku-row__code {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.87);
   white-space: pre-line;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.sku-row__cn {
+  font-size: 0.6875rem;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Multi-SKU quantity comparison */
+.qty-compare-multi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
   font-variant-numeric: tabular-nums;
+}
+
+.qty-row {
+  font-size: 0.8125rem;
+}
+
+/* Legacy SKU cell fallback */
+.sku-cell {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.87);
+  max-inline-size: 260px;
+  line-height: 1.5;
+}
+
+/* Declared/received comparison */
+.qty-compare {
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.qty-compare__val {
+  min-inline-size: 1.5rem;
+  text-align: center;
+}
+
+/* Batch action bar */
+.batch-action-bar {
+  background: rgba(var(--v-theme-primary), 0.06);
+  border: 1px solid rgba(var(--v-theme-primary), 0.18);
+}
+
+/* Slide-in animation */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* Monospace values */
+.ds-mono {
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 }
 </style>

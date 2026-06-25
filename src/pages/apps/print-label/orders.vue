@@ -4,7 +4,6 @@ import { resolveBackendFileUrl } from '@/utils/backendFileUrl'
 import {
   formatTotalWeight,
   formatYundanShippingFee,
-  ORDER_DD_STATUS_FILTER_ITEMS,
   resolveYundanStatus,
   useYundanList,
 } from '@/views/apps/print-label/useYundanList'
@@ -31,12 +30,14 @@ const {
   filterCankaohao,
   filterRecipientName,
   filterCreateRange,
+  statusFilterItems,
   channelTypeItems,
   searchOrders,
   resetFilters,
 } = useYundanList()
 
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 const { platform } = useDisplay()
 
 const isMobileDevice = computed(() => {
@@ -57,19 +58,19 @@ function clearLoadError() {
   loadError.value = ''
 }
 
-const headers = [
-  { title: '创建时间', key: 'createtime', minWidth: '158' },
-  { title: '订单号', key: 'order_sn', minWidth: '200' },
-  { title: '参考号', key: 'cankaohao', minWidth: '140' },
-  { title: '线路', key: 'transport_line', minWidth: '140' },
-  { title: '跟踪号', key: 'ht_tracking_no', minWidth: '180' },
-  { title: 'SKU / 件数', key: 'sku_line', sortable: false, minWidth: '120' },
-  { title: '总重', key: 'total_weight', minWidth: '80' },
-  { title: '运费', key: 'shipping_fee', minWidth: '88' },
-  { title: '异常信息', key: 'error_message', sortable: false, minWidth: '160' },
-  { title: '状态', key: 'status', minWidth: '100' },
-  { title: '操作', key: 'actions', sortable: false, align: 'end', width: '72', fixed: 'end' },
-]
+const headers = computed(() => [
+  { title: t('pages.printLabelOrders.headers.createdAt'), key: 'createtime', minWidth: '158' },
+  { title: t('pages.printLabelOrders.headers.orderNo'), key: 'order_sn', minWidth: '200' },
+  { title: t('pages.printLabelOrders.headers.refNo'), key: 'cankaohao', minWidth: '140' },
+  { title: t('pages.printLabelOrders.headers.line'), key: 'transport_line', minWidth: '140' },
+  { title: t('pages.printLabelOrders.headers.trackingNo'), key: 'ht_tracking_no', minWidth: '180' },
+  { title: t('pages.printLabelOrders.headers.skuQty'), key: 'sku_line', sortable: false, minWidth: '120' },
+  { title: t('pages.printLabelOrders.headers.totalWeight'), key: 'total_weight', minWidth: '80' },
+  { title: t('pages.printLabelOrders.headers.shippingFee'), key: 'shipping_fee', minWidth: '88' },
+  { title: t('pages.printLabelOrders.headers.errorInfo'), key: 'error_message', sortable: false, minWidth: '160' },
+  { title: t('pages.printLabelOrders.headers.status'), key: 'status', minWidth: '100' },
+  { title: t('pages.printLabelOrders.headers.actions'), key: 'actions', sortable: false, align: 'end', width: '72', fixed: 'end' },
+])
 
 const pageLength = computed(() => {
   const ipp = itemsPerPage.value
@@ -79,22 +80,10 @@ const pageLength = computed(() => {
   return Math.max(1, Math.ceil(total.value / ipp))
 })
 
-const zhPageMeta = computed(() => {
-  const t = total.value
-  if (t === 0)
-    return '共 0 条'
-  const p = page.value
-  const ipp = itemsPerPage.value
-  const start = (p - 1) * ipp + 1
-  const end = Math.min(p * ipp, t)
-
-  return `第 ${start}–${end} 条，共 ${t} 条`
-})
-
 async function copyTracking(no) {
   const s = (no && String(no).trim()) || ''
   if (!s) {
-    snack.value = { show: true, text: '无跟踪号', color: 'warning' }
+    snack.value = { show: true, text: t('pages.printLabelOrders.messages.noTracking'), color: 'warning' }
 
     return
   }
@@ -103,10 +92,10 @@ async function copyTracking(no) {
       await copy(s)
     else
       await navigator.clipboard.writeText(s)
-    snack.value = { show: true, text: '跟踪号已复制', color: 'success' }
+    snack.value = { show: true, text: t('pages.printLabelOrders.messages.trackingCopied'), color: 'success' }
   }
   catch {
-    snack.value = { show: true, text: '复制失败', color: 'error' }
+    snack.value = { show: true, text: t('pages.printLabelOrders.messages.copyFailed'), color: 'error' }
   }
 }
 
@@ -120,7 +109,7 @@ async function fetchOrderDetail({ id, orderSn }) {
     else if (orderSn)
       body['order_sn'] = orderSn
     else
-      throw new Error('缺少订单标识')
+      throw new Error(t('pages.printLabelOrders.messages.missingOrderIdentifier'))
 
     const res = await $api('/ordernew/getOrderDdDetail', {
       method: 'POST',
@@ -132,12 +121,12 @@ async function fetchOrderDetail({ id, orderSn }) {
     }
     else {
       detailData.value = null
-      detailError.value = res?.msg || '加载详情失败'
+      detailError.value = res?.msg || t('pages.printLabelOrders.messages.detailLoadFailed')
     }
   }
   catch (e) {
     detailData.value = null
-    detailError.value = e?.data?.msg || e?.message || '网络请求失败'
+    detailError.value = e?.data?.msg || e?.message || t('pages.printLabelOrders.messages.networkFailed')
   }
   finally {
     detailLoading.value = false
@@ -173,7 +162,7 @@ function downloadLabelPdf() {
   const label = detailData.value?.label || {}
   const source = label.ht_pdf || label.wp_data || ''
   if (!source) {
-    snack.value = { show: true, text: '暂无面单文件', color: 'warning' }
+    snack.value = { show: true, text: t('pages.printLabelOrders.messages.noLabelFile'), color: 'warning' }
     
     return
   }
@@ -224,559 +213,573 @@ function formatStreet(addr) {
 
   return [addr.address, addr.address2].filter(Boolean).join(' ') || '—'
 }
+
+function resolveStatus(status) {
+  return resolveYundanStatus(status, t)
+}
 </script>
 
 <template>
-  <VContainer
-    fluid
-    class="pa-4 pa-sm-6"
+  <VSnackbar
+    v-model="snack.show"
+    :color="snack.color"
+    location="top"
+    :timeout="2200"
   >
-    <VSnackbar
-      v-model="snack.show"
-      :color="snack.color"
-      location="top"
-      :timeout="2200"
-    >
-      {{ snack.text }}
-    </VSnackbar>
+    {{ snack.text }}
+  </VSnackbar>
 
-    <VRow>
-      <VCol cols="12">
-        <VCard class="rounded-lg">
-          <VCardItem class="pb-4 pt-6 px-6">
-            <template #title>
-              <span class="text-h5 font-weight-medium">订单列表（旧）</span>
-            </template>
-            <template #subtitle>
-              <span class="text-body-2 text-medium-emphasis">填写条件后点击「查询」，分页切换会自动刷新。</span>
-            </template>
-            <template #append>
-              <div class="d-flex flex-wrap gap-2 justify-end">
-                <VBtn
-                  color="primary"
-                  size="small"
-                  prepend-icon="tabler-plus"
-                  :to="{ name: 'apps-print-label-create' }"
-                >
-                  新建运单
-                </VBtn>
-              </div>
-            </template>
-          </VCardItem>
-
-          <VDivider />
-
-          <VCardText class="pa-4 pa-sm-6 pt-4">
-            <VAlert
-              type="warning"
-              variant="tonal"
-              border="start"
-              density="comfortable"
-              prominent
-              class="mb-4"
-              prepend-icon="tabler-alert-triangle"
-            >
-              <div class="text-body-2">
-                本列表仅为历史数据，并更名为「订单列表（旧）」。即日起，新订单将在「订单列表」中展示与处理；过往订单的取消需联络客服。
-              </div>
-            </VAlert>
-
-            <VAlert
-              v-if="loadError"
-              type="error"
-              variant="tonal"
-              density="compact"
-              class="mb-4"
-              closable
-              @click:close="clearLoadError"
-            >
-              {{ loadError }}
-            </VAlert>
-
-            <AppQueryPanel
-              class="mb-4"
-              :loading="loading"
-              actions-position="bottom"
-              @search="searchOrders"
-              @reset="resetFilters"
-            >
-              <VRow dense>
-                <VCol
-                  cols="12"
-                  sm="6"
-                  lg="3"
-                >
-                  <AppSelect
-                    v-model="filterStatus"
-                    :items="ORDER_DD_STATUS_FILTER_ITEMS"
-                    item-title="title"
-                    item-value="value"
-                    label="状态"
-                    density="compact"
-                    hide-details
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="6"
-                  lg="3"
-                >
-                  <AppSelect
-                    v-model="filterType"
-                    :items="channelTypeItems"
-                    item-title="title"
-                    item-value="value"
-                    label="渠道"
-                    density="compact"
-                    hide-details
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="6"
-                  lg="3"
-                >
-                  <AppTextField
-                    v-model="filterRecipientName"
-                    label="收件人"
-                    density="compact"
-                    hide-details
-                    placeholder="姓名"
-                    @keyup.enter="searchOrders"
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  sm="6"
-                  lg="3"
-                >
-                  <AppDateTimePicker
-                    v-model="filterCreateRange"
-                    label="创建时间"
-                    density="compact"
-                    hide-details
-                    placeholder="选择日期范围"
-                    :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
-                    @keyup.enter="searchOrders"
-                  />
-                </VCol>
-                <VCol cols="12">
-                  <AppTextarea
-                    v-model="filterCankaohao"
-                    label="参考号（多行）"
-                    density="compact"
-                    rows="2"
-                    variant="outlined"
-                    hide-details
-                    placeholder="每行一个参考号"
-                    class="order-dd-filter-ref"
-                  />
-                </VCol>
-              </VRow>
-            </AppQueryPanel>
-
-            <VDataTableServer
-              v-model:items-per-page="itemsPerPage"
-              v-model:page="page"
-              :headers="headers"
-              :items="items"
-              :items-length="total"
-              :loading="loading"
-              loading-text="加载中…"
-              item-value="id"
-              density="comfortable"
-              class="text-body-2 yundan-list-table"
-              fixed-header
-              :height="520"
-              :items-per-page-options="[
-                { value: 10, title: '10' },
-                { value: 20, title: '20' },
-                { value: 50, title: '50' },
-              ]"
-            >
-              <template #item.order_sn="{ item }">
-                <button
-                  type="button"
-                  class="order-dd-link text-high-emphasis font-weight-medium text-truncate d-inline-block"
-                  style="max-inline-size: 220px;"
-                  :title="item.order_sn"
-                  @click="openDetailByRow(item)"
-                >
-                  {{ item.order_sn }}
-                </button>
-              </template>
-
-              <template #item.cankaohao="{ item }">
-                <span
-                  class="text-truncate d-inline-block"
-                  style="max-inline-size: 160px;"
-                  :title="item.cankaohao"
-                >{{ item.cankaohao || '—' }}</span>
-              </template>
-
-              <template #item.transport_line="{ item }">
-                <span
-                  class="text-truncate d-inline-block"
-                  style="max-inline-size: 200px;"
-                  :title="item.transport_line"
-                >{{ item.transport_line || '—' }}</span>
-              </template>
-
-              <template #item.ht_tracking_no="{ item }">
-                <div class="d-flex align-center gap-1">
-                  <span
-                    class="text-truncate"
-                    style="max-inline-size: 200px;"
-                    :title="item.ht_tracking_no"
-                  >{{ item.ht_tracking_no || '—' }}</span>
-                  <IconBtn
-                    v-if="item.ht_tracking_no"
-                    size="small"
-                    aria-label="复制跟踪号"
-                    @click="copyTracking(item.ht_tracking_no)"
-                  >
-                    <VIcon
-                      icon="tabler-copy"
-                      size="18"
-                    />
-                  </IconBtn>
-                </div>
-              </template>
-
-              <template #item.sku_line="{ item }">
-                <span class="text-medium-emphasis">
-                  <template v-if="item.sku || item.sku_num">
-                    {{ item.sku || '—' }} / {{ item.sku_num || '—' }}
-                  </template>
-                  <template v-else>
-                    —
-                  </template>
-                </span>
-              </template>
-
-              <template #item.total_weight="{ item }">
-                {{ formatTotalWeight(item.total_weight) }}
-              </template>
-
-              <template #item.shipping_fee="{ item }">
-                {{ formatYundanShippingFee(item.shipping_fee) }}
-              </template>
-
-              <template #item.error_message="{ item }">
-                <span
-                  v-if="item.error_message"
-                  class="text-error text-truncate d-inline-block"
-                  style="max-inline-size: 220px;"
-                  :title="String(item.error_message)"
-                >{{ item.error_message }}</span>
-                <span
-                  v-else
-                  class="text-disabled"
-                >—</span>
-              </template>
-
-              <template #item.status="{ item }">
-                <VChip
-                  :color="resolveYundanStatus(item.status).color"
-                  label
-                  size="small"
-                  class="font-weight-medium"
-                >
-                  {{ resolveYundanStatus(item.status).text }}
-                </VChip>
-              </template>
-
-              <template #item.actions="{ item }">
-                <VMenu>
-                  <template #activator="{ props }">
-                    <IconBtn
-                      v-bind="props"
-                      aria-label="更多操作"
-                    >
-                      <VIcon
-                        icon="tabler-dots-vertical"
-                        size="20"
-                      />
-                    </IconBtn>
-                  </template>
-                  <VList density="compact">
-                    <VListItem
-                      prepend-icon="tabler-eye"
-                      title="详情"
-                      @click="openDetailByRow(item)"
-                    />
-                    <VListItem
-                      prepend-icon="tabler-download"
-                      title="下载面单"
-                      @click="downloadLabelByRow(item)"
-                    />
-                  </VList>
-                </VMenu>
-              </template>
-
-              <template #no-data>
-                <div class="text-center text-medium-emphasis py-12">
-                  暂无订单数据
-                </div>
-              </template>
-
-              <template #bottom>
-                <VDivider />
-                <div class="d-flex align-center justify-sm-space-between justify-center flex-wrap gap-3 px-4 px-sm-6 py-3">
-                  <p class="text-medium-emphasis mb-0 text-body-2">
-                    {{ zhPageMeta }}
-                  </p>
-                  <VPagination
-                    v-if="pageLength > 1"
-                    v-model="page"
-                    rounded
-                    active-color="primary"
-                    :length="pageLength"
-                    :total-visible="$vuetify.display.xs ? 1 : Math.min(pageLength, 7)"
-                  />
-                </div>
-              </template>
-            </VDataTableServer>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
-
-    <VDialog
-      v-model="detailDialog"
-      max-width="980"
-      scrollable
-    >
-      <VCard class="rounded-lg order-detail-dialog">
-        <VCardItem class="px-6 pt-5 pb-3">
+  <VRow>
+    <VCol cols="12">
+      <VCard class="rounded-lg">
+        <VCardItem class="pb-3">
           <template #title>
-            <span class="text-h6 font-weight-medium">运单详情</span>
+            <span class="text-h5 font-weight-medium">{{ $t('pages.printLabelOrders.title') }}</span>
           </template>
           <template #subtitle>
-            <span class="text-body-2 text-medium-emphasis">订单号：{{ detailData?.order_sn || '—' }}</span>
+            <span class="text-body-2 text-medium-emphasis">{{ $t('pages.printLabelOrders.subtitle') }}</span>
           </template>
           <template #append>
-            <div class="d-flex align-center gap-2">
+            <div class="d-flex flex-wrap gap-2 justify-end">
               <VBtn
-                variant="tonal"
+                color="primary"
                 size="small"
-                prepend-icon="tabler-download"
-                :disabled="detailLoading || !detailData"
-                @click="downloadLabelPdf"
+                prepend-icon="tabler-plus"
+                :to="{ name: 'apps-print-label-create' }"
               >
-                下载面单
+                {{ $t('pages.printLabelOrders.actions.create') }}
               </VBtn>
-              <IconBtn @click="closeDetailDialog">
-                <VIcon icon="tabler-x" />
-              </IconBtn>
             </div>
           </template>
         </VCardItem>
+
         <VDivider />
-        <VCardText class="pa-4 pa-sm-6">
+
+        <VCardText class="pa-4 pa-sm-6 pt-4">
           <VAlert
-            v-if="detailError"
+            type="warning"
+            variant="tonal"
+            border="start"
+            density="comfortable"
+            prominent
+            class="mb-4"
+            prepend-icon="tabler-alert-triangle"
+          >
+            <div class="text-body-2">
+              {{ $t('pages.printLabelOrders.legacyNotice') }}
+            </div>
+          </VAlert>
+
+          <VAlert
+            v-if="loadError"
             type="error"
             variant="tonal"
             density="compact"
             class="mb-4"
+            closable
+            @click:close="clearLoadError"
           >
-            {{ detailError }}
+            {{ loadError }}
           </VAlert>
-          <VProgressLinear
-            v-if="detailLoading"
-            indeterminate
-            color="primary"
-            class="mb-4"
-          />
-          <template v-if="detailData && !detailLoading">
-            <VSheet
-              rounded="lg"
-              class="order-detail-hero pa-4 pa-sm-5 mb-4"
-            >
-              <div class="d-flex flex-wrap align-center justify-space-between gap-3">
-                <div class="min-w-0">
-                  <div class="text-caption text-medium-emphasis mb-1">
-                    参考号
-                  </div>
-                  <div
-                    class="text-h5 font-weight-bold text-high-emphasis text-truncate"
-                    :title="detailData?.order_meta?.cankaohao || '—'"
-                  >
-                    {{ detailData?.order_meta?.cankaohao || '—' }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis mt-1">
-                    创建时间：{{ detailData?.order_meta?.createtime_text || '—' }}
-                  </div>
-                </div>
-                <div class="d-flex flex-wrap justify-end gap-2">
-                  <VChip
-                    color="primary"
-                    variant="tonal"
-                    label
-                    size="small"
-                  >
-                    {{ resolveYundanStatus(detailData?.status).text }}
-                  </VChip>
-                  <VChip
-                    color="secondary"
-                    variant="tonal"
-                    label
-                    size="small"
-                  >
-                    {{ detailData?.transport_line || '—' }}
-                  </VChip>
-                </div>
-              </div>
-            </VSheet>
 
-            <VRow class="mt-1">
+          <AppQueryPanel
+            class="mb-4"
+            :loading="loading"
+            actions-position="bottom"
+            @search="searchOrders"
+            @reset="resetFilters"
+          >
+            <VRow dense>
+              <VCol
+                cols="12"
+                sm="6"
+                lg="3"
+              >
+                <AppSelect
+                  v-model="filterStatus"
+                  :items="statusFilterItems"
+                  item-title="title"
+                  item-value="value"
+                  :label="$t('pages.printLabelOrders.filters.status')"
+                  density="compact"
+                  hide-details
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                sm="6"
+                lg="3"
+              >
+                <AppSelect
+                  v-model="filterType"
+                  :items="channelTypeItems"
+                  item-title="title"
+                  item-value="value"
+                  :label="$t('pages.printLabelOrders.filters.channel')"
+                  density="compact"
+                  hide-details
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                sm="6"
+                lg="3"
+              >
+                <AppTextField
+                  v-model="filterRecipientName"
+                  :label="$t('pages.printLabelOrders.filters.recipient')"
+                  density="compact"
+                  hide-details
+                  :placeholder="$t('pages.printLabelOrders.filters.recipientPlaceholder')"
+                  @keyup.enter="searchOrders"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                sm="6"
+                lg="3"
+              >
+                <AppDateTimePicker
+                  v-model="filterCreateRange"
+                  :label="$t('pages.printLabelOrders.filters.createdAt')"
+                  density="compact"
+                  hide-details
+                  :placeholder="$t('pages.printLabelOrders.filters.dateRange')"
+                  :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
+                  @keyup.enter="searchOrders"
+                />
+              </VCol>
               <VCol cols="12">
-                <VSheet
-                  border
-                  rounded="lg"
-                  class="pa-3 pa-sm-4"
-                >
-                  <div class="order-detail-kpis">
-                    <div class="order-detail-kpi">
-                      <div class="order-detail-kpi__label">
-                        状态
-                      </div>
-                      <div class="order-detail-kpi__value">
-                        {{ resolveYundanStatus(detailData?.status).text }}
-                      </div>
-                    </div>
-                    <div class="order-detail-kpi">
-                      <div class="order-detail-kpi__label">
-                        线路
-                      </div>
-                      <div
-                        class="order-detail-kpi__value text-truncate"
-                        :title="detailData?.transport_line || '—'"
-                      >
-                        {{ detailData?.transport_line || '—' }}
-                      </div>
-                    </div>
-                    <div class="order-detail-kpi">
-                      <div class="order-detail-kpi__label">
-                        运费
-                      </div>
-                      <div class="order-detail-kpi__value">
-                        {{ detailData?.price?.shipping_fee ?? '—' }}
-                      </div>
-                    </div>
-                    <div class="order-detail-kpi">
-                      <div class="order-detail-kpi__label">
-                        跟踪号
-                      </div>
-                      <div
-                        class="order-detail-kpi__value text-truncate"
-                        :title="detailData?.label?.ht_tracking_no || '—'"
-                      >
-                        {{ detailData?.label?.ht_tracking_no || '—' }}
-                      </div>
-                    </div>
-                  </div>
-                </VSheet>
+                <AppTextarea
+                  v-model="filterCankaohao"
+                  :label="$t('pages.printLabelOrders.filters.refNoMultiline')"
+                  density="compact"
+                  rows="2"
+                  variant="outlined"
+                  hide-details
+                  :placeholder="$t('pages.printLabelOrders.filters.refNoPerLine')"
+                  class="order-dd-filter-ref"
+                />
               </VCol>
             </VRow>
+          </AppQueryPanel>
 
-            <div class="order-detail-bottom-grid mt-4">
-              <VCard
-                variant="outlined"
-                class="h-100"
+          <VDataTableServer
+            v-model:items-per-page="itemsPerPage"
+            v-model:page="page"
+            :headers="headers"
+            :items="items"
+            :items-length="total"
+            :loading="loading"
+            :loading-text="$t('pages.printLabelOrders.empty.loading')"
+            item-value="id"
+            density="comfortable"
+            class="text-body-2 yundan-list-table"
+            fixed-header
+            :height="520"
+            :items-per-page-options="[
+              { value: 10, title: '10' },
+              { value: 20, title: '20' },
+              { value: 50, title: '50' },
+            ]"
+          >
+            <template #item.order_sn="{ item }">
+              <button
+                type="button"
+                class="order-dd-link text-high-emphasis font-weight-medium text-truncate d-inline-block"
+                style="max-inline-size: 220px;"
+                :title="item.order_sn"
+                @click="openDetailByRow(item)"
               >
-                <VCardText>
-                  <div class="text-subtitle-2 font-weight-medium mb-3 d-flex align-center gap-2">
-                    <VIcon
-                      icon="tabler-send"
-                      size="18"
-                    />
-                    发件人
-                  </div>
-                  <div class="text-body-1 font-weight-medium">
-                    {{ detailData?.send?.name || '—' }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis mt-1">
-                    {{ formatRegion(detailData?.send) }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis">
-                    {{ formatStreet(detailData?.send) }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis mt-2">
-                    {{ detailData?.send?.telephone || '—' }}
-                  </div>
-                </VCardText>
-              </VCard>
+                {{ item.order_sn }}
+              </button>
+            </template>
 
-              <VCard
-                variant="outlined"
-                class="h-100"
-              >
-                <VCardText>
-                  <div class="text-subtitle-2 font-weight-medium mb-3 d-flex align-center gap-2">
-                    <VIcon
-                      icon="tabler-package-export"
-                      size="18"
-                    />
-                    收件人
-                  </div>
-                  <div class="text-body-1 font-weight-medium">
-                    {{ detailData?.receive?.name || '—' }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis mt-1">
-                    {{ formatRegion(detailData?.receive) }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis">
-                    {{ formatStreet(detailData?.receive) }}
-                  </div>
-                  <div class="text-body-2 text-medium-emphasis mt-2">
-                    {{ detailData?.receive?.telephone || '—' }}
-                  </div>
-                </VCardText>
-              </VCard>
+            <template #item.cankaohao="{ item }">
+              <span
+                class="text-truncate d-inline-block"
+                style="max-inline-size: 160px;"
+                :title="item.cankaohao"
+              >{{ item.cankaohao || '—' }}</span>
+            </template>
 
-              <VCard
-                variant="outlined"
-                class="h-100"
+            <template #item.transport_line="{ item }">
+              <span
+                class="text-truncate d-inline-block"
+                style="max-inline-size: 200px;"
+                :title="item.transport_line"
+              >{{ item.transport_line || '—' }}</span>
+            </template>
+
+            <template #item.ht_tracking_no="{ item }">
+              <div class="d-flex align-center gap-1">
+                <span
+                  class="text-truncate"
+                  style="max-inline-size: 200px;"
+                  :title="item.ht_tracking_no"
+                >{{ item.ht_tracking_no || '—' }}</span>
+                <IconBtn
+                  v-if="item.ht_tracking_no"
+                  size="small"
+                  :aria-label="$t('pages.printLabelOrders.aria.copyTracking')"
+                  @click="copyTracking(item.ht_tracking_no)"
+                >
+                  <VIcon
+                    icon="tabler-copy"
+                    size="18"
+                  />
+                </IconBtn>
+              </div>
+            </template>
+
+            <template #item.sku_line="{ item }">
+              <span class="text-medium-emphasis">
+                <template v-if="item.sku || item.sku_num">
+                  {{ item.sku || '—' }} / {{ item.sku_num || '—' }}
+                </template>
+                <template v-else>
+                  —
+                </template>
+              </span>
+            </template>
+
+            <template #item.total_weight="{ item }">
+              {{ formatTotalWeight(item.total_weight) }}
+            </template>
+
+            <template #item.shipping_fee="{ item }">
+              {{ formatYundanShippingFee(item.shipping_fee) }}
+            </template>
+
+            <template #item.error_message="{ item }">
+              <span
+                v-if="item.error_message"
+                class="text-error text-truncate d-inline-block"
+                style="max-inline-size: 220px;"
+                :title="String(item.error_message)"
+              >{{ item.error_message }}</span>
+              <span
+                v-else
+                class="text-disabled"
+              >—</span>
+            </template>
+
+            <template #item.status="{ item }">
+              <VChip
+                :color="resolveStatus(item.status).color"
+                label
+                size="small"
+                class="font-weight-medium"
               >
-                <VCardText>
-                  <div class="text-subtitle-2 font-weight-medium mb-3 d-flex align-center gap-2">
-                    <VIcon
-                      icon="tabler-box"
-                      size="18"
-                    />
-                    包裹信息
-                  </div>
-                  <div
-                    v-if="!(detailData?.packages || []).length"
-                    class="text-body-2 text-medium-emphasis"
-                  >
-                    暂无包裹信息
-                  </div>
-                  <div
-                    v-for="(p, idx) in (detailData?.packages || [])"
-                    :key="idx"
-                    class="order-detail-package py-2"
-                  >
-                    <div class="text-body-2 font-weight-medium mb-1">
-                      包裹 #{{ idx + 1 }}
-                    </div>
-                    <div class="text-body-2 text-medium-emphasis">
-                      重量 {{ p.weight ?? '—' }} · 尺寸 {{ p.length ?? '—' }} × {{ p.width ?? '—' }} × {{ p.height ?? '—' }}
-                    </div>
-                    <div class="text-body-2 text-medium-emphasis">
-                      申报 {{ p.value ?? '—' }}
-                    </div>
-                  </div>
-                </VCardText>
-              </VCard>
-            </div>
-          </template>
+                {{ resolveStatus(item.status).text }}
+              </VChip>
+            </template>
+
+            <template #item.actions="{ item }">
+              <div class="d-flex align-center justify-end gap-1">
+                <VTooltip :text="$t('pages.printLabelOrders.tooltips.detail')">
+                  <template #activator="{ props }">
+                    <IconBtn
+                      v-bind="props"
+                      size="small"
+                      color="primary"
+                      @click="openDetailByRow(item)"
+                    >
+                      <VIcon
+                        icon="tabler-eye"
+                        size="20"
+                      />
+                    </IconBtn>
+                  </template>
+                </VTooltip>
+                <VTooltip :text="$t('pages.printLabelOrders.tooltips.downloadLabel')">
+                  <template #activator="{ props }">
+                    <IconBtn
+                      v-bind="props"
+                      size="small"
+                      color="secondary"
+                      @click="downloadLabelByRow(item)"
+                    >
+                      <VIcon
+                        icon="tabler-download"
+                        size="20"
+                      />
+                    </IconBtn>
+                  </template>
+                </VTooltip>
+              </div>
+            </template>
+
+            <template #no-data>
+              <div class="text-center text-medium-emphasis py-12">
+                {{ $t('pages.printLabelOrders.empty.noOrderData') }}
+              </div>
+            </template>
+
+            <template #bottom>
+              <VDivider />
+              <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+                <div class="text-body-2 text-medium-emphasis">
+                  {{ $t('pages.printLabelOrders.pagination.total', { total }) }}
+                </div>
+                <div class="d-flex align-center gap-3">
+                  <AppSelect
+                    v-model="itemsPerPage"
+                    :items="[10, 20, 50, 100]"
+                    density="compact"
+                    hide-details
+                    style="inline-size: 100px"
+                  />
+                  <VPagination
+                    v-model="page"
+                    :length="pageLength"
+                    :total-visible="5"
+                    active-color="primary"
+                    size="small"
+                  />
+                </div>
+              </div>
+            </template>
+          </VDataTableServer>
         </VCardText>
       </VCard>
-    </VDialog>
-  </VContainer>
+    </VCol>
+  </VRow>
+
+  <VDialog
+    v-model="detailDialog"
+    max-width="980"
+    scrollable
+  >
+    <VCard class="rounded-lg order-detail-dialog">
+      <VCardItem class="px-6 pt-5 pb-3">
+        <template #title>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.printLabelOrders.detail.title') }}</span>
+        </template>
+        <template #subtitle>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.printLabelOrders.detail.orderNo', { orderNo: detailData?.order_sn || '—' }) }}</span>
+        </template>
+        <template #append>
+          <div class="d-flex align-center gap-2">
+            <VBtn
+              variant="tonal"
+              size="small"
+              prepend-icon="tabler-download"
+              :disabled="detailLoading || !detailData"
+              @click="downloadLabelPdf"
+            >
+              {{ $t('pages.printLabelOrders.actions.downloadLabel') }}
+            </VBtn>
+            <IconBtn @click="closeDetailDialog">
+              <VIcon icon="tabler-x" />
+            </IconBtn>
+          </div>
+        </template>
+      </VCardItem>
+      <VDivider />
+      <VCardText class="pa-4 pa-sm-6">
+        <VAlert
+          v-if="detailError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+        >
+          {{ detailError }}
+        </VAlert>
+        <VProgressLinear
+          v-if="detailLoading"
+          indeterminate
+          color="primary"
+          class="mb-4"
+        />
+        <template v-if="detailData && !detailLoading">
+          <VSheet
+            rounded="lg"
+            class="order-detail-hero pa-4 pa-sm-5 mb-4"
+          >
+            <div class="d-flex flex-wrap align-center justify-space-between gap-3">
+              <div class="min-w-0">
+                <div class="text-caption text-medium-emphasis mb-1">
+                  {{ $t('pages.printLabelOrders.detail.refNo') }}
+                </div>
+                <div
+                  class="text-h5 font-weight-bold text-high-emphasis text-truncate"
+                  :title="detailData?.order_meta?.cankaohao || '—'"
+                >
+                  {{ detailData?.order_meta?.cankaohao || '—' }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-1">
+                  {{ $t('pages.printLabelOrders.detail.createdAt', { time: detailData?.order_meta?.createtime_text || '—' }) }}
+                </div>
+              </div>
+              <div class="d-flex flex-wrap justify-end gap-2">
+                <VChip
+                  color="primary"
+                  variant="tonal"
+                  label
+                  size="small"
+                >
+                  {{ resolveStatus(detailData?.status).text }}
+                </VChip>
+                <VChip
+                  color="secondary"
+                  variant="tonal"
+                  label
+                  size="small"
+                >
+                  {{ detailData?.transport_line || '—' }}
+                </VChip>
+              </div>
+            </div>
+          </VSheet>
+
+          <VRow class="mt-1">
+            <VCol cols="12">
+              <VSheet
+                border
+                rounded="lg"
+                class="pa-3 pa-sm-4"
+              >
+                <div class="order-detail-kpis">
+                  <div class="order-detail-kpi">
+                    <div class="order-detail-kpi__label">
+                      {{ $t('pages.printLabelOrders.detail.status') }}
+                    </div>
+                    <div class="order-detail-kpi__value">
+                      {{ resolveStatus(detailData?.status).text }}
+                    </div>
+                  </div>
+                  <div class="order-detail-kpi">
+                    <div class="order-detail-kpi__label">
+                      {{ $t('pages.printLabelOrders.detail.line') }}
+                    </div>
+                    <div
+                      class="order-detail-kpi__value text-truncate"
+                      :title="detailData?.transport_line || '—'"
+                    >
+                      {{ detailData?.transport_line || '—' }}
+                    </div>
+                  </div>
+                  <div class="order-detail-kpi">
+                    <div class="order-detail-kpi__label">
+                      {{ $t('pages.printLabelOrders.detail.shippingFee') }}
+                    </div>
+                    <div class="order-detail-kpi__value">
+                      {{ detailData?.price?.shipping_fee ?? '—' }}
+                    </div>
+                  </div>
+                  <div class="order-detail-kpi">
+                    <div class="order-detail-kpi__label">
+                      {{ $t('pages.printLabelOrders.detail.trackingNo') }}
+                    </div>
+                    <div
+                      class="order-detail-kpi__value text-truncate"
+                      :title="detailData?.label?.ht_tracking_no || '—'"
+                    >
+                      {{ detailData?.label?.ht_tracking_no || '—' }}
+                    </div>
+                  </div>
+                </div>
+              </VSheet>
+            </VCol>
+          </VRow>
+
+          <div class="order-detail-bottom-grid mt-4">
+            <VCard
+              variant="outlined"
+              class="h-100"
+            >
+              <VCardText>
+                <div class="text-subtitle-2 font-weight-medium mb-3 d-flex align-center gap-2">
+                  <VIcon
+                    icon="tabler-send"
+                    size="18"
+                  />
+                  {{ $t('pages.printLabelOrders.detail.sender') }}
+                </div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ detailData?.send?.name || '—' }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-1">
+                  {{ formatRegion(detailData?.send) }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis">
+                  {{ formatStreet(detailData?.send) }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-2">
+                  {{ detailData?.send?.telephone || '—' }}
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VCard
+              variant="outlined"
+              class="h-100"
+            >
+              <VCardText>
+                <div class="text-subtitle-2 font-weight-medium mb-3 d-flex align-center gap-2">
+                  <VIcon
+                    icon="tabler-package-export"
+                    size="18"
+                  />
+                  {{ $t('pages.printLabelOrders.detail.recipient') }}
+                </div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ detailData?.receive?.name || '—' }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-1">
+                  {{ formatRegion(detailData?.receive) }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis">
+                  {{ formatStreet(detailData?.receive) }}
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-2">
+                  {{ detailData?.receive?.telephone || '—' }}
+                </div>
+              </VCardText>
+            </VCard>
+
+            <VCard
+              variant="outlined"
+              class="h-100"
+            >
+              <VCardText>
+                <div class="text-subtitle-2 font-weight-medium mb-3 d-flex align-center gap-2">
+                  <VIcon
+                    icon="tabler-box"
+                    size="18"
+                  />
+                  {{ $t('pages.printLabelOrders.detail.packageInfo') }}
+                </div>
+                <div
+                  v-if="!(detailData?.packages || []).length"
+                  class="text-body-2 text-medium-emphasis"
+                >
+                  {{ $t('pages.printLabelOrders.empty.noPackageInfo') }}
+                </div>
+                <div
+                  v-for="(p, idx) in (detailData?.packages || [])"
+                  :key="idx"
+                  class="order-detail-package py-2"
+                >
+                  <div class="text-body-2 font-weight-medium mb-1">
+                    {{ $t('pages.printLabelOrders.detail.packageNo', { index: idx + 1 }) }}
+                  </div>
+                  <div class="text-body-2 text-medium-emphasis">
+                    {{ $t('pages.printLabelOrders.detail.packageMetrics', { weight: p.weight ?? '—', length: p.length ?? '—', width: p.width ?? '—', height: p.height ?? '—' }) }}
+                  </div>
+                  <div class="text-body-2 text-medium-emphasis">
+                    {{ $t('pages.printLabelOrders.detail.packageDeclaration', { value: p.value ?? '—' }) }}
+                  </div>
+                </div>
+              </VCardText>
+            </VCard>
+          </div>
+        </template>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>

@@ -20,58 +20,59 @@ const itemsPerPage = ref(20)
 const warehouseOptions = ref([])
 const snack = ref({ show: false, text: '', color: 'info' })
 const warehousePersistReady = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
-const statusTextMap = {
-  1: '待确认',
-  2: '已确认',
-  3: '待付款',
-  4: '待发货',
-  6: '海外仓已发货',
-  14: '问题订单',
-  15: '已退运费',
+const statusTextKeys = {
+  1: 'pages.dropShippingOrderList.status.pendingConfirm',
+  2: 'pages.dropShippingOrderList.status.confirmed',
+  3: 'pages.dropShippingOrderList.status.pendingPayment',
+  4: 'pages.dropShippingOrderList.status.pendingShipment',
+  6: 'pages.dropShippingOrderList.status.overseasShipped',
+  14: 'pages.dropShippingOrderList.status.problem',
+  15: 'pages.dropShippingOrderList.status.refundedShipping',
 }
 
-const statusItems = [
-  { title: '全部订单', value: '100' },
-  { title: '待确认', value: 1 },
-  { title: '已确认', value: 2 },
-  { title: '待发货', value: 4 },
-  { title: '海外仓已发出', value: 6 },
-  { title: '已退运费', value: 15 },
-  { title: '问题订单', value: 14 },
-]
+const statusItems = computed(() => [
+  { title: t('pages.dropShippingOrderList.status.all'), value: '100' },
+  { title: t('pages.dropShippingOrderList.status.pendingConfirm'), value: 1 },
+  { title: t('pages.dropShippingOrderList.status.confirmed'), value: 2 },
+  { title: t('pages.dropShippingOrderList.status.pendingShipment'), value: 4 },
+  { title: t('pages.dropShippingOrderList.status.overseasSent'), value: 6 },
+  { title: t('pages.dropShippingOrderList.status.refundedShipping'), value: 15 },
+  { title: t('pages.dropShippingOrderList.status.problem'), value: 14 },
+])
 
-/** 与下单线路 ID 及旧版 order-list 筛选一致（接口 transport_type 为数字） */
-const transportTypeItems = [
-  { title: '全部运输方式', value: '' },
-  { title: '自提', value: 200 },
-  { title: 'USPS（非预上网）', value: 29 },
-  { title: 'USPS（T5）', value: 27 },
+/** Keep transport_type IDs aligned with order creation and the legacy order-list filters. */
+const transportTypeItems = computed(() => [
+  { title: t('pages.dropShippingOrderList.transport.all'), value: '' },
+  { title: t('pages.dropShippingOrderList.transport.pickup'), value: 200 },
+  { title: t('pages.dropShippingOrderList.transport.uspsNoPreOnline'), value: 29 },
+  { title: t('pages.dropShippingOrderList.transport.uspsT5'), value: 27 },
   { title: 'SPEEDX', value: 53 },
   { title: 'Amazon', value: 56 },
   { title: 'UPS Ground', value: 50 },
   { title: 'FedEx 2Day', value: 52 },
   { title: 'Fedex', value: 59 },
   { title: 'Gofo', value: 210 },
-  { title: 'UNI（', value: 211 },
+  { title: t('pages.dropShippingOrderList.transport.uni'), value: 211 },
   { title: 'NEXTDAY', value: 213 },
   { title: 'USPS-Y', value: 214 },
-]
+])
 
-const erpTypeItems = [
-  { title: '全部来源', value: '' },
-  { title: '系统', value: 1 },
-  { title: '马帮', value: 2 },
-  { title: '第三方ERP', value: 3 },
+const erpTypeItems = computed(() => [
+  { title: t('pages.dropShippingOrderList.source.all'), value: '' },
+  { title: t('pages.dropShippingOrderList.source.system'), value: 1 },
+  { title: t('pages.dropShippingOrderList.source.mabang'), value: 2 },
+  { title: t('pages.dropShippingOrderList.source.thirdPartyErp'), value: 3 },
   { title: 'TikTok', value: 4 },
   { title: 'Temu', value: 5 },
-]
+])
 
-const remoteItems = [
-  { title: '全部', value: '' },
-  { title: '偏远地区', value: 1 },
-  { title: '非偏远', value: 0 },
-]
+const remoteItems = computed(() => [
+  { title: t('pages.dropShippingOrderList.remote.all'), value: '' },
+  { title: t('pages.dropShippingOrderList.remote.remote'), value: 1 },
+  { title: t('pages.dropShippingOrderList.remote.nonRemote'), value: 0 },
+])
 
 const filters = ref({
   status: '100',
@@ -88,17 +89,17 @@ const filters = ref({
   questionReason: '',
 })
 
-const headers = [
-  { title: '订单号', key: 'order_info', minWidth: '220' },
-  { title: '参考号', key: 'cankaohao', minWidth: '130' },
-  { title: '收件人', key: 'name', minWidth: '120' },
-  { title: '仓库', key: 'warehouse_name', minWidth: '120' },
-  { title: 'SKU', key: 'sku', minWidth: '120' },
-  { title: '运单号', key: 'ht_tracking_no', minWidth: '170' },
-  { title: '费用', key: 'total_fee', minWidth: '90' },
-  { title: '状态', key: 'status_name', minWidth: '110', align: 'center' },
-  { title: '操作', key: 'actions', sortable: false, width: '230', align: 'center', fixed: 'end' },
-]
+const headers = computed(() => [
+  { title: t('pages.dropShippingOrderList.headers.orderNo'), key: 'order_info', minWidth: '220' },
+  { title: t('pages.dropShippingOrderList.headers.referenceNo'), key: 'cankaohao', minWidth: '130' },
+  { title: t('pages.dropShippingOrderList.headers.recipient'), key: 'name', minWidth: '120' },
+  { title: t('pages.dropShippingOrderList.headers.warehouse'), key: 'warehouse_name', minWidth: '120' },
+  { title: t('pages.dropShippingOrderList.headers.sku'), key: 'sku', minWidth: '120' },
+  { title: t('pages.dropShippingOrderList.headers.trackingNo'), key: 'ht_tracking_no', minWidth: '170' },
+  { title: t('pages.dropShippingOrderList.headers.fee'), key: 'total_fee', minWidth: '90' },
+  { title: t('pages.dropShippingOrderList.headers.status'), key: 'status_name', minWidth: '110', align: 'center' },
+  { title: t('pages.dropShippingOrderList.headers.actions'), key: 'actions', sortable: false, width: '130', align: 'end', fixed: 'end' },
+])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
 
@@ -111,7 +112,11 @@ function getStatusText(row) {
   if (raw && String(raw).trim())
     return String(raw).trim()
 
-  return statusTextMap[Number(row?.status)] || `状态(${row?.status ?? '-'})`
+  const statusKey = statusTextKeys[Number(row?.status)]
+
+  return statusKey
+    ? t(statusKey)
+    : t('pages.dropShippingOrderList.status.unknown', { status: row?.status ?? '-' })
 }
 
 function trackUrl(trackingNo) {
@@ -177,13 +182,13 @@ async function loadList() {
     else {
       rows.value = []
       total.value = 0
-      toast(res?.msg || '加载订单列表失败', 'error')
+      toast(res?.msg || t('pages.dropShippingOrderList.messages.loadFailed'), 'error')
     }
   }
   catch (e) {
     rows.value = []
     total.value = 0
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderList.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -192,7 +197,7 @@ async function loadList() {
 
 function searchList() {
   if (filters.value.status === '' || filters.value.status == null) {
-    toast('状态为必选项，请先选择状态', 'warning')
+    toast(t('pages.dropShippingOrderList.messages.statusRequired'), 'warning')
 
     return
   }
@@ -204,10 +209,10 @@ function searchList() {
     loadList()
 }
 
-/** 状态快捷筛选：与 filters.status 同步并拉取列表 */
+/** Keep the quick status filter synced with filters.status and reload the list. */
 function onStatusTabChange(v) {
   if (v === '' || v == null) {
-    toast('状态为必选项，请先选择状态', 'warning')
+    toast(t('pages.dropShippingOrderList.messages.statusRequired'), 'warning')
 
     return
   }
@@ -247,14 +252,14 @@ async function exportOrders() {
     })
 
     if (Number(res?.code) === 1) {
-      toast('导出任务已提交', 'success')
+      toast(t('pages.dropShippingOrderList.messages.exportSubmitted'), 'success')
     }
     else {
-      toast(res?.msg || '导出失败', 'error')
+      toast(res?.msg || t('pages.dropShippingOrderList.messages.exportFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '导出失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderList.messages.exportFailed'), 'error')
   }
 }
 
@@ -267,10 +272,10 @@ watch(() => filters.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  const remote = await loadWarehouseOptions()
+  const remote = await loadWarehouseOptions(t)
 
   warehouseOptions.value = [
-    { title: '全部仓库', value: null },
+    { title: t('pages.dropShippingOrderList.filters.allWarehouses'), value: null },
     ...remote,
   ]
   filters.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: false })
@@ -280,326 +285,340 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VContainer
-    fluid
-    class="pa-4 pa-sm-6 ds-order-list-page"
+  <VSnackbar
+    v-model="snack.show"
+    :color="snack.color"
+    location="top"
+    :timeout="2600"
   >
-    <VSnackbar
-      v-model="snack.show"
-      :color="snack.color"
-      location="top"
-      :timeout="2600"
-    >
-      {{ snack.text }}
-    </VSnackbar>
+    {{ snack.text }}
+  </VSnackbar>
 
-    <VCard class="rounded-lg">
-      <VCardItem class="pb-4 pt-6 px-6">
-        <template #title>
-          <span class="text-h5 font-weight-medium">订单列表</span>
+  <VCard class="rounded-lg ds-order-list-page">
+    <VCardItem class="pb-3">
+      <template #title>
+        <span class="text-h5 font-weight-medium">{{ $t('pages.dropShippingOrderList.title') }}</span>
+      </template>
+      <template #subtitle>
+        <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderList.subtitle') }}</span>
+      </template>
+      <template #append>
+        <div class="d-flex flex-wrap gap-2 justify-end">
+          <VBtn
+            color="primary"
+            size="small"
+            variant="tonal"
+            prepend-icon="tabler-upload"
+            :to="{ name: 'apps-drop-shipping-order-batch' }"
+          >
+            {{ $t('pages.dropShippingOrderList.actions.batchCreate') }}
+          </VBtn>
+          <VBtn
+            color="primary"
+            size="small"
+            prepend-icon="tabler-plus"
+            :to="{ name: 'apps-drop-shipping-order-create' }"
+          >
+            {{ $t('pages.dropShippingOrderList.actions.create') }}
+          </VBtn>
+        </div>
+      </template>
+    </VCardItem>
+    <VDivider />
+    <VCardText>
+      <AppQueryPanel
+        class="mb-4"
+        expandable
+        :loading="loading"
+        actions-position="bottom"
+        :quick-filter-items="statusItems"
+        :quick-filter="filters.status"
+        @search="searchList"
+        @reset="resetFilters"
+        @update:quick-filter="onStatusTabChange"
+      >
+        <template #export>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="tabler-download"
+            @click="exportOrders"
+          >
+            {{ $t('pages.dropShippingOrderList.actions.export') }}
+          </VBtn>
         </template>
-        <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">填写条件后点查询；状态在查询按钮下方快捷切换；仓库、运输方式与时间等展开「高级搜索」。</span>
+        <template #primary>
+          <VRow class="ds-order-list-page__filters">
+            <VCol
+              cols="12"
+              sm="6"
+              lg="3"
+            >
+              <AppTextField
+                v-model="filters.cankaohao"
+                :label="$t('pages.dropShippingOrderList.filters.orderNo')"
+                :placeholder="$t('pages.dropShippingOrderList.filters.orderNoPlaceholder')"
+                hide-details
+                density="compact"
+                @keyup.enter="searchList"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+              lg="3"
+            >
+              <AppTextField
+                v-model="filters.recipientName"
+                :label="$t('pages.dropShippingOrderList.filters.recipient')"
+                :placeholder="$t('pages.dropShippingOrderList.filters.recipientPlaceholder')"
+                hide-details
+                density="compact"
+                @keyup.enter="searchList"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+              lg="3"
+            >
+              <AppTextField
+                v-model="filters.skuName"
+                label="SKU"
+                :placeholder="$t('pages.dropShippingOrderList.filters.skuPlaceholder')"
+                hide-details
+                density="compact"
+                @keyup.enter="searchList"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+              lg="3"
+            >
+              <AppTextField
+                v-model="filters.htTrackingNo"
+                :label="$t('pages.dropShippingOrderList.filters.trackingNo')"
+                :placeholder="$t('pages.dropShippingOrderList.filters.trackingNoPlaceholder')"
+                hide-details
+                density="compact"
+                @keyup.enter="searchList"
+              />
+            </VCol>
+          </VRow>
         </template>
-        <template #append>
-          <div class="d-flex flex-wrap gap-2 justify-end">
-            <VBtn
-              color="primary"
-              size="small"
-              prepend-icon="tabler-plus"
-              :to="{ name: 'apps-drop-shipping-order-create' }"
+        <template #advanced>
+          <VRow class="ds-order-list-page__filters">
+            <VCol
+              cols="12"
+              md="3"
             >
-              创建订单
-            </VBtn>
-            <VBtn
-              color="primary"
-              size="small"
-              variant="tonal"
-              prepend-icon="tabler-upload"
-              :to="{ name: 'apps-drop-shipping-order-batch' }"
+              <AppSelect
+                v-model="filters.warehouseId"
+                :items="warehouseOptions"
+                item-title="title"
+                item-value="value"
+                :label="$t('pages.dropShippingOrderList.filters.warehouse')"
+                hide-details
+                density="compact"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="3"
             >
-              批量创建
-            </VBtn>
+              <AppSelect
+                v-model="filters.transportType"
+                :items="transportTypeItems"
+                item-title="title"
+                item-value="value"
+                :label="$t('pages.dropShippingOrderList.filters.transport')"
+                hide-details
+                density="compact"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <AppSelect
+                v-model="filters.erpType"
+                :items="erpTypeItems"
+                item-title="title"
+                item-value="value"
+                :label="$t('pages.dropShippingOrderList.filters.source')"
+                hide-details
+                density="compact"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <AppSelect
+                v-model="filters.isQujian"
+                :items="remoteItems"
+                item-title="title"
+                item-value="value"
+                :label="$t('pages.dropShippingOrderList.filters.remoteArea')"
+                hide-details
+                density="compact"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <AppDateTimePicker
+                v-model="filters.createRange"
+                :label="$t('pages.dropShippingOrderList.filters.createdAt')"
+                hide-details
+                density="compact"
+                :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <AppDateTimePicker
+                v-model="filters.sendRange"
+                :label="$t('pages.dropShippingOrderList.filters.shippedAt')"
+                hide-details
+                density="compact"
+                :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <AppTextField
+                v-model="filters.questionReason"
+                :label="$t('pages.dropShippingOrderList.filters.questionReason')"
+                :placeholder="$t('pages.dropShippingOrderList.filters.questionReasonPlaceholder')"
+                hide-details
+                density="compact"
+                @keyup.enter="searchList"
+              />
+            </VCol>
+          </VRow>
+        </template>
+      </AppQueryPanel>
+
+      <VDataTableServer
+        :headers="headers"
+        :items="rows"
+        :items-length="total"
+        :loading="loading"
+        item-value="id"
+        class="text-body-2 ds-order-list-page__table"
+      >
+        <template #item.order_info="{ item }">
+          <div class="order-info-cell">
+            <div class="order-info-cell__sn">
+              {{ item.order_sn || '-' }}
+            </div>
+            <div class="order-info-cell__time">
+              <VIcon
+                icon="tabler-clock"
+                size="14"
+                class="me-1"
+              />
+              {{ item.createtime || '-' }}
+            </div>
           </div>
         </template>
-      </VCardItem>
-      <VDivider />
-      <VCardText class="pa-4 pa-sm-6">
-        <AppQueryPanel
-          class="mb-4"
-          expandable
-          :loading="loading"
-          actions-position="bottom"
-          :quick-filter-items="statusItems"
-          :quick-filter="filters.status"
-          @search="searchList"
-          @reset="resetFilters"
-          @update:quick-filter="onStatusTabChange"
-        >
-          <template #export>
-            <VBtn
-              color="primary"
-              variant="tonal"
+
+        <template #item.ht_tracking_no="{ item }">
+          <a
+            v-if="item.ht_tracking_no"
+            :href="trackUrl(item.ht_tracking_no)"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary text-decoration-none"
+          >
+            {{ item.ht_tracking_no }}
+          </a>
+          <span v-else>-</span>
+        </template>
+
+        <template #item.status_name="{ item }">
+          <div class="d-flex justify-center">
+            <VChip
               size="small"
-              prepend-icon="tabler-download"
-              @click="exportOrders"
+              variant="tonal"
+              :color="Number(item.status) === 14 || getStatusText(item).includes('\u95ee\u9898') ? 'error' : 'primary'"
             >
-              导出订单
-            </VBtn>
-          </template>
-          <template #primary>
-            <VRow class="ds-order-list-page__filters">
-              <VCol
-                cols="12"
-                sm="6"
-                lg="3"
-              >
-                <AppTextField
-                  v-model="filters.cankaohao"
-                  label="订单号"
-                  placeholder="订单号或参考号"
-                  hide-details
-                  density="compact"
-                  @keyup.enter="searchList"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-                lg="3"
-              >
-                <AppTextField
-                  v-model="filters.recipientName"
-                  label="收件人"
-                  placeholder="收件人姓名"
-                  hide-details
-                  density="compact"
-                  @keyup.enter="searchList"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-                lg="3"
-              >
-                <AppTextField
-                  v-model="filters.skuName"
-                  label="SKU"
-                  placeholder="SKU 编码"
-                  hide-details
-                  density="compact"
-                  @keyup.enter="searchList"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-                lg="3"
-              >
-                <AppTextField
-                  v-model="filters.htTrackingNo"
-                  label="国际单号"
-                  placeholder="国际单号/追踪号"
-                  hide-details
-                  density="compact"
-                  @keyup.enter="searchList"
-                />
-              </VCol>
-            </VRow>
-          </template>
-          <template #advanced>
-            <VRow class="ds-order-list-page__filters">
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppSelect
-                  v-model="filters.warehouseId"
-                  :items="warehouseOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="仓库"
-                  hide-details
-                  density="compact"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppSelect
-                  v-model="filters.transportType"
-                  :items="transportTypeItems"
-                  item-title="title"
-                  item-value="value"
-                  label="运输方式"
-                  hide-details
-                  density="compact"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppSelect
-                  v-model="filters.erpType"
-                  :items="erpTypeItems"
-                  item-title="title"
-                  item-value="value"
-                  label="来源"
-                  hide-details
-                  density="compact"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppSelect
-                  v-model="filters.isQujian"
-                  :items="remoteItems"
-                  item-title="title"
-                  item-value="value"
-                  label="偏远地区"
-                  hide-details
-                  density="compact"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppDateTimePicker
-                  v-model="filters.createRange"
-                  label="创建时间"
-                  hide-details
-                  density="compact"
-                  :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppDateTimePicker
-                  v-model="filters.sendRange"
-                  label="发货时间"
-                  hide-details
-                  density="compact"
-                  :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="3"
-              >
-                <AppTextField
-                  v-model="filters.questionReason"
-                  label="问题原因"
-                  placeholder="输入问题原因"
-                  hide-details
-                  density="compact"
-                  @keyup.enter="searchList"
-                />
-              </VCol>
-            </VRow>
-          </template>
-        </AppQueryPanel>
+              {{ getStatusText(item) }}
+            </VChip>
+          </div>
+        </template>
 
-        <VDataTableServer
-          :headers="headers"
-          :items="rows"
-          :items-length="total"
-          :loading="loading"
-          item-value="id"
-          class="text-body-2 ds-order-list-page__table"
-        >
-          <template #item.order_info="{ item }">
-            <div class="order-info-cell">
-              <div class="order-info-cell__sn">
-                {{ item.order_sn || '-' }}
-              </div>
-              <div class="order-info-cell__time">
-                <VIcon
-                  icon="tabler-clock"
-                  size="14"
-                  class="me-1"
-                />
-                {{ item.createtime || '-' }}
-              </div>
-            </div>
-          </template>
+        <template #item.actions="{ item }">
+          <div class="d-flex align-center justify-end gap-1">
+            <VTooltip :text="$t('pages.dropShippingOrderList.tooltips.detail')">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  color="primary"
+                  @click="router.push({ name: 'apps-drop-shipping-order-detail', query: { id: item.id } })"
+                >
+                  <VIcon
+                    icon="tabler-eye"
+                    size="20"
+                  />
+                </IconBtn>
+              </template>
+            </VTooltip>
+            <VTooltip :text="$t('pages.dropShippingOrderList.tooltips.copy')">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  color="secondary"
+                  @click="router.push({ name: 'apps-drop-shipping-order-create', query: { id: item.id, mode: 'copy' } })"
+                >
+                  <VIcon
+                    icon="tabler-copy"
+                    size="20"
+                  />
+                </IconBtn>
+              </template>
+            </VTooltip>
+          </div>
+        </template>
 
-          <template #item.ht_tracking_no="{ item }">
-            <a
-              v-if="item.ht_tracking_no"
-              :href="trackUrl(item.ht_tracking_no)"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-primary text-decoration-none"
-            >
-              {{ item.ht_tracking_no }}
-            </a>
-            <span v-else>-</span>
-          </template>
-
-          <template #item.status_name="{ item }">
-            <div class="d-flex justify-center">
-              <VChip
+        <template #bottom>
+          <VDivider />
+          <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+            <span class="text-body-2 text-medium-emphasis">
+              {{ $t('pages.dropShippingOrderList.pagination.total', { total }) }}
+            </span>
+            <div class="d-flex align-center gap-3">
+              <AppSelect
+                :model-value="itemsPerPage"
+                :items="[10, 20, 50, 100]"
+                style="inline-size: 100px;"
+                density="compact"
+                hide-details
+                @update:model-value="itemsPerPage = Number($event)"
+              />
+              <VPagination
+                v-model="page"
+                :length="pageLength"
+                :total-visible="5"
                 size="small"
-                variant="tonal"
-                :color="getStatusText(item).includes('问题') ? 'error' : 'primary'"
-              >
-                {{ getStatusText(item) }}
-              </VChip>
+                active-color="primary"
+              />
             </div>
-          </template>
-
-          <template #item.actions="{ item }">
-            <div class="d-flex align-center justify-center gap-2">
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="secondary"
-                @click="router.push({ name: 'apps-drop-shipping-order-create', query: { id: item.id, mode: 'detail' } })"
-              >
-                详情
-              </VBtn>
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="primary"
-                @click="router.push({ name: 'apps-drop-shipping-order-create', query: { id: item.id, mode: 'copy' } })"
-              >
-                复制
-              </VBtn>
-            </div>
-          </template>
-
-          <template #bottom>
-            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
-              <span class="text-body-2 text-medium-emphasis">共 {{ total }} 条</span>
-              <div class="d-flex align-center gap-3">
-                <AppSelect
-                  :model-value="itemsPerPage"
-                  :items="[20, 50, 100]"
-                  style="inline-size: 96px;"
-                  density="compact"
-                  hide-details
-                  @update:model-value="itemsPerPage = Number($event)"
-                />
-                <VPagination
-                  v-model="page"
-                  :length="pageLength"
-                  :total-visible="7"
-                />
-              </div>
-            </div>
-          </template>
-        </VDataTableServer>
-      </VCardText>
-    </VCard>
-  </VContainer>
+          </div>
+        </template>
+      </VDataTableServer>
+    </VCardText>
+  </VCard>
 </template>
 
 <style scoped>

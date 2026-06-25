@@ -1,5 +1,5 @@
-import { useCookie } from '@core/composable/useCookie'
 import { clearAppAbilityRules } from '@/utils/authAbilityRegistry'
+import { useCookie } from '@core/composable/useCookie'
 
 let redirecting401 = false
 
@@ -20,7 +20,20 @@ export async function handleHttpUnauthorized() {
   if (typeof document === 'undefined')
     return
 
-  const { router } = await import('@/plugins/1.router/index')
+  let router
+  try {
+    const mod = await import('@/plugins/1.router/index')
+
+    router = mod.router
+  }
+  catch {
+    // dev 模式下 HMR 窗口期动态 import 可能失败，降级为强制刷新
+    if (typeof window !== 'undefined')
+      window.location.href = '/login'
+    
+    return
+  }
+
   const route = router.currentRoute.value
 
   if (route.name === 'login')

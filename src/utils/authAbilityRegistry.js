@@ -5,6 +5,10 @@ export function registerAppAbility(ability) {
   appAbility = ability
 }
 
+export function getAppAbility() {
+  return appAbility
+}
+
 export function clearAppAbilityRules() {
   appAbility?.update([])
 }

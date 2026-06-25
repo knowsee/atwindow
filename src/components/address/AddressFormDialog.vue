@@ -1,9 +1,5 @@
 <script setup>
-/**
- * 地址新增/编辑弹窗（与 /order/addAddr、/order/editAddr 字段一致，UI 与面单创建对齐）
- */
 const props = defineProps({
-  /** 1 发件 2 收件 — 用于副标题与接口 type */
   addrType: {
     type: Number,
     required: true,
@@ -17,7 +13,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  /** 锁定国家（短码）时禁用国家下拉 */
   countryLock: {
     type: String,
     default: null,
@@ -40,15 +35,15 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['submit'])
 const visible = defineModel({ type: Boolean, default: false })
 const form = defineModel('form', { type: Object, required: true })
 
-const emit = defineEmits(['submit'])
-
 const formRef = ref()
+const { t } = useI18n({ useScope: 'global' })
 
 function requiredField(v) {
-  return String(v || '').trim() ? true : '必填项'
+  return String(v || '').trim() ? true : t('components.addressForm.required')
 }
 
 watch(visible, v => {
@@ -67,7 +62,7 @@ async function onSave() {
   emit('submit')
 }
 
-const contextLabel = computed(() => (props.addrType === 1 ? '发件地址' : '收件地址'))
+const contextLabel = computed(() => (props.addrType === 1 ? t('components.addressForm.context.sender') : t('components.addressForm.context.receiver')))
 const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
 </script>
 
@@ -81,7 +76,7 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
     <VCard class="rounded-lg">
       <VCardItem>
         <VCardTitle class="text-h6 font-weight-medium">
-          {{ isEdit ? '编辑地址' : '新增地址' }}
+          {{ isEdit ? $t('components.addressForm.title.edit') : $t('components.addressForm.title.create') }}
         </VCardTitle>
         <VCardSubtitle>
           {{ contextLabel }}
@@ -94,30 +89,30 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
             <VCol cols="12">
               <AppTextField
                 v-model="form.name"
-                label="姓名"
+                :label="$t('components.addressForm.fields.name')"
                 :rules="[requiredField]"
               />
             </VCol>
             <VCol cols="12">
               <AppTextField
                 v-model="form.address"
-                label="详细地址 1"
+                :label="$t('components.addressForm.fields.address1')"
                 :rules="[requiredField]"
               />
             </VCol>
             <VCol cols="12">
               <AppTextField
                 v-model="form.address2"
-                label="详细地址 2"
-                hint="可选"
+                :label="$t('components.addressForm.fields.address2')"
+                :hint="$t('components.addressForm.hints.optional')"
                 persistent-hint
               />
             </VCol>
             <VCol cols="12">
               <AppTextField
                 v-model="form.streetno"
-                label="街道 / 门牌"
-                hint="可选（门牌、街道补充）"
+                :label="$t('components.addressForm.fields.street')"
+                :hint="$t('components.addressForm.hints.street')"
                 persistent-hint
               />
             </VCol>
@@ -127,7 +122,7 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
             >
               <AppTextField
                 v-model="form.city"
-                label="城市"
+                :label="$t('components.addressForm.fields.city')"
                 :rules="[requiredField]"
               />
             </VCol>
@@ -137,7 +132,7 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
             >
               <AppTextField
                 v-model="form.province"
-                label="省 / 州"
+                :label="$t('components.addressForm.fields.province')"
                 :rules="[requiredField]"
               />
             </VCol>
@@ -147,7 +142,7 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
             >
               <AppTextField
                 v-model="form.postcode"
-                label="邮政编码"
+                :label="$t('components.addressForm.fields.postcode')"
                 :rules="[requiredField]"
               />
             </VCol>
@@ -156,7 +151,7 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
                 v-model="form.country"
                 :items="countryItems"
                 :loading="countriesLoading"
-                label="国家 / 地区"
+                :label="$t('components.addressForm.fields.country')"
                 :disabled="countryDisabled"
                 :rules="[requiredField]"
               />
@@ -167,7 +162,7 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
             >
               <AppTextField
                 v-model="form.telephone"
-                label="电话"
+                :label="$t('components.addressForm.fields.telephone')"
                 :rules="[requiredField]"
               />
             </VCol>
@@ -177,13 +172,13 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
             >
               <AppTextField
                 v-model="form.company"
-                label="公司"
+                :label="$t('components.addressForm.fields.company')"
               />
             </VCol>
             <VCol cols="12">
               <AppTextField
                 v-model="form.email"
-                label="邮箱"
+                :label="$t('components.addressForm.fields.email')"
               />
             </VCol>
           </VRow>
@@ -195,14 +190,14 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
           :disabled="submitting"
           @click="onClose"
         >
-          取消
+          {{ $t('components.addressForm.actions.cancel') }}
         </VBtn>
         <VBtn
           color="primary"
           :loading="submitting"
           @click="onSave"
         >
-          {{ isEdit ? '保存' : '创建' }}
+          {{ isEdit ? $t('components.addressForm.actions.save') : $t('components.addressForm.actions.create') }}
         </VBtn>
       </VCardActions>
     </VCard>

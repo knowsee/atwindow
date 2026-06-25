@@ -16,6 +16,7 @@ const tableRows = ref([])
 const selectedRows = ref([])
 const categories = ref([])
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const pagination = reactive({
   page: 1,
@@ -39,23 +40,24 @@ const deletingId = ref(0)
 const previewVisible = ref(false)
 const previewImage = ref('')
 const exporting = ref(false)
+const PRODUCT_STATUS_NORMAL = '\u6b63\u5e38'
 
-const headers = [
-  { title: 'SKU', key: 'en_sku', width: 160 },
-  { title: '产品名', key: 'cn_name', minWidth: 220 },
-  { title: '英文品牌', key: 'en_brand', width: 130 },
-  { title: '重量(KG)', key: 'weight', width: 110 },
-  { title: '长*宽*高(CM)', key: 'lwh', width: 170, align: 'center' },
-  { title: '原产地', key: 'original_places', width: 130 },
-  { title: '产品分类', key: 'cat_name', width: 130 },
-  { title: '总库存', key: 'number', width: 100, align: 'end' },
-  { title: '图片', key: 'img_url', width: 100, align: 'center' },
-  { title: '状态', key: 'status', width: 100, align: 'center' },
-  { title: '操作', key: 'actions', width: 80, align: 'center', sortable: false },
-]
+const headers = computed(() => [
+  { title: t('pages.productList.headers.sku'), key: 'en_sku', width: 160 },
+  { title: t('pages.productList.headers.name'), key: 'cn_name', minWidth: 220 },
+  { title: t('pages.productList.headers.brand'), key: 'en_brand', width: 130 },
+  { title: t('pages.productList.headers.weight'), key: 'weight', width: 110 },
+  { title: t('pages.productList.headers.lwh'), key: 'lwh', width: 170, align: 'center' },
+  { title: t('pages.productList.headers.origin'), key: 'original_places', width: 130 },
+  { title: t('pages.productList.headers.category'), key: 'cat_name', width: 130 },
+  { title: t('pages.productList.headers.stock'), key: 'number', width: 100, align: 'end' },
+  { title: t('pages.productList.headers.image'), key: 'img_url', width: 100, align: 'center' },
+  { title: t('pages.productList.headers.status'), key: 'status', width: 100, align: 'center' },
+  { title: t('pages.productList.headers.actions'), key: 'actions', width: 140, align: 'end', sortable: false },
+])
 
 const categoryItems = computed(() => [
-  { title: '全部分类', value: null },
+  { title: t('pages.productList.filters.allCategories'), value: null },
   ...categories.value.map(item => ({
     title: String(item.cn_en_name || ''),
     value: Number(item.id),
@@ -74,7 +76,7 @@ function normalizeTableRows(rows) {
     ...item,
     id: Number(item.id),
     lwh: `${item.length || 0}*${item.width || 0}*${item.height || 0}`,
-    statusEnabled: item.status === '正常' || Number(item.status) === 1,
+    statusEnabled: item.status === PRODUCT_STATUS_NORMAL || Number(item.status) === 1,
   }))
 }
 
@@ -108,10 +110,10 @@ async function fetchCategoryList() {
     if (Number(res?.code) === 1)
       categories.value = parseCategoryRows(res?.data)
     else
-      toast(res?.msg || '加载产品分类失败', 'warning')
+      toast(res?.msg || t('pages.productList.messages.categoryLoadFailed'), 'warning')
   }
   catch {
-    toast('加载产品分类失败', 'warning')
+    toast(t('pages.productList.messages.categoryLoadFailed'), 'warning')
   }
 }
 
@@ -140,10 +142,10 @@ async function fetchProductList() {
       return
     }
 
-    toast(res?.msg || '加载产品列表失败', 'error')
+    toast(res?.msg || t('pages.productList.messages.listLoadFailed'), 'error')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '加载产品列表失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productList.messages.listLoadFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -162,14 +164,14 @@ async function exportToExcel() {
     })
 
     if (Number(res?.code) !== 1 || !res?.data) {
-      toast(res?.msg || '获取导出数据失败', 'error')
+      toast(res?.msg || t('pages.productList.messages.exportFetchFailed'), 'error')
 
       return
     }
 
     const raw = Array.isArray(res.data.data) ? res.data.data : []
     if (!raw.length) {
-      toast('当前条件下无数据可导出', 'warning')
+      toast(t('pages.productList.messages.exportNoData'), 'warning')
 
       return
     }
@@ -188,26 +190,26 @@ async function exportToExcel() {
     }))
 
     await downloadXlsx({
-      filename: makeExportBasename('产品列表'),
-      sheetName: '产品列表',
+      filename: makeExportBasename(t('pages.productList.title')),
+      sheetName: t('pages.productList.title'),
       columns: [
-        { key: 'en_sku', title: 'SKU' },
-        { key: 'cn_name', title: '产品名' },
-        { key: 'en_brand', title: '英文品牌' },
-        { key: 'weight', title: '重量(KG)' },
-        { key: 'lwh', title: '长*宽*高(CM)' },
-        { key: 'original_places', title: '原产地' },
-        { key: 'cat_name', title: '产品分类' },
-        { key: 'number', title: '总库存' },
-        { key: 'img_url', title: '图片链接' },
-        { key: 'status', title: '状态' },
+        { key: 'en_sku', title: t('pages.productList.headers.sku') },
+        { key: 'cn_name', title: t('pages.productList.headers.name') },
+        { key: 'en_brand', title: t('pages.productList.headers.brand') },
+        { key: 'weight', title: t('pages.productList.headers.weight') },
+        { key: 'lwh', title: t('pages.productList.headers.lwh') },
+        { key: 'original_places', title: t('pages.productList.headers.origin') },
+        { key: 'cat_name', title: t('pages.productList.headers.category') },
+        { key: 'number', title: t('pages.productList.headers.stock') },
+        { key: 'img_url', title: t('pages.productList.headers.imageUrl') },
+        { key: 'status', title: t('pages.productList.headers.status') },
       ],
       rows,
     })
-    toast(`已导出 ${rows.length} 条（单次最多 ${EXPORT_PAGE_SIZE} 条）`, 'success')
+    toast(t('pages.productList.messages.exportSuccess', { count: rows.length, max: EXPORT_PAGE_SIZE }), 'success')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '导出失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productList.messages.exportFailed'), 'error')
   }
   finally {
     exporting.value = false
@@ -232,12 +234,12 @@ async function toggleStatus(row) {
   try {
     const res = await $api(path, { method: 'POST', body: { id: row.id } })
     if (Number(res?.code) !== 1)
-      throw new Error(res?.msg || '状态切换失败')
-    toast(res?.msg || '状态更新成功', 'success')
+      throw new Error(res?.msg || t('pages.productList.messages.statusToggleFailed'))
+    toast(res?.msg || t('pages.productList.messages.statusUpdated'), 'success')
   }
   catch (error) {
     row.statusEnabled = !row.statusEnabled
-    toast(error?.message || '状态切换失败', 'error')
+    toast(error?.message || t('pages.productList.messages.statusToggleFailed'), 'error')
   }
 }
 
@@ -252,15 +254,15 @@ async function deleteOne(id) {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '删除成功', 'success')
+      toast(res?.msg || t('pages.productList.messages.deleteSuccess'), 'success')
       fetchProductList()
     }
     else {
-      toast(res?.msg || '删除失败', 'error')
+      toast(res?.msg || t('pages.productList.messages.deleteFailed'), 'error')
     }
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '删除失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productList.messages.deleteFailed'), 'error')
   }
   finally {
     deletingId.value = 0
@@ -283,10 +285,10 @@ async function printOne(id) {
     if (Number(res?.code) === 1 && res?.data?.pdf_url)
       window.open(resolveBackendFileUrl(res.data.pdf_url), '_blank', 'noopener')
     else
-      toast(res?.msg || '打印失败', 'error')
+      toast(res?.msg || t('pages.productList.messages.printFailed'), 'error')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '打印失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productList.messages.printFailed'), 'error')
   }
 }
 
@@ -304,7 +306,7 @@ async function batchPrint() {
     .filter(Boolean)
 
   if (!ids.length) {
-    toast('请先选择要批量打印的数据', 'warning')
+    toast(t('pages.productList.messages.batchPrintEmpty'), 'warning')
     
     return
   }
@@ -320,10 +322,10 @@ async function batchPrint() {
     if (Number(res?.code) === 1 && res?.data?.pdf_url)
       window.open(resolveBackendFileUrl(res.data.pdf_url), '_blank', 'noopener')
     else
-      toast(res?.msg || '批量打印失败', 'error')
+      toast(res?.msg || t('pages.productList.messages.batchPrintFailed'), 'error')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '批量打印失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productList.messages.batchPrintFailed'), 'error')
   }
   finally {
     batchPrinting.value = false
@@ -358,7 +360,7 @@ onMounted(async () => {
   <VCard class="rounded-lg">
     <VCardItem class="pb-3">
       <template #title>
-        <span class="text-h5 font-weight-medium">产品列表</span>
+        <span class="text-h5 font-weight-medium">{{ $t('pages.productList.title') }}</span>
       </template>
       <template #append>
         <div class="d-flex flex-wrap gap-2">
@@ -368,7 +370,7 @@ onMounted(async () => {
             prepend-icon="tabler-copy-plus"
             @click="openProductBatchPage"
           >
-            批量新增
+            {{ $t('pages.productList.batchCreate') }}
           </VBtn>
           <VBtn
             color="primary"
@@ -376,7 +378,7 @@ onMounted(async () => {
             prepend-icon="tabler-plus"
             @click="openProductForm('create')"
           >
-            新建产品
+            {{ $t('pages.productList.create') }}
           </VBtn>
         </div>
       </template>
@@ -400,7 +402,7 @@ onMounted(async () => {
             :disabled="loading"
             @click="exportToExcel"
           >
-            导出 Excel
+            {{ $t('pages.productList.exportExcel') }}
           </VBtn>
         </template>
         <VRow dense>
@@ -411,10 +413,10 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="filters.en_sku"
-              label="SKU"
+              :label="$t('pages.productList.filters.sku')"
               density="compact"
               hide-details
-              placeholder="输入 SKU"
+              :placeholder="$t('pages.productList.filters.skuPlaceholder')"
               @keyup.enter="searchList"
             />
           </VCol>
@@ -425,10 +427,10 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="filters.cn_name"
-              label="产品名"
+              :label="$t('pages.productList.filters.name')"
               density="compact"
               hide-details
-              placeholder="输入产品名"
+              :placeholder="$t('pages.productList.filters.namePlaceholder')"
               @keyup.enter="searchList"
             />
           </VCol>
@@ -442,7 +444,7 @@ onMounted(async () => {
               :items="categoryItems"
               item-title="title"
               item-value="value"
-              label="产品分类"
+              :label="$t('pages.productList.filters.category')"
               density="compact"
               hide-details
               clearable
@@ -471,7 +473,7 @@ onMounted(async () => {
               :disabled="batchPrinting"
               @click="batchPrint"
             >
-              批量打印 ({{ selectedRows.length }})
+              {{ $t('pages.productList.actions.batchPrint', { count: selectedRows.length }) }}
             </VBtn>
           </div>
         </template>
@@ -492,7 +494,7 @@ onMounted(async () => {
           <span
             v-else
             class="text-disabled"
-          >无图</span>
+          >{{ $t('pages.productList.noImage') }}</span>
         </template>
 
         <template #item.status="{ item }">
@@ -506,54 +508,87 @@ onMounted(async () => {
         </template>
 
         <template #item.actions="{ item }">
-          <VMenu>
-            <template #activator="{ props }">
-              <IconBtn v-bind="props">
-                <VIcon icon="tabler-dots-vertical" />
-              </IconBtn>
-            </template>
-            <VList density="compact">
-              <VListItem
-                title="编辑"
-                prepend-icon="tabler-edit"
-                @click="openProductForm('edit', item.id)"
-              />
-              <VListItem
-                title="查看"
-                prepend-icon="tabler-eye"
-                @click="openProductForm('detail', item.id)"
-              />
-              <VListItem
-                title="打印"
-                prepend-icon="tabler-printer"
-                @click="printOne(item.id)"
-              />
-              <VListItem
-                title="删除"
-                prepend-icon="tabler-trash"
-                base-color="error"
-                @click="() => window.confirm('删除后不可恢复，确定继续吗？') && deleteOne(item.id)"
-              />
-            </VList>
-          </VMenu>
+          <div class="d-flex align-center justify-end gap-1">
+            <VTooltip :text="$t('pages.productList.actions.view')">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  color="secondary"
+                  @click="openProductForm('detail', item.id)"
+                >
+                  <VIcon
+                    icon="tabler-eye"
+                    size="20"
+                  />
+                </IconBtn>
+              </template>
+            </VTooltip>
+            <VTooltip :text="$t('pages.productList.actions.edit')">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  color="primary"
+                  @click="openProductForm('edit', item.id)"
+                >
+                  <VIcon
+                    icon="tabler-pencil"
+                    size="20"
+                  />
+                </IconBtn>
+              </template>
+            </VTooltip>
+            <VMenu>
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  color="secondary"
+                >
+                  <VIcon
+                    icon="tabler-dots-vertical"
+                    size="20"
+                  />
+                </IconBtn>
+              </template>
+              <VList density="compact">
+                <VListItem
+                  :title="$t('pages.productList.actions.print')"
+                  prepend-icon="tabler-printer"
+                  @click="printOne(item.id)"
+                />
+                <VListItem
+                  :title="$t('pages.productList.actions.delete')"
+                  prepend-icon="tabler-trash"
+                  base-color="error"
+                  @click="() => window.confirm($t('pages.productList.messages.deleteConfirm')) && deleteOne(item.id)"
+                />
+              </VList>
+            </VMenu>
+          </div>
         </template>
 
         <template #bottom>
-          <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
+          <VDivider />
+          <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
             <div class="text-body-2 text-medium-emphasis">
-              共 {{ pagination.total }} 条
+              {{ $t('pages.productList.total', { total: pagination.total }) }}
             </div>
             <div class="d-flex align-center gap-3">
               <AppSelect
                 v-model="pagination.perPage"
-                :items="[10, 20, 50, 100, 200, 300, 500, 1000]"
+                :items="[10, 20, 50, 100, 200, 500]"
                 density="compact"
-                style="min-inline-size: 120px"
+                hide-details
+                style="inline-size: 100px"
               />
               <VPagination
                 v-model="pagination.page"
                 :length="pageCount"
-                rounded
+                :total-visible="5"
+                active-color="primary"
+                size="small"
               />
             </div>
           </div>
@@ -569,7 +604,7 @@ onMounted(async () => {
     <VCard class="rounded-lg">
       <VCardItem class="pb-2">
         <template #title>
-          <span class="text-subtitle-1 font-weight-medium">图片预览</span>
+          <span class="text-subtitle-1 font-weight-medium">{{ $t('pages.productList.previewTitle') }}</span>
         </template>
         <template #append>
           <IconBtn @click="previewVisible = false">

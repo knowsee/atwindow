@@ -1,7 +1,4 @@
 <script setup>
-/**
- * 地址簿选择浮窗：搜索 + 表格 + 分页（queryAddr / beianAddr 由父组件拉取后传入 items）
- */
 const props = defineProps({
   title: {
     type: String,
@@ -11,7 +8,6 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  /** 有值时展示「渠道已限定国家」提示 */
   countryLock: {
     type: String,
     default: '',
@@ -42,24 +38,24 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['close', 'search', 'reset-search', 'select', 'load-page'])
 const visible = defineModel({ type: Boolean, default: false })
 const searchName = defineModel('searchName', { type: String, default: '' })
 const currentPage = defineModel('currentPage', { type: Number, default: 1 })
+const { t } = useI18n({ useScope: 'global' })
 
-const emit = defineEmits(['close', 'search', 'reset-search', 'select', 'load-page'])
-
-const TABLE_HEADERS = [
-  { title: '姓名', key: 'name', minWidth: '100' },
-  { title: '详细地址 1', key: 'address', minWidth: '160' },
-  { title: '详细地址 2', key: 'address2', minWidth: '120' },
-  { title: '城市', key: 'city', minWidth: '88' },
-  { title: '省 / 州', key: 'province', minWidth: '80' },
-  { title: '邮政编码', key: 'postcode', minWidth: '88' },
-  { title: '国家 / 地区', key: 'country', minWidth: '88' },
-  { title: '街道 / 门牌', key: 'streetno', minWidth: '80' },
-  { title: '电话', key: 'telephone', minWidth: '112' },
-  { title: '操作', key: 'actions', sortable: false, align: 'end', width: '96' },
-]
+const tableHeaders = computed(() => [
+  { title: t('components.addressForm.fields.name'), key: 'name', minWidth: '100' },
+  { title: t('components.addressForm.fields.address1'), key: 'address', minWidth: '160' },
+  { title: t('components.addressForm.fields.address2'), key: 'address2', minWidth: '120' },
+  { title: t('components.addressForm.fields.city'), key: 'city', minWidth: '88' },
+  { title: t('components.addressForm.fields.province'), key: 'province', minWidth: '80' },
+  { title: t('components.addressForm.fields.postcode'), key: 'postcode', minWidth: '88' },
+  { title: t('components.addressForm.fields.country'), key: 'country', minWidth: '88' },
+  { title: t('components.addressForm.fields.street'), key: 'streetno', minWidth: '80' },
+  { title: t('components.addressForm.fields.telephone'), key: 'telephone', minWidth: '112' },
+  { title: t('pages.accountAddressManagement.headers.actions'), key: 'actions', sortable: false, align: 'end', width: '96' },
+])
 
 function rowProps({ item }) {
   return {
@@ -114,7 +110,7 @@ function onSelect(item) {
         </template>
         <template #append>
           <IconBtn
-            aria-label="关闭"
+            :aria-label="$t('components.addressBookPicker.close')"
             @click="onClose"
           >
             <VIcon icon="tabler-x" />
@@ -132,7 +128,7 @@ function onSelect(item) {
           density="compact"
           class="mb-4 text-body-2"
         >
-          当前渠道已限定国家；列表仅显示该地区地址。
+          {{ $t('components.addressBookPicker.countryLocked') }}
         </VAlert>
 
         <VSheet
@@ -143,8 +139,8 @@ function onSelect(item) {
           <div class="d-flex flex-column gap-3 flex-sm-row align-sm-end">
             <AppTextField
               v-model="searchName"
-              label="姓名关键词"
-              placeholder="输入姓名，回车或点击搜索"
+              :label="$t('components.addressBookPicker.searchLabel')"
+              :placeholder="$t('components.addressBookPicker.searchPlaceholder')"
               density="compact"
               clearable
               hide-details
@@ -160,7 +156,7 @@ function onSelect(item) {
                 :disabled="loading"
                 @click="onResetSearch"
               >
-                重置
+                {{ $t('components.addressBookPicker.reset') }}
               </VBtn>
               <VBtn
                 color="primary"
@@ -169,14 +165,14 @@ function onSelect(item) {
                 :loading="loading"
                 @click="onSearch"
               >
-                搜索
+                {{ $t('components.addressBookPicker.search') }}
               </VBtn>
             </div>
           </div>
         </VSheet>
 
         <VDataTable
-          :headers="TABLE_HEADERS"
+          :headers="tableHeaders"
           :items="items"
           :items-per-page="-1"
           hide-default-footer
@@ -220,7 +216,7 @@ function onSelect(item) {
               class="text-none"
               @click.stop="onSelect(item)"
             >
-              选择
+              {{ $t('components.addressBookPicker.select') }}
             </VBtn>
           </template>
           <template #no-data>
@@ -231,10 +227,10 @@ function onSelect(item) {
                 class="text-disabled mb-3"
               />
               <div class="text-body-1 text-medium-emphasis">
-                暂无地址记录
+                {{ $t('components.addressBookPicker.emptyTitle') }}
               </div>
               <div class="text-body-2 text-disabled mt-1">
-                试试清空姓名关键词，或先在 WMS 地址簿中维护联系人后再试。
+                {{ $t('components.addressBookPicker.emptyHint') }}
               </div>
             </div>
           </template>
@@ -247,7 +243,7 @@ function onSelect(item) {
         <span
           v-if="total > 0"
           class="text-body-2 text-medium-emphasis"
-        >共 {{ total }} 条 · 每页 {{ pageSize }} 条</span>
+        >{{ $t('components.addressBookPicker.pagination', { total, pageSize }) }}</span>
         <VSpacer />
         <VPagination
           v-if="pageCount > 1"

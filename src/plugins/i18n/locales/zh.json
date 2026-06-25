@@ -6,7 +6,7 @@
     "dashboard": "控制台",
     "printLabel": {
       "_": "打印标签",
-      "create": "创建标签",
+      "create": "新建运单",
       "shippingList": "订单列表",
       "batchUpload": "批量出单",
       "orders": "订单列表（旧）"
@@ -35,7 +35,8 @@
       "personalization": "个性化配置",
       "auth": "授权管理",
       "funds": "资金管理",
-      "addresses": "地址管理"
+      "addresses": "地址管理",
+      "tiktok": "TikTok 服务"
     }
   },
   "search": {
@@ -60,6 +61,2208 @@
     "error": {
       "invalidCredentials": "登录失败，请检查账号或密码",
       "network": "网络异常，请稍后重试"
+    }
+  },
+  "common": {
+    "actions": {
+      "addAddress": "添加地址",
+      "backToList": "返回列表",
+      "calculateRate": "试算运费",
+      "clear": "清除",
+      "edit": "编辑",
+      "order": "下单",
+      "preview": "预览",
+      "selectFromAddressBook": "从地址簿选择"
+    },
+    "options": {
+      "notRequired": "不需要"
+    },
+    "warehouseFallback": "仓库{id}"
+  },
+  "domain": {
+    "dropShipping": {
+      "packageStatuses": {
+        "all": "全部",
+        "notArrived": "未到库",
+        "arrived": "已到库",
+        "arrivedNotReported": "已到库未上报"
+      }
+    }
+  },
+  "layout": {
+    "footer": {
+      "company": "在窗海外仓",
+      "product": "WMS",
+      "tagline": "领先的海外仓平台"
+    },
+    "userMenu": {
+      "changePassword": "修改密码",
+      "logout": "注销"
+    }
+  },
+  "components": {
+    "queryPanel": {
+      "title": "查询条件",
+      "search": "查询",
+      "reset": "重置",
+      "expandAdvanced": "展开高级搜索",
+      "collapseAdvanced": "收起高级搜索",
+      "quickFilterAria": "快捷筛选"
+    },
+    "upload": {
+      "label": "点击上传",
+      "tips": "JPG/PNG/WebP,\n{max}MB以内",
+      "uploaded": "已上传",
+      "failed": "上传失败",
+      "maxSize": "文件不能超过{max}MB"
+    },
+    "printLabelProducts": {
+      "title": "货品信息",
+      "subtitle": "请逐行填写 SKU、中英文品名、数量与申报；至少保留一行。",
+      "add": "添加货品",
+      "headers": {
+        "sku": "SKU",
+        "enName": "英文名称",
+        "cnName": "中文名称",
+        "qty": "数量",
+        "weightPerItem": "每件重量（{unit}）",
+        "declaredValue": "申报价值（{currency}）",
+        "actions": "操作"
+      },
+      "requiredSuffix": " *",
+      "placeholders": {
+        "sku": "SKU",
+        "enName": "英文品名",
+        "cnName": "中文品名"
+      }
+    },
+    "addressForm": {
+      "required": "必填项",
+      "context": {
+        "sender": "发件地址",
+        "receiver": "收件地址"
+      },
+      "title": {
+        "create": "新增地址",
+        "edit": "编辑地址"
+      },
+      "fields": {
+        "name": "姓名",
+        "address1": "详细地址 1",
+        "address2": "详细地址 2",
+        "street": "街道 / 门牌",
+        "city": "城市",
+        "province": "省 / 州",
+        "postcode": "邮政编码",
+        "country": "国家 / 地区",
+        "telephone": "电话",
+        "company": "公司",
+        "email": "邮箱"
+      },
+      "hints": {
+        "optional": "可选",
+        "street": "可选（门牌、街道补充）"
+      },
+      "actions": {
+        "cancel": "取消",
+        "save": "保存",
+        "create": "创建"
+      }
+    },
+    "addressBookPicker": {
+      "close": "关闭",
+      "countryLocked": "当前渠道已限定国家；列表仅显示该地区地址。",
+      "searchLabel": "姓名关键词",
+      "searchPlaceholder": "输入姓名，回车或点击搜索",
+      "reset": "重置",
+      "search": "搜索",
+      "select": "选择",
+      "emptyTitle": "暂无地址记录",
+      "emptyHint": "试试清空姓名关键词，或先在 WMS 地址簿中维护联系人后再试。",
+      "pagination": "共 {total} 条 · 每页 {pageSize} 条"
+    },
+    "loadingOverlay": {
+      "defaultMessage": "正在加载..."
+    }
+  },
+  "pages": {
+    "dashboard": {
+      "notice": {
+        "defaultTitle": "公告",
+        "loading": "公告加载中...",
+        "close": "关闭",
+        "readAndHide": "已读并不再显示"
+      },
+      "hero": {
+        "overline": "运营中心",
+        "title": "业务看板",
+        "subtitle": "全局履约与财务一览；下方“仓库洞察”可切换仓库查看代发、库存与近 7 日动销。",
+        "overviewTime": "概览 {time}",
+        "refresh": "刷新"
+      },
+      "sections": {
+        "global": "全局概览",
+        "sevenDay": "近 7 日订单统计",
+        "finance": "财务快照",
+        "recentLogs": "最近流水",
+        "recentInbound": "最近入库动态",
+        "warehouseInsight": "仓库洞察",
+        "topSku": "近 7 天 SKU 销量 Top",
+        "lowStock": "低库存关注",
+        "dropshipOrders": "一件代发订单"
+      },
+      "kpis": {
+        "packages": {
+          "title": "入库包裹",
+          "subtitle": "累计在库流程",
+          "hint": "待入库 {pending} · 已到库 {arrived}"
+        },
+        "balance": {
+          "title": "账户余额",
+          "hint": "本月流入 {inflow} · 流出 {outflow}"
+        },
+        "sevenDay": {
+          "title": "近7日出单（打单+一件代发）",
+          "subtitle": "订单数",
+          "hint": "状态分布见下方“近 7 日订单统计”"
+        },
+        "dropship": {
+          "title": "代发订单",
+          "today": "今日 {count}"
+        },
+        "sku": {
+          "title": "SKU 种类",
+          "stockQty": "库存件数 {count}"
+        },
+        "lowStock": {
+          "title": "低库存 SKU",
+          "subtitle": "预警线内"
+        }
+      },
+      "sevenDay": {
+        "fallbackSubtitle": "按状态分布 · createtime 近 7 日",
+        "dropshipTab": "一件代发",
+        "waybillTab": "打单",
+        "emptyWaybill": "近 7 日暂无打单订单",
+        "emptyDropship": "近 7 日暂无一件代发订单",
+        "period": "统计周期：{start} ~ {end}",
+        "donutTotal": "订单数",
+        "status": {
+          "pendingConfirm": "待确认",
+          "confirmed": "已确认",
+          "processing": "处理中",
+          "pendingPay": "待付款",
+          "pendingShip": "待发货",
+          "shipped": "已发货",
+          "problem": "问题订单",
+          "problemShort": "问题"
+        }
+      },
+      "finance": {
+        "subtitle": "余额与近期资金变动",
+        "availableUsd": "USD · 当前可用",
+        "monthInflow": "本月流入",
+        "monthInflowHint": "充值等入账合计",
+        "monthOutflow": "本月流出",
+        "monthOutflowHint": "订单扣费等支出合计",
+        "balance": "余额 {amount}",
+        "emptyLogs": "暂无流水"
+      },
+      "recentInbound": {
+        "subtitle": "包裹轨迹摘要",
+        "headers": {
+          "trackingNo": "运单号",
+          "time": "时间"
+        },
+        "empty": "暂无入库记录"
+      },
+      "warehouse": {
+        "generatedAt": "仓库数据 {time}",
+        "topSkuSubtitle": "按当前仓库聚合动销件数",
+        "topSkuSeries": "销量",
+        "topSkuEmpty": "暂无销量数据",
+        "lowStockSubtitle": "库存 ≤ 预警值",
+        "warning": " / 预警 ",
+        "lowStockEmpty": "暂无低库存记录",
+        "dropshipSubtitle": "展示最新20条记录",
+        "statusFallback": "状态 {status}",
+        "noWarehouse": "未获取到可用仓库，请确认已在系统中维护仓库信息。"
+      },
+      "dropshipRecent": {
+        "headers": {
+          "reference": "参考号",
+          "trackingNo": "运单号",
+          "fee": "费用",
+          "shipTime": "发货时间",
+          "createTime": "创建时间"
+        },
+        "empty": "暂无最近代发订单"
+      },
+      "messages": {
+        "overviewFailed": "加载概览失败",
+        "warehouseFailed": "加载仓库数据失败",
+        "refreshed": "数据已刷新"
+      }
+    },
+    "printLabelBatchUpload": {
+      "hero": {
+        "title": "批量出单",
+        "subtitle": "上传 .xls / .xlsx / .csv 后批量导入，系统将异步创建 Shipping 批次。"
+      },
+      "upload": {
+        "title": "上传文件",
+        "subtitle": "支持 .xls / .xlsx / .csv，建议先下载模板填写；提交后在「订单列表 → 批量出单状态」查看进度与面单。",
+        "choose": "点击选择文件（.xls / .xlsx / .csv）",
+        "empty": "未选择文件",
+        "templateDownload": "模板下载：",
+        "templateName": "批量出单模板.xlsx"
+      },
+      "actions": {
+        "backToOrders": "返回订单列表",
+        "submitImport": "提交导入"
+      },
+      "messages": {
+        "fileRequired": "请先选择文件",
+        "fileTypeInvalid": "仅支持 .xls / .xlsx / .csv 文件",
+        "batchCreated": "已创建批次 {sn}（ID {id}），后台解析中",
+        "uploadSuccess": "批量上传提交成功",
+        "uploadFailed": "批量上传失败"
+      }
+    },
+    "printLabelShippingList": {
+      "title": "订单列表",
+      "subtitle": "填写条件后点击「查询」，分页切换会自动刷新。",
+      "actions": {
+        "batchStatus": "批量出单状态",
+        "create": "新建运单",
+        "batchDetail": "批次明细",
+        "cancelShipment": "取消运单"
+      },
+      "filters": {
+        "refNo": "参考号",
+        "fuzzy": "模糊匹配",
+        "channel": "渠道",
+        "status": "状态",
+        "createdDate": "创建日期",
+        "dateRange": "选择日期区间",
+        "trackingNo": "跟踪号",
+        "allChannels": "全部渠道",
+        "unnamedChannel": "未命名渠道"
+      },
+      "headers": {
+        "id": "ID",
+        "createdAt": "创建时间",
+        "orderNo": "订单号",
+        "refNo": "参考号",
+        "trackingNo": "跟踪号",
+        "channelWithCode": "渠道（渠道编码）",
+        "fee": "费用",
+        "status": "状态",
+        "failReason": "失败原因",
+        "actions": "操作"
+      },
+      "statuses": {
+        "all": "全部",
+        "pending": "待处理",
+        "requesting": "请求中",
+        "success": "成功",
+        "failed": "失败",
+        "cancelled": "已取消",
+        "cancelling": "取消中"
+      },
+      "tooltips": {
+        "view": "查看",
+        "label": "面单"
+      },
+      "pagination": {
+        "total": "共 {total} 条",
+        "perPage": "每页",
+        "detailTotal": "本页 {count} 条 · 合计 {total} 条"
+      },
+      "messages": {
+        "loadFailed": "加载订单列表失败",
+        "networkFailed": "网络请求失败",
+        "noLabelFile": "暂无面单文件",
+        "invalidOrderId": "订单 ID 无效",
+        "invalidOrderIdentifier": "订单标识无效",
+        "cancelConfirm": "确定取消该运单？",
+        "cancelSubmitted": "已提交取消",
+        "cancelFailed": "取消失败",
+        "cancelling": "取消中..."
+      },
+      "batchDialog": {
+        "title": "批量出单状态",
+        "subtitle": "批量导入批次列表、明细与面单打包下载",
+        "detailTitle": "批次订单明细",
+        "filterTitle": "筛选条件",
+        "detailFilterTitle": "筛选",
+        "close": "关闭",
+        "closeDetail": "关闭明细",
+        "filters": {
+          "batchNo": "批次号",
+          "exact": "精确匹配",
+          "status": "批量出单状态"
+        },
+        "headers": {
+          "batchNo": "批次号",
+          "total": "总数",
+          "success": "成功",
+          "failed": "失败",
+          "status": "状态",
+          "createdAt": "创建时间",
+          "actions": "操作",
+          "orderNo": "订单号",
+          "refNo": "参考号",
+          "trackingNo": "跟踪号",
+          "failReason": "失败原因"
+        },
+        "statuses": {
+          "all": "全部",
+          "processing": "处理中",
+          "completed": "已完成",
+          "failed": "失败",
+          "unknown": "状态 {status}"
+        },
+        "actions": {
+          "detail": "明细",
+          "label": "面单"
+        },
+        "aria": {
+          "batchActions": "批次操作 {batch}",
+          "sourceFile": "源文件",
+          "labelZip": "面单 ZIP"
+        },
+        "tooltips": {
+          "detail": "查看本批次订单明细",
+          "sourceFile": "打开上传的源表格",
+          "downloadZip": "下载面单 ZIP 压缩包",
+          "openLabel": "在新窗口打开面单"
+        },
+        "empty": {
+          "loading": "加载中…",
+          "noData": "暂无数据",
+          "hint": "可先上传批量文件，或调整批次号 / 状态筛选后重新查询。",
+          "noOrderData": "暂无订单数据"
+        },
+        "messages": {
+          "loadBatchesFailed": "加载批次列表失败",
+          "networkFailed": "网络请求失败",
+          "noSourceFile": "暂无源文件路径",
+          "loadBatchOrdersFailed": "加载批次订单失败",
+          "invalidBatchId": "批次 ID 无效",
+          "noLabelFile": "暂无面单文件",
+          "getDownloadLinkFailed": "获取下载链接失败",
+          "noDownloadUrl": "接口未返回下载地址",
+          "downloadOpened": "已打开下载链接",
+          "batchNotFound": "未找到对应批次"
+        }
+      }
+    },
+    "printLabelOrders": {
+      "title": "订单列表（旧）",
+      "subtitle": "填写条件后点击「查询」，分页切换会自动刷新。",
+      "legacyNotice": "本列表仅为历史数据，并更名为「订单列表（旧）」。即日起，新订单将在「订单列表」中展示与处理；过往订单的取消需联络客服。",
+      "actions": {
+        "create": "新建运单",
+        "downloadLabel": "下载面单"
+      },
+      "filters": {
+        "status": "状态",
+        "channel": "渠道",
+        "recipient": "收件人",
+        "recipientPlaceholder": "姓名",
+        "createdAt": "创建时间",
+        "dateRange": "选择日期范围",
+        "refNoMultiline": "参考号（多行）",
+        "refNoPerLine": "每行一个参考号",
+        "allChannels": "全部渠道",
+        "unnamedChannel": "未命名渠道"
+      },
+      "statusFilters": {
+        "all": "全部状态"
+      },
+      "statuses": {
+        "paidWaiting": "已支付等待出单",
+        "completed": "出单完成",
+        "cancelled": "已取消",
+        "cancelling": "取消中",
+        "failed": "出单失败",
+        "orderedWaitingFee": "已下单，等待出单扣费",
+        "exception": "异常",
+        "unknown": "状态({status})"
+      },
+      "headers": {
+        "createdAt": "创建时间",
+        "orderNo": "订单号",
+        "refNo": "参考号",
+        "line": "线路",
+        "trackingNo": "跟踪号",
+        "skuQty": "SKU / 件数",
+        "totalWeight": "总重",
+        "shippingFee": "运费",
+        "errorInfo": "异常信息",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "tooltips": {
+        "detail": "详情",
+        "downloadLabel": "下载面单"
+      },
+      "aria": {
+        "copyTracking": "复制跟踪号"
+      },
+      "pagination": {
+        "total": "共 {total} 条"
+      },
+      "empty": {
+        "loading": "加载中…",
+        "noOrderData": "暂无订单数据",
+        "noPackageInfo": "暂无包裹信息"
+      },
+      "messages": {
+        "noTracking": "无跟踪号",
+        "trackingCopied": "跟踪号已复制",
+        "copyFailed": "复制失败",
+        "missingOrderIdentifier": "缺少订单标识",
+        "detailLoadFailed": "加载详情失败",
+        "networkFailed": "网络请求失败",
+        "noLabelFile": "暂无面单文件",
+        "loadFailed": "加载订单列表失败"
+      },
+      "detail": {
+        "title": "运单详情",
+        "orderNo": "订单号：{orderNo}",
+        "basicInfo": "基础信息",
+        "refNo": "参考号",
+        "createdAt": "创建时间：{time}",
+        "status": "状态",
+        "line": "线路",
+        "shippingFee": "运费",
+        "trackingNo": "跟踪号",
+        "sender": "发件人",
+        "recipient": "收件人",
+        "packageInfo": "包裹信息",
+        "packageNo": "包裹 #{index}",
+        "packageMetrics": "重量 {weight} · 尺寸 {length} × {width} × {height}",
+        "packageDeclaration": "申报 {value}"
+      }
+    },
+    "printLabelOrderNewDetail": {
+      "title": "运单详情",
+      "readonly": "只读",
+      "subtitle": "查看物流轨迹、收发件信息与财务结算明细。",
+      "actions": {
+        "backToList": "返回列表",
+        "printLabel": "打印面单"
+      },
+      "alerts": {
+        "cancellingTitle": "拦截 / 取消中",
+        "cancellingBody": "当前订单处于取消流程中，需等待15-30日后渠道确认退款"
+      },
+      "labels": {
+        "trackingNumber": "跟踪号",
+        "statusDescription": "状态描述",
+        "channelName": "渠道名称",
+        "customerRef": "客户参考号",
+        "orderSn": "系统内部单号",
+        "deductionStatus": "扣费状态",
+        "failReason": "失败原因",
+        "addresses": "收寄信息",
+        "sender": "寄件人",
+        "recipient": "收件人",
+        "timeline": "时间轨迹",
+        "orderCreated": "订单创建",
+        "dataUpdated": "数据更新",
+        "labelPrinted": "面单生成/打印",
+        "orderCancelled": "订单取消",
+        "fees": "费用明细",
+        "customerFee": "客户应付运费",
+        "packageContents": "包裹内容",
+        "skuCode": "SKU编码",
+        "skuCnName": "中文名称",
+        "skuEnName": "英文名称",
+        "skuQty": "数量",
+        "skuValue": "申报价值",
+        "skuWeight": "重量"
+      },
+      "statuses": {
+        "unknown": "未知状态",
+        "pending": "待处理",
+        "requesting": "请求中",
+        "success": "成功",
+        "failed": "失败",
+        "cancelled": "已取消",
+        "statusWithValue": "状态 {status}",
+        "deducted": "已扣费",
+        "notDeducted": "未扣费"
+      },
+      "copyLabels": {
+        "content": "内容",
+        "trackingNumber": "跟踪号",
+        "orderSn": "系统单号"
+      },
+      "messages": {
+        "missingOrderIdentifier": "缺少订单标识",
+        "detailLoadFailed": "加载详情失败",
+        "networkFailed": "网络请求失败",
+        "copySuccess": "{label}已复制",
+        "copyFailed": "{label}复制失败"
+      }
+    },
+    "dropShippingBegin": {
+      "stepsTitle": "一件代发步骤",
+      "stepsSubtitle": "先提交开通申请，审核通过后即可使用入库与订单能力。",
+      "steps": {
+        "register": {
+          "title": "注册账号",
+          "desc": "完成账号注册并进入一件代发业务模块"
+        },
+        "apply": {
+          "title": "提交申请",
+          "desc": "选择仓库并填写预估业务规模"
+        },
+        "review": {
+          "title": "审核开通",
+          "desc": "后台工作人员审核后开通服务权限"
+        },
+        "inbound": {
+          "title": "创建入库",
+          "desc": "提交入库单并安排货物入仓"
+        },
+        "order": {
+          "title": "创建订单",
+          "desc": "服务开通后即可创建订单并发货"
+        }
+      },
+      "application": {
+        "title": "服务申请",
+        "subtitle": "请如实填写计划开通仓库与业务规模，便于平台审核与后续支持。",
+        "loadingWarehouses": "正在加载仓库列表...",
+        "notice": "提交后将进入人工审核流程，如有疑问可联系销售或客服查询进度。"
+      },
+      "fields": {
+        "warehouse": "需开通仓库",
+        "warehousePlaceholder": "请选择需要开通服务的仓库",
+        "weeklyShipments": "预计每周发货件数",
+        "weeklyShipmentsPlaceholder": "请输入件数",
+        "weeklyWeight": "预计每周发货重量",
+        "weeklyWeightPlaceholder": "请输入重量",
+        "goodsType": "商品类型",
+        "goodsTypePlaceholder": "例如：服饰、家居、3C、日用品",
+        "saleType": "销售方式",
+        "saleTypePlaceholder": "例如 eBay、Amazon、独立 B2C 平台等"
+      },
+      "validation": {
+        "warehouseRequired": "请选择仓库",
+        "shipmentsRequired": "请输入有效件数",
+        "weightRequired": "请输入有效重量",
+        "goodsTypeRequired": "请填写商品类型",
+        "saleTypeRequired": "请填写销售方式"
+      },
+      "units": {
+        "pieces": "件"
+      },
+      "actions": {
+        "submit": "提交开通申请"
+      },
+      "messages": {
+        "warehouseLoadFailed": "仓库加载失败",
+        "applySuccess": "您的开通申请已提交，请等待后台工作人员审核开通，如有疑问可联系客服或者销售经理查询进度！",
+        "submitFailed": "提交失败",
+        "networkFailed": "网络请求失败"
+      }
+    },
+    "productBatch": {
+      "title": "批量新增产品",
+      "subtitle": "上传 Excel 模板文件后批量导入产品数据。",
+      "upload": {
+        "title": "上传文件",
+        "subtitle": "仅支持 .xls / .xlsx，建议先下载模板填写。",
+        "choose": "点击选择 Excel 文件",
+        "empty": "未选择文件",
+        "templateDownload": "模板下载：",
+        "templateName": "产品批量添加模板.xls"
+      },
+      "actions": {
+        "backToList": "返回列表",
+        "submitImport": "提交导入"
+      },
+      "messages": {
+        "fileRequired": "请先选择 Excel 文件",
+        "fileTypeInvalid": "仅支持 .xls / .xlsx 文件",
+        "submitSuccess": "批量新增提交成功",
+        "submitFailed": "批量新增失败"
+      }
+    },
+    "dropShippingPackageList": {
+      "title": "入库列表",
+      "subtitle": "支持筛选、批量打印箱唛与批量删除；在查询框下方快捷切换状态。",
+      "actions": {
+        "batchCreate": "批量创建",
+        "create": "创建入库单",
+        "batchPrintBox": "批量打印箱唛",
+        "batchDelete": "批量删除",
+        "cancelSelection": "取消选择",
+        "delete": "删除"
+      },
+      "filters": {
+        "skuPlaceholder": "输入 SKU 编码",
+        "trackingNo": "运单号",
+        "trackingNoPlaceholder": "输入运单号",
+        "createdAt": "创建时间"
+      },
+      "headers": {
+        "package": "入库单",
+        "warehouse": "仓库",
+        "sku": "SKU",
+        "qty": "申报 / 实收",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "selection": {
+        "selected": "已选 {count} 条"
+      },
+      "tooltips": {
+        "detail": "查看详情",
+        "printBox": "打印箱唛"
+      },
+      "pagination": {
+        "total": "共 {total} 条记录"
+      },
+      "messages": {
+        "loadFailed": "加载入库列表失败",
+        "networkFailed": "网络请求失败",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "selectDeleteRequired": "请先勾选要删除的数据",
+        "batchDeleteSuccess": "批量删除成功",
+        "batchDeleteFailed": "批量删除失败",
+        "printTaskCreated": "打印任务已生成",
+        "printFailed": "打印失败",
+        "selectPrintRequired": "请先勾选要打印的数据",
+        "batchPrintFailed": "批量打印失败"
+      }
+    },
+    "dropShippingPackageBatch": {
+      "title": "批量创建入库单",
+      "subtitle": "可选指定仓库，上传 Excel 后系统将批量创建入库单；成功后可自动打开面单 PDF。",
+      "settings": {
+        "title": "入库设置",
+        "subtitle": "未选仓库时按系统默认规则处理。",
+        "warehouse": "仓库（可选）",
+        "warehouseAddress": "仓库收件地址"
+      },
+      "upload": {
+        "title": "上传文件",
+        "subtitle": "仅支持 .xls / .xlsx，列字段以运营提供的入库批量模板为准。",
+        "pickExcel": "点击选择 Excel",
+        "noFile": "未选择文件",
+        "templateDownload": "模板下载：",
+        "templateName": "批量创建入库清单模板.{ext}"
+      },
+      "actions": {
+        "backToList": "返回列表",
+        "submit": "提交导入"
+      },
+      "messages": {
+        "selectExcel": "请先选择 Excel 文件",
+        "invalidExcel": "仅支持 .xls / .xlsx 文件",
+        "success": "批量创建成功",
+        "failed": "批量创建失败",
+        "uploadFailed": "上传失败"
+      }
+    },
+    "dropShippingOrderList": {
+      "title": "订单列表",
+      "subtitle": "填写条件后点查询；状态在查询按钮下方快捷切换；仓库、运输方式与时间等展开“高级搜索”。",
+      "actions": {
+        "batchCreate": "批量创建",
+        "create": "创建订单",
+        "export": "导出订单"
+      },
+      "status": {
+        "all": "全部订单",
+        "pendingConfirm": "待确认",
+        "confirmed": "已确认",
+        "pendingPayment": "待付款",
+        "pendingShipment": "待发货",
+        "overseasShipped": "海外仓已发货",
+        "overseasSent": "海外仓已发出",
+        "problem": "问题订单",
+        "refundedShipping": "已退运费",
+        "unknown": "状态({status})"
+      },
+      "transport": {
+        "all": "全部运输方式",
+        "pickup": "自提",
+        "uspsNoPreOnline": "USPS（非预上网）",
+        "uspsT5": "USPS（T5）",
+        "uni": "UNI（"
+      },
+      "source": {
+        "all": "全部来源",
+        "system": "系统",
+        "mabang": "马帮",
+        "thirdPartyErp": "第三方ERP"
+      },
+      "remote": {
+        "all": "全部",
+        "remote": "偏远地区",
+        "nonRemote": "非偏远"
+      },
+      "filters": {
+        "allWarehouses": "全部仓库",
+        "orderNo": "订单号",
+        "orderNoPlaceholder": "订单号或参考号",
+        "recipient": "收件人",
+        "recipientPlaceholder": "收件人姓名",
+        "skuPlaceholder": "SKU 编码",
+        "trackingNo": "国际单号",
+        "trackingNoPlaceholder": "国际单号/追踪号",
+        "warehouse": "仓库",
+        "transport": "运输方式",
+        "source": "来源",
+        "remoteArea": "偏远地区",
+        "createdAt": "创建时间",
+        "shippedAt": "发货时间",
+        "questionReason": "问题原因",
+        "questionReasonPlaceholder": "输入问题原因"
+      },
+      "headers": {
+        "orderNo": "订单号",
+        "referenceNo": "参考号",
+        "recipient": "收件人",
+        "warehouse": "仓库",
+        "sku": "SKU",
+        "trackingNo": "运单号",
+        "fee": "费用",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "tooltips": {
+        "detail": "详情",
+        "copy": "复制"
+      },
+      "pagination": {
+        "total": "共 {total} 条"
+      },
+      "messages": {
+        "loadFailed": "加载订单列表失败",
+        "networkFailed": "网络请求失败",
+        "statusRequired": "状态为必选项，请先选择状态",
+        "exportSubmitted": "导出任务已提交",
+        "exportFailed": "导出失败"
+      }
+    },
+    "dropShippingOrderBatch": {
+      "title": "批量创建订单",
+      "subtitle": "选择线路与仓库，上传 Excel（及可选自提 ZIP）后提交批量下单。",
+      "transport": {
+        "autoTrial": "自动物流渠道选择（试运行）",
+        "pickup": "自提",
+        "uspsT5": "USPS（T5）"
+      },
+      "settings": {
+        "title": "线路与仓库",
+        "subtitle": "与单笔下单一致，将应用于本批 Excel 中的订单。",
+        "transport": "线路",
+        "warehouse": "仓库"
+      },
+      "upload": {
+        "title": "上传文件",
+        "subtitle": "订单 Excel 必填；自提场景可再传面单 ZIP。仅支持 .xls / .xlsx 与 .zip。",
+        "pickExcel": "点击选择订单 Excel",
+        "pickZip": "点击选择自提面单 ZIP（可选）",
+        "noFile": "未选择文件",
+        "templateDownload": "模板下载：",
+        "templateName": "批量一件代发模板.{ext}",
+        "templateNote": "Excel 列字段请以运营提供的批量模板为准。"
+      },
+      "actions": {
+        "backToList": "返回列表",
+        "submit": "提交批量创建"
+      },
+      "messages": {
+        "selectTransport": "请选择线路",
+        "selectWarehouse": "请选择仓库",
+        "selectExcel": "请先选择 Excel 文件",
+        "invalidExcel": "仅支持 .xls / .xlsx 文件",
+        "success": "批量创建成功",
+        "failed": "批量创建失败"
+      }
+    },
+    "dropShippingOrderCreate": {
+      "eyebrow": "一件代发 · 订单",
+      "title": {
+        "create": "创建订单",
+        "edit": "编辑订单",
+        "copy": "复制订单"
+      },
+      "subtitle": "填写收件信息、线路与货品明细后提交订单。",
+      "loading": {
+        "detail": "正在读取订单详情...",
+        "initial": "正在加载仓库、国家与货品数据...",
+        "default": "正在加载..."
+      },
+      "transport": {
+        "autoTrial": "自动物流渠道选择（试运行）",
+        "pickup": "自提",
+        "uspsT5": "USPS（T5）"
+      },
+      "sections": {
+        "recipient": {
+          "title": "收件人信息",
+          "subtitle": "用于生成面单",
+          "empty": "请从地址簿选择已有收件地址，或点击“新增地址”在浮窗中新建；确认后此处为只读展示。",
+          "name": "姓名：",
+          "address1": "地址第 1 行：",
+          "address2": "地址第 2 行：",
+          "city": "城市：",
+          "province": "省/州：",
+          "postcode": "邮编：",
+          "country": "国家/地区：",
+          "phone": "电话："
+        },
+        "logistics": {
+          "title": "物流信息",
+          "subtitle": "线路、仓库与包装材料",
+          "transport": "线路",
+          "warehouse": "仓库",
+          "carton": "包装材料",
+          "pickupAttachment": "上传附件（自提面单）"
+        },
+        "order": {
+          "title": "订单信息",
+          "subtitle": "参考单号、备注与货品明细",
+          "referenceNo": "参考号",
+          "remark": "备注（选填）",
+          "addProduct": "添加货品",
+          "cnName": "中文名称",
+          "qty": "数量",
+          "actions": "操作",
+          "skuPlaceholder": "请选择 SKU",
+          "productCount": "共 {count} 条货品，至少保留 1 条。"
+        },
+        "summary": {
+          "title": "提交摘要",
+          "warehouse": "发件仓库",
+          "transport": "物流线路",
+          "carton": "包装材料",
+          "validProducts": "有效货品",
+          "validProductsCount": "{count} 件",
+          "estimatedFee": "预估运输费用",
+          "estimateNote": "仅供参考，最终以出单为准"
+        }
+      },
+      "addressDialog": {
+        "title": "选择收件人地址",
+        "subtitle": "按姓名向服务器筛选；单击“选择”或双击整行填入表单。"
+      },
+      "actions": {
+        "backToList": "返回列表",
+        "chooseAddress": "从地址簿选择",
+        "addAddress": "新增地址",
+        "estimate": "预估运费",
+        "submitCreate": "确认并提交订单",
+        "submitCopy": "提交复制订单",
+        "submitEdit": "保存修改"
+      },
+      "messages": {
+        "addressSaved": "地址已保存",
+        "saveFailed": "保存失败",
+        "loadAddressFailed": "加载地址失败",
+        "addressSelected": "已填入收件地址",
+        "invalidLoadedReference": "加载到的参考号包含非法字符，系统保留原值，请不要手动修改",
+        "loadDetailFailed": "加载订单详情失败",
+        "selectWarehouse": "请选择发件仓库",
+        "selectAddress": "请先从地址簿选择一个收件地址",
+        "selectTransport": "请选择线路",
+        "estimateUnsupported": "当前选择不支持试算",
+        "validProductsRequired": "请先填写有效的货品明细",
+        "estimatedFee": "预估物流费用：{fee}",
+        "estimateFailed": "估算失败",
+        "invalidReferenceBlocked": "参考号仅允许字母、数字和下划线，提交已被阻止",
+        "atLeastOneProduct": "请至少填写一条有效货品明细",
+        "submitSuccess": "保存成功",
+        "submitFailed": "保存失败",
+        "attachmentUploaded": "附件上传成功",
+        "attachmentUploadFailed": "附件上传失败"
+      },
+      "rules": {
+        "transportRequired": "请选择线路",
+        "warehouseRequired": "请选择仓库",
+        "referenceRequired": "请输入参考号",
+        "referenceInvalid": "参考号仅允许字母、数字和下划线"
+      },
+      "sku": {
+        "availableStock": "可用库存: {stock}"
+      }
+    },
+    "dropShippingOrderDetail": {
+      "title": "订单详情",
+      "readonly": "只读",
+      "subtitle": "查看系统单号、收件地址、物流轨迹与账单结算。",
+      "actions": {
+        "backToList": "返回列表",
+        "copyOrder": "复制订单"
+      },
+      "labels": {
+        "orderSn": "系统单号 (Order SN)",
+        "referenceNo": "参考号 (Ref)",
+        "temuOrderNo": "Temu订单号(如有)",
+        "warehouse": "发货仓库",
+        "trackingNo": "追踪号 (Tracking No.)",
+        "logisticsTitle": "收件与物流信息",
+        "logistics": "物流与要求 (Logistics)",
+        "route": "发货线路",
+        "totalQty": "总件数",
+        "totalWeight": "总重量",
+        "declaredWeight": "申报重量",
+        "recipient": "收件人 (Recipient)",
+        "itemsTitle": "货品明细 (SKUs)",
+        "itemsSummary": "共 {types} 种 · {qty} 件",
+        "cnName": "中文名称",
+        "qty": "数量",
+        "unmatchedProduct": "未匹配系统商品",
+        "emptyItems": "暂无货品数据",
+        "totalQtyLabel": "合计数量",
+        "remark": "备注",
+        "questionReason": "问题单原因",
+        "feesTitle": "费用与结算",
+        "shippingFee": "物流运费",
+        "deliveryFee": "派送费",
+        "handleFee": "订单处理费",
+        "materialFee": "耗材费",
+        "packingFee": "装箱操作费",
+        "pickupFee": "自提出库费",
+        "brandFee": "品牌费",
+        "productLabelFee": "产品标费",
+        "totalFee": "总费用",
+        "emptyFees": "暂无费用详细信息",
+        "timelineTitle": "时间节点",
+        "erpSource": "ERP 来源"
+      },
+      "timeline": {
+        "created": "订单创建",
+        "paid": "交易支付",
+        "confirmed": "节点确认",
+        "printed": "面单生成 & 打印",
+        "resent": "补发处理",
+        "shipped": "海外仓发出",
+        "problem": "标记为问题单"
+      },
+      "erp": {
+        "system": "系统",
+        "mabang": "马帮",
+        "lingxing": "领星",
+        "tiktok": "TikTok",
+        "temu": "Temu",
+        "thirdParty": "第三方"
+      },
+      "copy": {
+        "orderSn": "系统单号",
+        "trackingNo": "追踪号",
+        "success": "{label}已复制",
+        "failed": "{label}复制失败"
+      },
+      "messages": {
+        "missingId": "缺少订单 ID",
+        "loadFailed": "加载订单失败",
+        "loadGenericFailed": "加载失败"
+      }
+    },
+    "dropShippingOrderLabelList": {
+      "title": "换标订单",
+      "actions": {
+        "create": "创建订单",
+        "openMainLabel": "打开主标文件",
+        "openBoxLabel": "打开箱唛文件"
+      },
+      "headers": {
+        "orderNo": "订单号",
+        "warehouse": "仓库",
+        "name": "名称",
+        "sku": "SKU",
+        "qty": "件数",
+        "fee": "费用",
+        "status": "状态",
+        "remark": "备注",
+        "adminRemark": "后台备注",
+        "createdAt": "创建时间",
+        "actions": "操作"
+      },
+      "status": {
+        "notRelabeled": "未换标",
+        "relabeled": "已换标",
+        "cancelled": "已取消",
+        "pendingPayment": "待付款"
+      },
+      "summary": {
+        "skuQty": "当前筛选 SKU 件数合计：{count}",
+        "totalFee": "当前筛选费用合计：{fee}"
+      },
+      "filters": {
+        "createdAt": "创建时间",
+        "adminRemark": "后台备注",
+        "adminRemarkPlaceholder": "后台备注关键词",
+        "remark": "备注",
+        "remarkPlaceholder": "备注关键词"
+      },
+      "tooltips": {
+        "detail": "详情",
+        "edit": "编辑"
+      },
+      "pagination": {
+        "total": "共 {total} 条"
+      },
+      "messages": {
+        "loadFailed": "加载换标列表失败",
+        "networkFailed": "网络请求失败",
+        "noFile": "无文件"
+      }
+    },
+    "dropShippingOrderLabelCreate": {
+      "eyebrow": "一件代发 · 换标",
+      "title": {
+        "create": "创建换标订单",
+        "edit": "编辑换标订单"
+      },
+      "subtitle": "填写收件地址、仓库与货品信息；标签与箱标请上传后再提交。",
+      "loading": {
+        "detail": "正在加载订单详情...",
+        "initial": "正在加载仓库、国家与 SKU...",
+        "default": "正在加载..."
+      },
+      "options": {
+        "relabel": "贴标换标",
+        "noRelabel": "不换标",
+        "required": "需要",
+        "pickup": "自提（自己提供面单选此项）"
+      },
+      "sections": {
+        "shipping": {
+          "title": "运输与仓库",
+          "subtitle": "订单类型与仓库",
+          "transport": "运输方式",
+          "warehouse": "发货仓库"
+        },
+        "product": {
+          "title": "货品与标签",
+          "subtitle": "SKU、数量、标签编码及文件",
+          "sku": "SKU",
+          "qty": "数量",
+          "labelCode": "标签编码",
+          "uploadLabel": "上传标签（面单）",
+          "pickupRequired": "（自提必填）",
+          "optional": "（选填）",
+          "uploadBox": "上传箱标"
+        },
+        "valueAdd": {
+          "title": "增值服务",
+          "subtitle": "包材、签名与运输方式",
+          "orderType": "订单类型",
+          "carton": "包材",
+          "remark": "备注",
+          "optionalHint": "选填"
+        },
+        "summary": {
+          "title": "提交摘要",
+          "productSku": "货品 SKU",
+          "qty": "数量"
+        }
+      },
+      "actions": {
+        "submitCreate": "确认并提交换标订单",
+        "submitEdit": "保存修改",
+        "cancel": "取消"
+      },
+      "messages": {
+        "loadOrderFailed": "加载订单失败",
+        "selectWarehouse": "请选择仓库",
+        "completeProduct": "请完整填写 SKU、数量与标签编码",
+        "selectTransport": "请选择运输方式",
+        "uploadBoxRequired": "请上传箱标文件",
+        "pickupLabelRequired": "自提运输须上传面单（标签文件）",
+        "submitSuccess": "提交成功",
+        "submitFailed": "提交失败",
+        "labelUploaded": "标签文件已上传",
+        "boxUploaded": "箱标文件已上传",
+        "uploadFailed": "上传失败"
+      },
+      "rules": {
+        "transportRequired": "请选择运输方式",
+        "warehouseRequired": "请选择仓库",
+        "skuRequired": "请选择或输入 SKU",
+        "qtyRequired": "请输入数量",
+        "labelCodeRequired": "请输入标签编码"
+      },
+      "sku": {
+        "availableStock": "可用库存: {stock}"
+      }
+    },
+    "dropShippingOrderLabelDetail": {
+      "title": "换标订单详情",
+      "loading": "正在加载换标订单详情...",
+      "actions": {
+        "copyThis": "复制此订单",
+        "viewAttachment": "查看附件",
+        "viewBoxLabel": "查看箱标"
+      },
+      "labels": {
+        "warehouseInline": "仓库:",
+        "recipientTitle": "收件人信息",
+        "shippingSubtitle": "运输方式、仓库与订单类型",
+        "signature": "签名服务",
+        "labelFile": "标签 / 面单",
+        "boxLabel": "箱标",
+        "summaryTitle": "订单摘要"
+      },
+      "messages": {
+        "missingId": "缺少订单 ID",
+        "loadFailed": "加载换标订单失败",
+        "loadGenericFailed": "加载失败"
+      }
+    },
+    "dropShippingReturnOrderList": {
+      "title": "退货订单列表",
+      "subtitle": "一件代发退货订单；状态在查询按钮下方快捷切换。",
+      "actions": {
+        "batchCreate": "批量创建",
+        "create": "创建退货订单"
+      },
+      "filters": {
+        "skuNamePlaceholder": "SKU 名称"
+      },
+      "labels": {
+        "remote": "（偏远）"
+      },
+      "messages": {
+        "loadFailed": "加载退货订单失败",
+        "networkFailed": "网络请求失败"
+      }
+    },
+    "dropShippingReturnOrderCreate": {
+      "eyebrow": "一件代发 · 退货",
+      "title": {
+        "create": "创建退货订单",
+        "edit": "编辑退货订单",
+        "copy": "复制退货订单"
+      },
+      "subtitle": "填写收件信息、线路、发货商品类型与货品明细后提交退货订单。",
+      "loading": {
+        "detail": "正在读取退货订单详情..."
+      },
+      "quality": {
+        "good": "良品",
+        "bad": "不良品"
+      },
+      "sections": {
+        "logistics": {
+          "pickupAttachment": "上传附件（主文件）"
+        },
+        "order": {
+          "title": "退货订单信息",
+          "subtitle": "参考单号、品相、备注与货品信息",
+          "quality": "品相",
+          "qualityWarehouse": "品相 / 仓库",
+          "productCount": "共 {count} 条货品，至少保留 1 条。"
+        },
+        "summary": {
+          "returnWarehouse": "退票仓库",
+          "validProducts": "有效货品",
+          "validProductsCount": "{count} 条",
+          "estimatedFee": "预估退票运费"
+        }
+      },
+      "actions": {
+        "submitCreate": "确认并提交退货订单"
+      },
+      "messages": {
+        "addressSavedAndFilled": "地址已保存并填入表单",
+        "invalidLoadedReference": "加载到的参考号包含非法字符，系统保留原值，请不要手动修改",
+        "loadDetailFailed": "加载退货订单详情失败",
+        "productDetailsRequired": "请先填写货品明细",
+        "estimatedFee": "预估费用：{fee}",
+        "invalidReferenceBlocked": "参考号仅允许字母、数字和下划线，提交已被阻止",
+        "atLeastOneProduct": "请至少填写一条有效货品明细"
+      }
+    },
+    "dropShippingReturnOrderBatch": {
+      "title": "批量创建退货订单",
+      "subtitle": "选择发货渠道与仓库，上传 Excel（及可选自提 ZIP）后提交批量创建退货。",
+      "settings": {
+        "title": "渠道与仓库",
+        "subtitle": "与单笔退货一致，将应用于本批 Excel 中的订单。",
+        "transport": "发货渠道",
+        "warehouse": "仓库"
+      },
+      "upload": {
+        "title": "上传文件",
+        "subtitle": "退货 Excel 必填；自提场景可再传面单 ZIP。仅支持 .xls / .xlsx 与 .zip。",
+        "pickExcel": "点击选择退货 Excel",
+        "pickZip": "点击选择自提面单 ZIP（可选）",
+        "noFile": "未选择文件",
+        "templateDownload": "模板下载：",
+        "templateName": "退货订单批量模板.{ext}",
+        "templateNote": "Excel 列字段请以运营提供的批量模板为准。"
+      },
+      "actions": {
+        "submit": "提交批量创建退货"
+      },
+      "messages": {
+        "selectTransport": "请选择发货渠道",
+        "selectWarehouse": "请选择仓库",
+        "selectExcel": "请先选择 Excel 文件",
+        "invalidExcel": "仅支持 .xls / .xlsx 文件",
+        "success": "批量创建成功",
+        "failed": "批量创建失败"
+      }
+    },
+    "dropShippingReturnOrderDetail": {
+      "title": "退单详情",
+      "loading": "正在加载退单详情...",
+      "actions": {
+        "copyOrder": "复制退单"
+      },
+      "messages": {
+        "missingId": "缺少退单 ID",
+        "loadFailed": "加载退单失败",
+        "loadGenericFailed": "加载失败"
+      }
+    },
+    "dropShippingReturnPackageList": {
+      "title": "退货包裹",
+      "subtitle": "接口 /package/returnKucun（按运单维度）。",
+      "quality": {
+        "all": "全部品相"
+      },
+      "headers": {
+        "declared": "申报",
+        "counted": "清点",
+        "quality": "品相",
+        "weightKg": "重量(kg)"
+      },
+      "messages": {
+        "loadFailed": "加载退货包裹失败",
+        "networkFailed": "网络请求失败"
+      }
+    },
+    "dataCenterSalesAnalysis": {
+      "title": "销量分析",
+      "subtitle": "与订单列表“销量”视图一致：按 SKU / 仓库汇总库存与销售；库存评估需在筛选仓库后更准确。",
+      "actions": {
+        "exportExcel": "导出 Excel"
+      },
+      "filters": {
+        "skuCode": "SKU编码",
+        "skuCodePlaceholder": "输入SKU编码"
+      },
+      "headers": {
+        "index": "序号",
+        "productCnName": "产品中文名",
+        "stockQty": "库存数量",
+        "salesQty": "销售数量",
+        "inventoryRatio": "库存比率",
+        "inventoryStatus": "库存评估"
+      },
+      "status": {
+        "normal": "正常",
+        "low": "库存偏低",
+        "high": "库存偏高",
+        "out": "缺货"
+      },
+      "tooltips": {
+        "ratioLine1": "库存比率 = 库存数量 ÷ 销售数量",
+        "ratioLine2": "数据统计范围：上月1日 到 本月1日",
+        "statusNormal": "正常： 0.3 ≤ 比率 ≤ 3.0",
+        "statusLow": "库存偏低： 比率小于 0.3 且库存大于 0",
+        "statusHigh": "库存偏高： 比率大于 3.0 或无出库",
+        "statusOut": "缺货： 库存 ≤ 0 且有出库",
+        "statusNote": "注：需筛选仓库后查询"
+      },
+      "messages": {
+        "exportLoadFailed": "获取导出数据失败",
+        "exportNoData": "当前条件下无数据可导出",
+        "exportSuccess": "已导出 {count} 条（单次最多 {max} 条）",
+        "exportFailed": "导出失败",
+        "loadFailed": "加载销量数据失败",
+        "networkFailed": "网络请求失败"
+      }
+    },
+    "dataCenterInventoryData": {
+      "title": "库存数据",
+      "subtitle": "按 SKU / 仓库查看在库数量、预警线与分区库存；支持筛选后分页查询。",
+      "filters": {
+        "productCnName": "产品中文名",
+        "productCnNamePlaceholder": "模糊搜索中文名",
+        "skuPlaceholder": "英文 SKU",
+        "recordId": "记录 ID",
+        "recordIdPlaceholder": "精确 ID"
+      },
+      "headers": {
+        "stock": "库存",
+        "warningValue": "预警值",
+        "zone1": "区1",
+        "zone2": "区2",
+        "zone3": "区3",
+        "updatedAt": "更新日期",
+        "warehouseId": "仓库ID",
+        "zone1Qty": "区1数量",
+        "zone2Qty": "区2数量",
+        "zone3Qty": "区3数量",
+        "imageUrl": "图片链接"
+      },
+      "tooltips": {
+        "zone1": "仓库分区一库存数量",
+        "zone2": "仓库分区二库存数量",
+        "zone3": "仓库分区三库存数量"
+      },
+      "messages": {
+        "loadFailed": "加载库存数据失败",
+        "lowStock": "低于预警"
+      }
+    },
+    "dataCenterReturnInventory": {
+      "title": "退货库存",
+      "filters": {
+        "skuPlaceholder": "输入 SKU"
+      },
+      "headers": {
+        "arrived31To60": "到仓31-60天",
+        "arrived61To90": "到仓61-90天",
+        "arrivedOver90": "到仓90天以上",
+        "storageBillingTime": "仓储计费时间"
+      },
+      "messages": {
+        "loadFailed": "加载退货库存失败"
+      }
+    },
+    "accountPersonalization": {
+      "title": "自动渠道配置",
+      "subtitle": "自动选渠道策略 + 三级渠道降级。",
+      "loading": "正在加载配置...",
+      "optionalDisabled": "不配置（关闭）",
+      "alert": "当订单导入选择“自动渠道选择”时，系统按“首选 → 次选 → 兜底”顺序尝试下单，直到成功。",
+      "steps": {
+        "primary": "1. 首选运输方式",
+        "secondary": "2. 次选运输方式",
+        "fallback": "3. 兜底运输方式"
+      },
+      "fields": {
+        "switch": "功能开关（开启 / 关闭）",
+        "primary": "首选运输方式",
+        "secondary": "次选运输方式",
+        "fallback": "兜底运输方式"
+      },
+      "status": {
+        "enabled": "当前：已开启",
+        "disabled": "当前：已关闭"
+      },
+      "placeholders": {
+        "primary": "请选择首选运输方式（必填）",
+        "secondary": "请选择次选运输方式（可选）",
+        "fallback": "请选择兜底运输方式（可选）"
+      },
+      "hints": {
+        "primary": "系统优先尝试该渠道下单。",
+        "secondary": "首选失败后自动重试该渠道。",
+        "fallback": "前两级都失败时启用，作为最终保障。"
+      },
+      "actions": {
+        "save": "保存配置"
+      },
+      "messages": {
+        "loadFailed": "加载配置失败",
+        "networkFailed": "网络请求失败",
+        "primaryRequired": "请选择首选运输方式",
+        "saveSuccess": "保存成功",
+        "saveFailed": "保存失败"
+      }
+    },
+    "accountAuthManagement": {
+      "developerTitle": "开发者对接信息",
+      "appKey": "App Key (应用标识)",
+      "appSecret": "App Secret (应用密钥)",
+      "title": "授权管理",
+      "subtitle": "旧版 erp-open 页面迁移：ERP/平台授权列表、新增授权及 TEMU 授权信息展示。",
+      "platforms": {
+        "mabang": "马帮ERP",
+        "thirdParty": "第三方ERP (领星、赛狐等)",
+        "tiktok": "TikTok",
+        "temu": "TEMU"
+      },
+      "actions": {
+        "copy": "复制",
+        "add": "新增授权",
+        "openLegacy": "打开旧版",
+        "cancel": "取消",
+        "authorize": "前往授权",
+        "copied": "我已复制"
+      },
+      "headers": {
+        "platform": "平台/ERP",
+        "seller": "店铺/账号名称",
+        "authTime": "授权时间",
+        "status": "状态"
+      },
+      "status": {
+        "normal": "正常",
+        "expired": "已过期"
+      },
+      "dialog": {
+        "addTitle": "新增授权",
+        "platformLabel": "选择平台",
+        "platformPlaceholder": "请选择需要授权的平台",
+        "platformRequired": "请选择平台",
+        "temuTitle": "TEMU 授权信息",
+        "temuAlert": "请复制以下信息并填写到 TEMU 平台完成绑定。",
+        "ownerId": "货主 ID",
+        "authCode": "授权码",
+        "authKey": "授权 KEY"
+      },
+      "messages": {
+        "copySuccess": "复制成功",
+        "copyFailed": "复制失败，请手动复制",
+        "copyUnsupported": "当前浏览器不支持自动复制，请手动复制",
+        "loadFailed": "获取列表失败",
+        "networkFailed": "网络请求失败",
+        "operationFailed": "操作失败",
+        "operationSuccess": "操作成功",
+        "authorizeInNewWindow": "请在新窗口中完成授权，完成后请刷新列表",
+        "requestFailed": "请求出错，请检查网络"
+      },
+      "empty": "暂无授权数据",
+      "loading": "正在加载..."
+    },
+    "accountFundOverview": {
+      "title": "财务管理",
+      "accountBalance": "账户余额",
+      "depositUsd": "出标押金 (USD)",
+      "types": {
+        "all": "全部",
+        "income": "收入",
+        "expense": "支出"
+      },
+      "currencies": {
+        "rmb": "人民币",
+        "usd": "美元",
+        "eur": "欧元"
+      },
+      "actions": {
+        "recharge": "充值",
+        "export": "导出账单明细",
+        "submitRecharge": "提交充值申请",
+        "scanPay": "扫码支付"
+      },
+      "filters": {
+        "type": "类型",
+        "keyword": "订单号 / 运单号",
+        "remark": "备注关键词",
+        "time": "交易时间"
+      },
+      "placeholders": {
+        "keyword": "请输入关键词",
+        "remark": "请输入备注",
+        "time": "选择时间范围",
+        "transferProof": "请输入银行转账订单号",
+        "amount": "请输入金额"
+      },
+      "headers": {
+        "createTime": "创建时间",
+        "orderNo": "订单号",
+        "trackingNo": "运单号",
+        "tradeType": "交易类型",
+        "incomeExpense": "收支",
+        "amountUsd": "交易金额(USD)",
+        "amountEur": "交易金额(EUR)",
+        "remark": "备注"
+      },
+      "recharge": {
+        "title": "账户充值",
+        "tabs": {
+          "rmb": "人工充值(¥)",
+          "usd": "人工充值($)",
+          "eur": "人工充值(€)",
+          "auto": "自动充值"
+        },
+        "bank": {
+          "transferAccount": "转账账户：浙商银行",
+          "accountName": "户名：潘威文 (PAN WEIWEN)",
+          "accountNo": "账号：6223095840810042306",
+          "zelle": "Zelle 账户",
+          "contactService": "请联系客服获取账户",
+          "airwallex": "Airwallex 账户"
+        },
+        "fields": {
+          "currency": "充值币种",
+          "amount": "充值金额",
+          "arrival": "实际到账",
+          "proof": "转账凭据",
+          "paymentMethod": "支付方式",
+          "customAmount": "其他金额",
+          "usdArrival": "美金到账"
+        },
+        "payment": {
+          "alipay": "支付宝",
+          "wechat": "微信"
+        },
+        "autoAlert": "5000 元内自动充值，即充即到，方便快捷。",
+        "payableAmount": "应付金额：",
+        "yuan": "元"
+      },
+      "wxPay": {
+        "title": "微信支付",
+        "submitted": "提交成功，等待支付...",
+        "instruction": "请确认金额并及时微信扫码支付订单",
+        "qrAlt": "微信支付二维码",
+        "noQr": "未返回二维码图片，请联系客服处理支付。",
+        "account": "账号：{value}",
+        "orderNo": "单号：{value}",
+        "amount": "金额：{value} 元"
+      },
+      "messages": {
+        "copied": "已复制到剪贴板",
+        "copyFailed": "复制失败，请手动复制",
+        "copyUnsupported": "当前环境不支持自动复制",
+        "loadFailed": "加载资金列表失败",
+        "rateFailed": "获取汇率失败",
+        "rateUpdateFailed": "汇率更新失败",
+        "incompleteRecharge": "请填写完整充值信息",
+        "amountRequired": "请选择或输入充值金额",
+        "submitFailed": "提交充值失败",
+        "payPageOpened": "已打开支付页面，请完成支付",
+        "submitSuccess": "充值申请提交成功",
+        "wxQrFailed": "微信支付二维码获取失败",
+        "wxPaid": "微信支付成功，余额已更新",
+        "exportConditionRequired": "请选择导出条件（类型或时间范围）",
+        "exportSubmitted": "导出任务已提交",
+        "exportFailed": "导出失败"
+      }
+    },
+    "accountAddressManagement": {
+      "title": "地址管理",
+      "subtitle": "切换“发件地址 / 收件地址”查看对应地址簿记录。",
+      "tabs": {
+        "sender": "发件地址",
+        "receiver": "收件地址"
+      },
+      "headers": {
+        "name": "姓名",
+        "telephone": "电话",
+        "company": "公司",
+        "actions": "操作"
+      },
+      "actions": {
+        "add": "新增地址",
+        "edit": "编辑"
+      },
+      "messages": {
+        "countryLoadFailed": "加载国家列表失败",
+        "listLoadFailed": "加载地址列表失败",
+        "networkFailed": "网络请求失败",
+        "editSuccess": "编辑成功",
+        "createSuccess": "创建成功",
+        "saveFailed": "保存失败"
+      }
+    },
+    "accountSettings": {
+      "tabs": {
+        "account": "账户信息",
+        "security": "修改密码"
+      },
+      "account": {
+        "title": "账户信息",
+        "fields": {
+          "username": "用户名",
+          "userCode": "用户编码",
+          "realName": "真实姓名",
+          "email": "邮箱",
+          "mobile": "手机",
+          "loginIp": "登录 IP"
+        },
+        "messages": {
+          "loadFailed": "加载用户信息失败",
+          "networkFailed": "网络请求失败"
+        }
+      },
+      "security": {
+        "title": "修改密码",
+        "fields": {
+          "currentPassword": "当前密码",
+          "newPassword": "新密码",
+          "confirmPassword": "确认新密码"
+        },
+        "requirementsTitle": "密码要求",
+        "requirements": {
+          "length": "至少 8 位字符，越长越好",
+          "lowercase": "需包含小写字母",
+          "complexity": "需包含数字、符号或空格中至少一类"
+        },
+        "actions": {
+          "save": "保存",
+          "clear": "清空"
+        },
+        "messages": {
+          "currentRequired": "请填写当前密码",
+          "newRequired": "请填写新密码",
+          "mismatch": "两次输入的新密码不一致",
+          "tooShort": "新密码长度至少 8 位",
+          "updated": "密码已更新",
+          "failed": "修改失败",
+          "requestFailed": "请求失败，请确认已配置修改密码接口"
+        }
+      }
+    },
+    "productList": {
+      "title": "产品列表",
+      "batchCreate": "批量新增",
+      "create": "新建产品",
+      "exportExcel": "导出 Excel",
+      "filters": {
+        "sku": "SKU",
+        "skuPlaceholder": "输入 SKU",
+        "name": "产品名",
+        "namePlaceholder": "输入产品名",
+        "category": "产品分类",
+        "allCategories": "全部分类"
+      },
+      "headers": {
+        "sku": "SKU",
+        "name": "产品名",
+        "brand": "英文品牌",
+        "weight": "重量(KG)",
+        "lwh": "长*宽*高(CM)",
+        "origin": "原产地",
+        "category": "产品分类",
+        "stock": "总库存",
+        "image": "图片",
+        "status": "状态",
+        "actions": "操作",
+        "imageUrl": "图片链接"
+      },
+      "actions": {
+        "batchPrint": "批量打印 ({count})",
+        "view": "查看",
+        "edit": "编辑",
+        "print": "打印",
+        "delete": "删除"
+      },
+      "previewTitle": "图片预览",
+      "noImage": "无图",
+      "total": "共 {total} 条",
+      "messages": {
+        "categoryLoadFailed": "加载产品分类失败",
+        "listLoadFailed": "加载产品列表失败",
+        "exportFetchFailed": "获取导出数据失败",
+        "exportNoData": "当前条件下无数据可导出",
+        "exportSuccess": "已导出 {count} 条（单次最多 {max} 条）",
+        "exportFailed": "导出失败",
+        "statusToggleFailed": "状态切换失败",
+        "statusUpdated": "状态更新成功",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "printFailed": "打印失败",
+        "batchPrintEmpty": "请先选择要批量打印的数据",
+        "batchPrintFailed": "批量打印失败",
+        "deleteConfirm": "删除后不可恢复，确定继续吗？"
+      }
+    },
+    "productCreate": {
+      "titles": {
+        "create": "新建产品",
+        "edit": "编辑产品",
+        "detail": "产品详情"
+      },
+      "subtitles": {
+        "create": "填写产品信息后保存创建",
+        "edit": "更新产品信息后保存生效",
+        "detail": "查看产品基础资料、规格参数、图片及子 SKU"
+      },
+      "overlay": "加载中...",
+      "sections": {
+        "basic": "基础信息",
+        "basicSubtitle": "维护产品名称、品牌与 SKU。",
+        "spec": "规格参数",
+        "specSubtitle": "重量、尺寸和商品基础属性。",
+        "attributes": "商品属性",
+        "attributesSubtitle": "用于报关与定价信息。",
+        "images": "图片与子 SKU",
+        "imagesSubtitle": "建议上传清晰主图，子 SKU 用于变体管理。",
+        "description": "描述信息",
+        "descriptionSubtitle": "补充中英文说明。"
+      },
+      "fields": {
+        "sku": "产品 SKU",
+        "barcode": "条形码",
+        "cnName": "产品中文名",
+        "enName": "产品英文名",
+        "cnBrand": "中文品牌",
+        "enBrand": "英文品牌",
+        "weight": "重量",
+        "length": "长度",
+        "width": "宽度",
+        "height": "高度",
+        "unit": "计量单位",
+        "category": "产品分类",
+        "battery": "是否带电池",
+        "status": "产品状态",
+        "hsCode": "海关编码",
+        "origin": "原产地",
+        "declaredValue": "申报价值",
+        "price1": "销售价1",
+        "price2": "销售价2",
+        "price3": "销售价3",
+        "cnDesc": "中文描述",
+        "enDesc": "英文描述"
+      },
+      "placeholders": {
+        "sku": "请输入SKU（英文/数字）",
+        "barcode": "请输入条形码",
+        "cnName": "请输入中文名",
+        "enName": "请输入英文名",
+        "cnBrand": "请输入中文品牌",
+        "enBrand": "请输入英文品牌",
+        "hsCode": "请输入 HS 编码",
+        "origin": "例如：中国",
+        "subSku": "请输入子SKU"
+      },
+      "options": {
+        "metric": "公制(kg/cm)",
+        "imperial": "英制(lb/in)",
+        "batteryNo": "不含电池",
+        "batteryYes": "含电池",
+        "enabled": "启用",
+        "disabled": "禁用"
+      },
+      "images": {
+        "upload": "点击上传",
+        "tips": "JPG/PNG/WebP, 5MB以内",
+        "main": "主图",
+        "image": "图片"
+      },
+      "actions": {
+        "addSubSku": "添加子 SKU",
+        "save": "保存产品",
+        "back": "返回"
+      },
+      "subSkuLabel": "子SKU {index}",
+      "categoryFallback": "分类#{id}",
+      "messages": {
+        "missingId": "缺少产品 ID，无法加载详情",
+        "loadDetailFailed": "加载产品详情失败",
+        "uploadFailed": "图片上传失败",
+        "imageType": "仅支持 jpg/png/gif/webp 图片",
+        "imageSize": "图片大小不能超过 5MB",
+        "skuRequired": "{label} 必填",
+        "skuInvalid": "{label} 仅支持英文、数字、- 和 _",
+        "skuTooLong": "{label} 长度不能超过 {max} 位",
+        "cnNameRequired": "请填写产品中文名",
+        "enNameRequired": "请填写产品英文名",
+        "enBrandRequired": "请填写英文品牌",
+        "sizeRequired": "请完善重量和长宽高",
+        "imageRequired": "请至少上传一张产品图片",
+        "saveSuccess": "保存成功",
+        "saveFailed": "保存失败"
+      }
+    },
+    "dropShippingPackageCreate": {
+      "hero": {
+        "eyebrow": "一件代发 · 入库",
+        "createTitle": "创建入库单",
+        "editTitle": "编辑入库单",
+        "subtitle": "填写仓库、物流与货品明细后提交入库申请。"
+      },
+      "overlay": {
+        "detail": "正在加载入库单详情...",
+        "initial": "正在加载仓库、地址与货品数据...",
+        "default": "正在加载..."
+      },
+      "express": {
+        "courier": "快递",
+        "truck": "卡车",
+        "sea": "海运",
+        "air": "空运"
+      },
+      "sections": {
+        "base": "基础与物流信息",
+        "baseSubtitle": "选择仓库、运输方式与到仓时间",
+        "warehouseAddress": "仓库收件地址",
+        "sender": "发件人信息",
+        "senderSubtitle": "用于退货等联系与面单打印",
+        "products": "货品明细",
+        "productsSubtitle": "填写入库商品 SKU 与数量",
+        "summary": "提交摘要"
+      },
+      "fields": {
+        "warehouse": "入库仓库",
+        "express": "运输方式",
+        "boxes": "箱数",
+        "reference": "参考号",
+        "eta": "预计到仓时间",
+        "country": "国家",
+        "sender": "发件人",
+        "phone": "电话",
+        "address": "详细地址",
+        "sku": "SKU / 商品",
+        "qty": "数量",
+        "products": "货品明细"
+      },
+      "actions": {
+        "reloadAddress": "重新读取默认地址",
+        "addProduct": "添加货品",
+        "saveEdit": "保存修改",
+        "submit": "确认并提交入库单",
+        "cancel": "取消"
+      },
+      "skuPlaceholder": "请选择 SKU（支持搜索）",
+      "availableStock": "可用库存: {stock}",
+      "productCount": "共 {count} 条货品，至少保留 1 条。",
+      "summaryItems": "{count} 项",
+      "messages": {
+        "skuLoadFailed": "SKU加载失败",
+        "countryLoadFailed": "国家加载失败",
+        "invalidLoadedReference": "加载到的参考号包含非法字符，系统保留原值，请不要手动修改",
+        "loadDetailFailed": "加载详情失败",
+        "referenceInvalid": "参考号仅允许字母、数字和下划线，提交已被阻止",
+        "productRequired": "请至少填写一条有效货品明细",
+        "saveSuccess": "保存成功",
+        "saveFailed": "保存失败",
+        "warehouseRequired": "请选择仓库",
+        "expressRequired": "请选择运输方式",
+        "boxesRequired": "请输入有效箱数",
+        "referenceRequired": "请输入参考号",
+        "referenceRule": "参考号仅允许字母、数字和下划线",
+        "countryRequired": "请选择发货国家",
+        "senderRequired": "请输入发件人姓名",
+        "phoneRequired": "请输入发货电话",
+        "addressRequired": "请输入发货地址"
+      }
+    },
+    "dropShippingPackageDetail": {
+      "hero": {
+        "eyebrow": "一件代发 · 入库",
+        "title": "入库单详情",
+        "readonly": "只读",
+        "subtitle": "查看入库单物流信息、发件地址与货品明细。"
+      },
+      "actions": {
+        "pdf": "箱唛 PDF",
+        "downloadPdf": "下载箱唛 PDF"
+      },
+      "sections": {
+        "tracking": "运单号 (Tracking No)",
+        "warehouse": "入库仓库",
+        "createdAt": "创建时间",
+        "inboundDate": "入库日期",
+        "remark": "备注",
+        "logisticsAddress": "物流与地址信息",
+        "logistics": "物流信息",
+        "eta": "预计到仓",
+        "warehouseAddress": "仓库收件地址",
+        "sender": "发件人信息",
+        "products": "货品明细 (SKUs)",
+        "summary": "入库摘要"
+      },
+      "table": {
+        "sku": "SKU",
+        "declaredQty": "申报数量",
+        "actualQty": "实际数量",
+        "totalQty": "合计数量",
+        "to": "至"
+      },
+      "empty": {
+        "logisticsTime": "暂无物流时间信息",
+        "warehouseAddress": "暂无仓库地址信息",
+        "products": "暂无货品数据"
+      },
+      "chips": {
+        "productSummary": "共 {kinds} 种 · {qty} 件",
+        "kindCount": "{count} 种",
+        "pieceCount": "{count} 件"
+      },
+      "messages": {
+        "missingId": "缺少入库单 ID",
+        "loadInboundFailed": "加载入库单失败",
+        "loadFailed": "加载失败"
+      }
+    },
+    "tiktokService": {
+      "title": "TikTok Shop 服务",
+      "subtitle": "管理 TikTok Shop 店铺绑定、仓库映射及订单拉取日志",
+      "authShop": "授权店铺",
+      "usSite": "美国站 (US)",
+      "ukSite": "英国站 (UK)",
+      "tabs": {
+        "shops": "店铺与仓库",
+        "logs": "订单拉取日志"
+      },
+      "token": {
+        "expired": "已过期",
+        "normal": "正常",
+        "access": "Access Token：{status}",
+        "refresh": "Refresh Token：{status}",
+        "accessExpire": "Access Token 到期：{time}",
+        "refreshExpire": "Refresh Token 到期：{time}",
+        "updatedAt": "最后更新：{time}"
+      },
+      "shops": {
+        "empty": "暂未绑定任何 TikTok Shop 店铺",
+        "goAuth": "前往授权管理绑定店铺",
+        "bindWarehouse": "绑定仓库",
+        "noBinding": "暂无仓库绑定，点击右上角「绑定仓库」添加",
+        "tkWarehouse": "TK 仓库",
+        "wmsWarehouse": "WMS 仓库",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "logs": {
+        "queryByOrder": "按订单号查询",
+        "refresh": "刷新",
+        "shop": "店铺",
+        "allShops": "全部店铺",
+        "type": "类型",
+        "description": "按时间倒序展示拉取任务、订单明细与库存校验结果，便于沿着同一 fetch_id 追踪处理链路。",
+        "total": "共 {total} 条",
+        "noData": "暂无日志数据",
+        "event": "事件",
+        "logType": "日志类型",
+        "orderInfo": "订单信息",
+        "summary": "结果摘要",
+        "time": "时间",
+        "status": "状态：{status}",
+        "orderedAt": "下单：{time}",
+        "updatedAt": "更新：{time}",
+        "errorCode": "错误码：{code}",
+        "createdAt": "创建时间",
+        "mainFetch": "主拉取任务",
+        "relatedFetch": "关联拉取 #{id}",
+        "allStatus": "全部状态",
+        "fetchSummary": "按 {status} 拉取到 {count} 条订单",
+        "itemSummary": "订单明细已入日志，可结合订单状态继续排查后续处理结果",
+        "inventoryOk": "库存校验通过",
+        "noPackage": "订单未匹配到包裹信息",
+        "errorSummary": "拉取过程发生异常",
+        "historyTitle": "订单 {order} 的拉取历史",
+        "syncStatus": "同步状态",
+        "recordTime": "记录时间",
+        "noRecords": "暂无拉取记录"
+      },
+      "selfCheck": {
+        "button": "Tiktok订单自检",
+        "title": "Tiktok订单自检",
+        "shopLabel": "店铺",
+        "shopPlaceholder": "请选择店铺",
+        "shopOption": "{name} (Shop ID: {shopId})",
+        "orderIdLabel": "TikTok 订单号",
+        "orderIdPlaceholder": "请输入 tk_order_id",
+        "run": "开始自检",
+        "fetchable": "可拉取：该订单满足拉取条件",
+        "notFetchable": "不可拉取：该订单暂不满足拉取条件",
+        "orderIdValue": "tk_order_id: {id}",
+        "passed": "通过",
+        "failed": "失败",
+        "currentStatus": "当前状态: {status}",
+        "expectedStatus": "期望状态: {status}",
+        "checkKeys": {
+          "order_exists": "订单存在性检查",
+          "shipping_type_supported": "物流类型支持检查",
+          "status_eligible": "订单状态符合性检查",
+          "warehouse_id_present": "订单仓库字段检查",
+          "warehouse_bound": "仓库绑定检查",
+          "package_ready": "包裹数据检查",
+          "sku_valid": "SKU 有效性检查",
+          "inventory_ok": "库存充足检查",
+          "not_processed": "重复处理检查"
+        },
+        "missingTitle": "库存不足明细",
+        "sku": "SKU",
+        "required": "需求",
+        "available": "可用",
+        "reason": "原因"
+      },
+      "dialogs": {
+        "addBinding": "新增仓库绑定",
+        "editBinding": "编辑仓库绑定",
+        "tkWarehousePlaceholder": "请选择 TikTok 仓库",
+        "wmsWarehousePlaceholder": "请选择 WMS 仓库",
+        "confirmBind": "确认绑定",
+        "saveEdit": "保存修改",
+        "queryTitle": "按 TikTok 订单号查询",
+        "orderId": "TikTok 订单号",
+        "orderPlaceholder": "请输入 TK 订单 ID",
+        "query": "查询",
+        "close": "关闭"
+      },
+      "options": {
+        "enabled": "启用",
+        "disabled": "禁用",
+        "all": "全部",
+        "fetch": "拉取任务",
+        "fetchOption": "拉取任务 (fetch)",
+        "item": "订单明细",
+        "itemOption": "订单明细 (item)",
+        "error": "拉取失败",
+        "errorOption": "失败记录 (error)",
+        "noPackage": "无包裹",
+        "noPackageOption": "无包裹 (no_package)",
+        "inventoryOk": "库存满足",
+        "inventoryOkOption": "库存满足 (inventory_ok)",
+        "inventoryFail": "库存不足",
+        "inventoryFailOption": "库存不足 (inventory_fail)"
+      },
+      "messages": {
+        "shopsFailed": "获取店铺列表失败",
+        "bindingsFailed": "获取仓库绑定失败",
+        "tkWarehousesFailed": "获取 TK 仓库列表失败",
+        "networkFailed": "网络请求失败",
+        "requestFailed": "请求失败",
+        "bindSuccess": "绑定成功",
+        "updateSuccess": "更新成功",
+        "operationFailed": "操作失败",
+        "requestError": "请求出错",
+        "logsNoUser": "未获取到用户 ID，无法查询订单拉取日志",
+        "logsFailed": "获取日志失败",
+        "queryFailed": "查询失败",
+        "selfCheckOrderRequired": "请输入 TikTok 订单号",
+        "selfCheckShopRequired": "请选择店铺",
+        "selfCheckFailed": "自检失败，请稍后重试",
+        "tkWarehouseRequired": "请选择 TK 仓库",
+        "wmsWarehouseRequired": "请选择 WMS 仓库"
+      }
+    },
+    "printLabelCreate": {
+      "hero": {
+        "title": "新建运单",
+        "subtitle": "选择渠道后，发件/收件地址请从地址簿选择或在浮窗中新增、编辑；填写包裹与货品信息后试算运费；比价模式可多选渠道对比报价。"
+      },
+      "globalNotice": {
+        "insurance": "如需保障货物安全并进行投保，请联络客服咨询下单。"
+      },
+      "overlay": {
+        "ordering": "出单中..."
+      },
+      "channel": {
+        "title": "渠道选择",
+        "subtitle": "选择后将影响币种、申报规则与国家限制。",
+        "compareMode": "比价模式",
+        "compareModeAlert": "比价模式已开启：可复选渠道。",
+        "alertTitle": "渠道提醒",
+        "defaultAlertTitle": "下单提醒"
+      },
+      "basic": {
+        "title": "基础信息",
+        "subtitle": "参考号与计量单位将参与试算与下单。",
+        "referenceLabel": "参考号",
+        "referencePlaceholder": "仅英文、数字、下划线，建议15位以上",
+        "referenceHint": "仅允许英文字母、数字与下划线；失焦或选字结束后会自动去掉其它字符（避免输入法过程中乱码）",
+        "unitLabel": "重量/尺寸单位",
+        "unitAria": "重量与尺寸单位",
+        "metricUnit": "公制 (g / cm)",
+        "imperialUnit": "英制 (lb / in)"
+      },
+      "address": {
+        "senderTitle": "发件人信息",
+        "receiverTitle": "收件人信息",
+        "senderEmpty": "请从地址簿选择已有发件地址，或点击「添加地址」在浮窗中新建；确认后此处为只读展示，修改请点「编辑」或通过地址簿重新选择。",
+        "senderBeianOnly": "当前选择的渠道包含需备案发件地址的渠道。请通过地址簿选择备案地址，不能手动新增或编辑发件地址。",
+        "receiverEmpty": "请从地址簿选择已有收件地址，或点击「添加地址」在浮窗中新建；确认后此处为只读展示，修改请点「编辑」或通过地址簿重新选择。",
+        "senderCountryLock": "当前渠道已限定发件国家：{country}",
+        "receiverCountryLock": "当前渠道已限定收件国家：{country}",
+        "fields": {
+          "name": "姓名：",
+          "address1": "地址第 1 行：",
+          "address2": "地址第 2 行：",
+          "street": "街道：",
+          "city": "城市：",
+          "province": "省/州：",
+          "postCode": "邮编：",
+          "country": "国家/地区：",
+          "telephone": "电话：",
+          "company": "公司："
+        }
+      },
+      "package": {
+        "title": "包裹信息",
+        "subtitle": "按实重与外包装尺寸填写，用于计费与材积核对。",
+        "weight": "重量（{unit}）",
+        "length": "长（{unit}）",
+        "width": "宽（{unit}）",
+        "height": "高（{unit}）"
+      },
+      "rate": {
+        "title": "报价结果",
+        "subtitle": "填写表单后试算；比价模式将按价格排序展示多渠道结果。",
+        "emptyCompare": "填写表单后点击「试算运费」查看多渠道比价结果",
+        "emptySingle": "填写表单后点击「试算运费」查看报价",
+        "loading": "正在查询报价，请稍候...",
+        "quoteReturned": "已返回报价，请在下方确认费用明细或选择线路",
+        "chooseRoute": "请选择线路后再下单",
+        "noRoutes": "当前报价未返回可选线路",
+        "unnamedRoute": "未命名线路",
+        "compareSummary": "共 {count} 条渠道报价（按价格从低到高）",
+        "resultChip": "试算结果",
+        "bestDeal": "最优惠",
+        "noQuote": "试算未返回报价",
+        "routeCount": "提供 {count} 条可选线路",
+        "standardQuote": "标准线路报价",
+        "standardRoute": "标准线路"
+      },
+      "dialogs": {
+        "senderAddressTitle": "选择发件人地址",
+        "receiverAddressTitle": "选择收件人地址",
+        "addressBookSubtitle": "按姓名向服务器筛选；单击「选择」或双击整行填入表单。"
+      },
+      "submit": {
+        "now": "立即下单"
+      },
+      "messages": {
+        "referenceRequired": "请输入参考号",
+        "referenceInvalidSubmit": "参考号仅允许字母、数字和下划线，提交已被阻止",
+        "referenceInvalid": "参考号仅允许英文字母、数字与下划线",
+        "rateTitleFallback": "报价结果",
+        "keepCompareChannel": "比价模式下至少保留一个渠道",
+        "selectChannel": "请选择一个渠道",
+        "senderRequired": "请完善发件人必填信息（姓名、地址第 1 行、城市、省/州、邮编、电话）",
+        "receiverRequired": "请完善收件人必填信息（姓名、地址第 1 行、城市、省/州、邮编、电话）",
+        "addressMustBeLocked": "请通过「从地址簿选择」或「添加地址」确认发件与收件地址后再试算或下单",
+        "senderBeianRequired": "当前选择的渠道包含需备案发件地址的渠道，请先从地址簿选择备案发件地址",
+        "senderBeianAddressOnly": "当前选择的渠道包含需备案发件地址的渠道，发件地址只能从地址簿中选择备案地址",
+        "senderAddressResetForChannelChange": "渠道要求已变化，原发件地址已清空，请重新选择符合要求的发件地址",
+        "packageRequired": "请填写包裹的重量和尺寸（长、宽、高）",
+        "productRequired": "请至少添加一条货品信息",
+        "productLine": "第{line}行货品",
+        "productSkuRequired": "{line}：请填写SKU",
+        "productEnNameRequired": "{line}：请填写英文名称",
+        "productCnNameRequired": "{line}：请填写中文名称",
+        "productQtyPositive": "{line}：数量必须大于0",
+        "productWeightPositive": "{line}：重量必须大于0",
+        "productValueRequired": "{line}：请填写有效的申报价值",
+        "selectRateChannel": "请选择至少一个渠道进行试算",
+        "rateFailed": "试算失败，请检查填写内容",
+        "compareNoData": "比价请求成功，但未返回可展示的渠道报价数据",
+        "compareSuccess": "比价获取成功",
+        "routeMissingAfterRate": "该渠道需要选择线路，但报价未返回可选线路，请检查地址和包裹信息",
+        "rateSuccess": "报价获取成功",
+        "networkRetry": "网络请求失败，请重试",
+        "addressListFailed": "加载地址列表失败",
+        "networkFailed": "网络请求失败",
+        "addressFilled": "地址已填入",
+        "requiredField": "必填项",
+        "saveFailed": "保存失败",
+        "saveSuccess": "保存成功",
+        "keepOneProduct": "至少保留一行货品",
+        "providerInvalid": "渠道配置异常，无法下单",
+        "orderSuccess": "订单创建成功，正在出单中，请前往订单列表查看",
+        "unauthorized": "登录已过期，请重新登录",
+        "orderFailed": "下单失败",
+        "compareModeSubmitBlocked": "比价模式仅用于试算。请关闭比价模式后选择单个渠道下单",
+        "rateBeforeOrder": "该渠道下单前需要先试算运费并选择线路",
+        "noRouteForOrder": "该渠道未返回可选线路，暂不能下单",
+        "selectRouteBeforeOrder": "请选择线路后再提交订单",
+        "compareOrderConfirm": "确认通过渠道「{channel}」下单？\n线路：{route} · 费用：{fee} {currency}",
+        "submitConfirm": "确认通过渠道「{channel}」（QID: {qid}）下单？{route}",
+        "selectedRoute": "\n已选线路：{route} / {fee} {currency}"
+      }
     }
   },
   "$vuetify": {

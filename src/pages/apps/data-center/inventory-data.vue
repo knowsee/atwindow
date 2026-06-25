@@ -1,6 +1,6 @@
 <script setup>
-import { $api } from '@/utils/api'
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
+import { $api } from '@/utils/api'
 import { downloadXlsx, EXPORT_PAGE_SIZE, makeExportBasename } from '@/utils/exportXlsx'
 import { resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
 import { loadWarehouseOptions } from '@/views/apps/drop-shipping/useDropShippingShared'
@@ -21,6 +21,7 @@ const warehouseOptions = ref([])
 const snack = ref({ show: false, text: '', color: 'info' })
 const exporting = ref(false)
 const warehousePersistReady = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
 const filters = ref({
   cnName: '',
@@ -29,19 +30,19 @@ const filters = ref({
   id: '',
 })
 
-const headers = [
+const headers = computed(() => [
   { title: '', key: 'thumb', width: '64', sortable: false },
   { title: 'ID', key: 'id', width: '88' },
   { title: 'SKU', key: 'en_sku', minWidth: '120' },
-  { title: '产品中文名', key: 'cn_name', minWidth: '200' },
-  { title: '仓库', key: 'warehouse_name', minWidth: '150' },
-  { title: '库存', key: 'sku_num', minWidth: '100', align: 'end' },
-  { title: '预警值', key: 'warn_num', minWidth: '96', align: 'end' },
-  { title: '区1', key: 'num_one', minWidth: '72', align: 'end' },
-  { title: '区2', key: 'num_two', minWidth: '72', align: 'end' },
-  { title: '区3', key: 'num_three', minWidth: '72', align: 'end' },
-  { title: '更新日期', key: 'logTime', minWidth: '120' },
-]
+  { title: t('pages.dataCenterInventoryData.filters.productCnName'), key: 'cn_name', minWidth: '200' },
+  { title: t('pages.dropShippingOrderCreate.sections.logistics.warehouse'), key: 'warehouse_name', minWidth: '150' },
+  { title: t('pages.dataCenterInventoryData.headers.stock'), key: 'sku_num', minWidth: '100', align: 'end' },
+  { title: t('pages.dataCenterInventoryData.headers.warningValue'), key: 'warn_num', minWidth: '96', align: 'end' },
+  { title: t('pages.dataCenterInventoryData.headers.zone1'), key: 'num_one', minWidth: '72', align: 'end' },
+  { title: t('pages.dataCenterInventoryData.headers.zone2'), key: 'num_two', minWidth: '72', align: 'end' },
+  { title: t('pages.dataCenterInventoryData.headers.zone3'), key: 'num_three', minWidth: '72', align: 'end' },
+  { title: t('pages.dataCenterInventoryData.headers.updatedAt'), key: 'logTime', minWidth: '120' },
+])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
 
@@ -93,41 +94,41 @@ async function exportToExcel() {
     })
 
     if (Number(res?.code) !== 1 || !res?.data) {
-      toast(res?.msg || '获取导出数据失败', 'error')
+      toast(res?.msg || t('pages.dataCenterSalesAnalysis.messages.exportLoadFailed'), 'error')
 
       return
     }
 
     const list = Array.isArray(res.data.data) ? res.data.data : []
     if (!list.length) {
-      toast('当前条件下无数据可导出', 'warning')
+      toast(t('pages.dataCenterSalesAnalysis.messages.exportNoData'), 'warning')
 
       return
     }
 
     await downloadXlsx({
-      filename: makeExportBasename('库存数据'),
-      sheetName: '库存数据',
+      filename: makeExportBasename(t('pages.dataCenterInventoryData.title')),
+      sheetName: t('pages.dataCenterInventoryData.title'),
       columns: [
         { key: 'id', title: 'ID' },
         { key: 'en_sku', title: 'SKU' },
-        { key: 'cn_name', title: '产品中文名' },
-        { key: 'warehouse_name', title: '仓库' },
-        { key: 'warehouse_id', title: '仓库ID' },
-        { key: 'sku_num', title: '库存数量' },
-        { key: 'warn_num', title: '预警值' },
-        { key: 'num_one', title: '区1数量' },
-        { key: 'num_two', title: '区2数量' },
-        { key: 'num_three', title: '区3数量' },
-        { key: 'logTime', title: '更新日期' },
-        { key: 'img_url', title: '图片链接' },
+        { key: 'cn_name', title: t('pages.dataCenterInventoryData.filters.productCnName') },
+        { key: 'warehouse_name', title: t('pages.dropShippingOrderCreate.sections.logistics.warehouse') },
+        { key: 'warehouse_id', title: t('pages.dataCenterInventoryData.headers.warehouseId') },
+        { key: 'sku_num', title: t('pages.dataCenterSalesAnalysis.headers.stockQty') },
+        { key: 'warn_num', title: t('pages.dataCenterInventoryData.headers.warningValue') },
+        { key: 'num_one', title: t('pages.dataCenterInventoryData.headers.zone1Qty') },
+        { key: 'num_two', title: t('pages.dataCenterInventoryData.headers.zone2Qty') },
+        { key: 'num_three', title: t('pages.dataCenterInventoryData.headers.zone3Qty') },
+        { key: 'logTime', title: t('pages.dataCenterInventoryData.headers.updatedAt') },
+        { key: 'img_url', title: t('pages.dataCenterInventoryData.headers.imageUrl') },
       ],
       rows: list,
     })
-    toast(`已导出 ${list.length} 条（单次最多 ${EXPORT_PAGE_SIZE} 条）`, 'success')
+    toast(t('pages.dataCenterSalesAnalysis.messages.exportSuccess', { count: list.length, max: EXPORT_PAGE_SIZE }), 'success')
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '导出失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dataCenterSalesAnalysis.messages.exportFailed'), 'error')
   }
   finally {
     exporting.value = false
@@ -151,12 +152,12 @@ async function loadList() {
 
     rows.value = []
     total.value = 0
-    toast(res?.msg || '加载库存数据失败', 'error')
+    toast(res?.msg || t('pages.dataCenterInventoryData.messages.loadFailed'), 'error')
   }
   catch (e) {
     rows.value = []
     total.value = 0
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dataCenterSalesAnalysis.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -190,10 +191,10 @@ watch(() => filters.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  const remote = await loadWarehouseOptions()
+  const remote = await loadWarehouseOptions(t)
 
   warehouseOptions.value = [
-    { title: '全部仓库', value: null },
+    { title: t('pages.dropShippingOrderList.filters.allWarehouses'), value: null },
     ...remote,
   ]
   filters.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: false })
@@ -219,11 +220,11 @@ onMounted(async () => {
     <VCard class="rounded-lg dc-inventory-page__card">
       <VCardItem class="pb-4 pt-6 px-6">
         <template #title>
-          <span class="text-h5 font-weight-medium">库存数据</span>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.dataCenterInventoryData.title') }}</span>
         </template>
         <template #subtitle>
           <span class="text-body-2 text-medium-emphasis">
-            按 SKU / 仓库查看在库数量、预警线与分区库存；支持筛选后分页查询。
+            {{ $t('pages.dataCenterInventoryData.subtitle') }}
           </span>
         </template>
       </VCardItem>
@@ -246,7 +247,7 @@ onMounted(async () => {
               :disabled="loading"
               @click="exportToExcel"
             >
-              导出 Excel
+              {{ $t('pages.dataCenterSalesAnalysis.actions.exportExcel') }}
             </VBtn>
           </template>
           <VRow class="dc-inventory-page__filters">
@@ -257,8 +258,8 @@ onMounted(async () => {
             >
               <AppTextField
                 v-model="filters.cnName"
-                label="产品中文名"
-                placeholder="模糊搜索中文名"
+                :label="$t('pages.dataCenterInventoryData.filters.productCnName')"
+                :placeholder="$t('pages.dataCenterInventoryData.filters.productCnNamePlaceholder')"
                 hide-details
                 density="compact"
                 @keyup.enter="searchList"
@@ -272,7 +273,7 @@ onMounted(async () => {
               <AppTextField
                 v-model="filters.enSku"
                 label="SKU"
-                placeholder="英文 SKU"
+                :placeholder="$t('pages.dataCenterInventoryData.filters.skuPlaceholder')"
                 hide-details
                 density="compact"
                 @keyup.enter="searchList"
@@ -288,7 +289,7 @@ onMounted(async () => {
                 :items="warehouseOptions"
                 item-title="title"
                 item-value="value"
-                label="仓库"
+                :label="$t('pages.dropShippingOrderCreate.sections.logistics.warehouse')"
                 hide-details
                 density="compact"
               />
@@ -300,8 +301,8 @@ onMounted(async () => {
             >
               <AppTextField
                 v-model="filters.id"
-                label="记录 ID"
-                placeholder="精确 ID"
+                :label="$t('pages.dataCenterInventoryData.filters.recordId')"
+                :placeholder="$t('pages.dataCenterInventoryData.filters.recordIdPlaceholder')"
                 hide-details
                 density="compact"
                 inputmode="numeric"
@@ -321,7 +322,7 @@ onMounted(async () => {
         >
           <template #header.num_one>
             <span class="d-inline-flex align-center justify-end gap-1 w-100">
-              区1
+              {{ $t('pages.dataCenterInventoryData.headers.zone1') }}
               <VTooltip location="top">
                 <template #activator="{ props }">
                   <VIcon
@@ -331,14 +332,14 @@ onMounted(async () => {
                     class="text-medium-emphasis"
                   />
                 </template>
-                仓库分区一库存数量
+                {{ $t('pages.dataCenterInventoryData.tooltips.zone1') }}
               </VTooltip>
             </span>
           </template>
 
           <template #header.num_two>
             <span class="d-inline-flex align-center justify-end gap-1 w-100">
-              区2
+              {{ $t('pages.dataCenterInventoryData.headers.zone2') }}
               <VTooltip location="top">
                 <template #activator="{ props }">
                   <VIcon
@@ -348,14 +349,14 @@ onMounted(async () => {
                     class="text-medium-emphasis"
                   />
                 </template>
-                仓库分区二库存数量
+                {{ $t('pages.dataCenterInventoryData.tooltips.zone2') }}
               </VTooltip>
             </span>
           </template>
 
           <template #header.num_three>
             <span class="d-inline-flex align-center justify-end gap-1 w-100">
-              区3
+              {{ $t('pages.dataCenterInventoryData.headers.zone3') }}
               <VTooltip location="top">
                 <template #activator="{ props }">
                   <VIcon
@@ -365,7 +366,7 @@ onMounted(async () => {
                     class="text-medium-emphasis"
                   />
                 </template>
-                仓库分区三库存数量
+                {{ $t('pages.dataCenterInventoryData.tooltips.zone3') }}
               </VTooltip>
             </span>
           </template>
@@ -415,7 +416,7 @@ onMounted(async () => {
                 variant="tonal"
                 class="align-self-end"
               >
-                低于预警
+                {{ $t('pages.dataCenterInventoryData.messages.lowStock') }}
               </VChip>
             </div>
           </template>
@@ -441,13 +442,14 @@ onMounted(async () => {
           </template>
 
           <template #bottom>
-            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
-              <span class="text-body-2 text-medium-emphasis">共 {{ total }} 条</span>
+            <VDivider />
+            <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-6 py-4">
+              <span class="text-body-2 text-medium-emphasis">{{ $t('pages.dropShippingOrderList.pagination.total', { total }) }}</span>
               <div class="d-flex align-center gap-3">
                 <AppSelect
                   :model-value="itemsPerPage"
                   :items="[10, 20, 50, 100]"
-                  style="inline-size: 96px;"
+                  style="inline-size: 100px;"
                   density="compact"
                   hide-details
                   @update:model-value="itemsPerPage = Number($event)"
@@ -455,7 +457,9 @@ onMounted(async () => {
                 <VPagination
                   v-model="page"
                   :length="pageLength"
-                  :total-visible="7"
+                  :total-visible="5"
+                  size="small"
+                  active-color="primary"
                 />
               </div>
             </div>

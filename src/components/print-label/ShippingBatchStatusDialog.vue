@@ -6,17 +6,18 @@ import { resolveBackendFileUrl } from '@/utils/backendFileUrl'
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
 
-  /** 打开时预填批次号（精确匹配） */
+  /** Prefill batch number on open for exact matching. */
   initialBatchSn: { type: String, default: '' },
 
-  /** 打开时按批次 ID 筛选（与 batch_sn 二选一或同时） */
+  /** Filter by batch ID on open, either with or instead of batch_sn. */
   initialBatchId: { type: Number, default: null },
 
-  /** 在列表加载完成后自动打开该批次的订单明细弹窗 */
+  /** Open the order-detail dialog automatically after the batch list loads. */
   autoOpenBatchDetail: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
+const { t, locale } = useI18n({ useScope: 'global' })
 
 const snack = ref({ show: false, text: '', color: 'info' })
 const loading = ref(false)
@@ -30,43 +31,43 @@ const filters = ref({
   status: null,
   batch_sn: '',
 
-  /** GET shippingBatches 可选参数 */
+  /** Optional GET shippingBatches param. */
   batch_id: null,
 })
 
-/** 避免主弹窗打开时与 [page, itemsPerPage] 重复请求 */
+/** Avoid duplicate requests from [page, itemsPerPage] while the main dialog opens. */
 const batchListOpening = ref(false)
 
-/** 从订单列表「直达批次明细」时隐藏外层批次列表弹窗，避免与明细弹窗叠两层 */
+/** Hide the outer batch list while jumping directly to detail from the order list. */
 const hideMainBatchDialog = ref(false)
 
-/** 上述场景下关闭明细后是否一并关闭（回到订单列表，不闪出批次列表弹窗） */
+/** Close the parent as well after the direct-detail scenario closes. */
 const closeParentWhenDetailClosed = ref(false)
 
-/** 批量出单状态：0=处理中，1=已完成，2=失败（与后端一致） */
-const STATUS_ITEMS = [
-  { title: '全部', value: null },
-  { title: '处理中', value: 0 },
-  { title: '已完成', value: 1 },
-  { title: '失败', value: 2 },
-]
+/** Batch shipping status: 0 = processing, 1 = completed, 2 = failed. */
+const STATUS_ITEMS = computed(() => [
+  { title: t('pages.printLabelShippingList.batchDialog.statuses.all'), value: null },
+  { title: t('pages.printLabelShippingList.batchDialog.statuses.processing'), value: 0 },
+  { title: t('pages.printLabelShippingList.batchDialog.statuses.completed'), value: 1 },
+  { title: t('pages.printLabelShippingList.batchDialog.statuses.failed'), value: 2 },
+])
 
-const headers = [
-  { title: '批次号', key: 'batch_sn', minWidth: '160' },
-  { title: '总数', key: 'total_count', width: '72', align: 'end' },
-  { title: '成功', key: 'success_count', width: '72', align: 'end' },
-  { title: '失败', key: 'fail_count', width: '72', align: 'end' },
-  { title: '状态', key: 'status', width: '96', align: 'center' },
-  { title: '创建时间', key: 'createtime', minWidth: '158' },
-  { title: '操作', key: 'actions', sortable: false, minWidth: '168', width: '168', align: 'end', fixed: 'end' },
-]
+const headers = computed(() => [
+  { title: t('pages.printLabelShippingList.batchDialog.headers.batchNo'), key: 'batch_sn', minWidth: '160' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.total'), key: 'total_count', width: '72', align: 'end' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.success'), key: 'success_count', width: '72', align: 'end' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.failed'), key: 'fail_count', width: '72', align: 'end' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.status'), key: 'status', width: '96', align: 'center' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.createdAt'), key: 'createtime', minWidth: '158' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.actions'), key: 'actions', sortable: false, minWidth: '168', width: '168', align: 'end', fixed: 'end' },
+])
 
 const detailLoading = ref(false)
 const detailRows = ref([])
 const detailBatch = ref(null)
 const downloadingId = ref(null)
 
-/** 批次明细独立弹窗（避免主表下方展开上百条） */
+/** Separate batch detail dialog to avoid expanding hundreds of rows below the main table. */
 const detailDialogVisible = ref(false)
 const detailFilters = ref({ cankaohao: '' })
 const detailPage = ref(1)
@@ -74,12 +75,13 @@ const detailLastPage = ref(1)
 const detailItemsPerPage = ref(20)
 const detailTotal = ref(0)
 
-/** 接口一次性返回数组时，在前端做参考号筛选与分页 */
+/** If the API returns an array in one response, filter and paginate reference numbers client-side. */
 const detailClientMode = ref(false)
 const detailOrdersCache = ref([])
 
 const pageLength = computed(() => Math.max(1, lastPage.value))
 const detailPageLength = computed(() => Math.max(1, detailLastPage.value))
+const dateLocale = computed(() => ({ zh: 'zh-CN', en: 'en-US', fr: 'fr-FR' })[locale.value] || undefined)
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
@@ -92,18 +94,18 @@ function formatTs(ts) {
   if (!Number.isFinite(n) || n <= 0)
     return '—'
 
-  return new Date(n * 1000).toLocaleString('zh-CN', { hour12: false })
+  return new Date(n * 1000).toLocaleString(dateLocale.value, { hour12: false })
 }
 
 function batchStatusLabel(s) {
   const m = {
-    0: '处理中',
-    1: '已完成',
-    2: '失败',
+    0: t('pages.printLabelShippingList.batchDialog.statuses.processing'),
+    1: t('pages.printLabelShippingList.batchDialog.statuses.completed'),
+    2: t('pages.printLabelShippingList.batchDialog.statuses.failed'),
   }
 
   
-  return m[Number(s)] ?? (s == null || s === '' ? '—' : `状态 ${s}`)
+  return m[Number(s)] ?? (s == null || s === '' ? '—' : t('pages.printLabelShippingList.batchDialog.statuses.unknown', { status: s }))
 }
 
 function batchStatusColor(s) {
@@ -118,13 +120,13 @@ function batchStatusColor(s) {
   return 'secondary'
 }
 
-/** 仅已完成展示批量面单 ZIP */
+/** Show batch label ZIP only for completed rows. */
 function showBatchZipButton(row) {
   return Number(row?.status) === 1
 }
 
 /**
- * 兼容 Laravel paginate / 自定义分页 / 顶层数组等多种返回形态。
+ * Supports Laravel paginate, custom pagination, and top-level array payloads.
  */
 function normalizeBatchesPayload(raw) {
   if (raw == null)
@@ -202,13 +204,13 @@ async function loadBatches() {
     rows.value = []
     total.value = 0
     lastPage.value = 1
-    toast(res?.msg || '加载批次列表失败', 'error')
+    toast(res?.msg || t('pages.printLabelShippingList.batchDialog.messages.loadBatchesFailed'), 'error')
   }
   catch (e) {
     rows.value = []
     total.value = 0
     lastPage.value = 1
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.printLabelShippingList.batchDialog.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -248,7 +250,7 @@ function closeDialog() {
 function openSourceFile(row) {
   const url = resolveBackendFileUrl(row?.xlspath)
   if (!url) {
-    toast('暂无源文件路径', 'warning')
+    toast(t('pages.printLabelShippingList.batchDialog.messages.noSourceFile'), 'warning')
 
     return
   }
@@ -305,7 +307,7 @@ async function loadBatchDetailList() {
       detailRows.value = []
       detailTotal.value = 0
       detailLastPage.value = 1
-      toast(res?.msg || '加载批次订单失败', 'error')
+      toast(res?.msg || t('pages.printLabelShippingList.batchDialog.messages.loadBatchOrdersFailed'), 'error')
 
       return
     }
@@ -332,7 +334,7 @@ async function loadBatchDetailList() {
     detailRows.value = []
     detailTotal.value = 0
     detailLastPage.value = 1
-    toast(e?.data?.msg || e?.message || '加载批次订单失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.printLabelShippingList.batchDialog.messages.loadBatchOrdersFailed'), 'error')
   }
   finally {
     detailLoading.value = false
@@ -345,7 +347,7 @@ async function loadBatchDetailList() {
  */
 function openBatchDetail(row, opts = {}) {
   if (!row?.id) {
-    toast('批次 ID 无效', 'warning')
+    toast(t('pages.printLabelShippingList.batchDialog.messages.invalidBatchId'), 'warning')
 
     return
   }
@@ -391,11 +393,11 @@ function clearDetail() {
 
 function orderStatusLabel(s) {
   const m = {
-    0: '待处理',
-    1: '请求中',
-    2: '成功',
-    3: '失败',
-    4: '已取消',
+    0: t('pages.printLabelShippingList.statuses.pending'),
+    1: t('pages.printLabelShippingList.statuses.requesting'),
+    2: t('pages.printLabelShippingList.statuses.success'),
+    3: t('pages.printLabelShippingList.statuses.failed'),
+    4: t('pages.printLabelShippingList.statuses.cancelled'),
   }
 
   
@@ -419,7 +421,7 @@ function orderStatusColor(s) {
 function openOrderLabel(row) {
   const url = resolveBackendFileUrl(row?.label_url)
   if (!url) {
-    toast('暂无面单文件', 'warning')
+    toast(t('pages.printLabelShippingList.batchDialog.messages.noLabelFile'), 'warning')
 
     return
   }
@@ -434,7 +436,7 @@ function pickBatchZipDownloadUrl(data) {
   return String(raw ?? '').trim()
 }
 
-/** 在异步回调里打开链接时，用 <a> 触发比 window.open 更不易被拦截 */
+/** In async callbacks, an anchor click is less likely to be blocked than window.open. */
 function openDownloadUrlInNewTab(url) {
   let href = String(url ?? '').trim()
   if (!href)
@@ -456,7 +458,7 @@ function openDownloadUrlInNewTab(url) {
 
 async function downloadBatchZip(row) {
   if (!row?.id) {
-    toast('批次 ID 无效', 'warning')
+    toast(t('pages.printLabelShippingList.batchDialog.messages.invalidBatchId'), 'warning')
 
     return
   }
@@ -468,36 +470,36 @@ async function downloadBatchZip(row) {
     })
 
     if (Number(res?.code) !== 1) {
-      toast(res?.msg || '获取下载链接失败', 'error')
+      toast(res?.msg || t('pages.printLabelShippingList.batchDialog.messages.getDownloadLinkFailed'), 'error')
 
       return
     }
     const downloadUrl = pickBatchZipDownloadUrl(res.data)
     if (!downloadUrl) {
-      toast('接口未返回下载地址', 'warning')
+      toast(t('pages.printLabelShippingList.batchDialog.messages.noDownloadUrl'), 'warning')
 
       return
     }
     openDownloadUrlInNewTab(downloadUrl)
-    toast('已打开下载链接', 'success')
+    toast(t('pages.printLabelShippingList.batchDialog.messages.downloadOpened'), 'success')
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '获取下载链接失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.printLabelShippingList.batchDialog.messages.getDownloadLinkFailed'), 'error')
   }
   finally {
     downloadingId.value = null
   }
 }
 
-const detailHeaders = [
-  { title: 'ID', key: 'id', width: '72', align: 'end' },
-  { title: '订单号', key: 'order_sn', minWidth: '128' },
-  { title: '参考号', key: 'cankaohao', minWidth: '120' },
-  { title: '跟踪号', key: 'tracking_number', minWidth: '128' },
-  { title: '状态', key: 'status', width: '100', align: 'center' },
-  { title: '失败原因', key: 'fail_reason', minWidth: '120' },
-  { title: '操作', key: 'd_actions', sortable: false, minWidth: '100', width: '100', align: 'end' },
-]
+const detailHeaders = computed(() => [
+  { title: t('pages.printLabelShippingList.headers.id'), key: 'id', width: '72', align: 'end' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.orderNo'), key: 'order_sn', minWidth: '128' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.refNo'), key: 'cankaohao', minWidth: '120' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.trackingNo'), key: 'tracking_number', minWidth: '128' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.status'), key: 'status', width: '100', align: 'center' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.failReason'), key: 'fail_reason', minWidth: '120' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.actions'), key: 'd_actions', sortable: false, minWidth: '100', width: '100', align: 'end' },
+])
 
 watch([page, itemsPerPage], () => {
   if (props.modelValue && !batchListOpening.value)
@@ -540,7 +542,7 @@ async function applyMainDialogOpenFromProps() {
       if (hit?.id)
         openBatchDetail(hit, { hideMainWhileDetailOpen: true })
       else if (sn || filters.value.batch_id != null)
-        toast('未找到对应批次', 'warning')
+        toast(t('pages.printLabelShippingList.batchDialog.messages.batchNotFound'), 'warning')
     }
   }
   finally {
@@ -572,17 +574,17 @@ watch(() => props.modelValue, v => {
     <VCard class="shipping-batch-dialog d-flex flex-column rounded-lg">
       <VCardItem class="shipping-batch-dialog__head pb-3 pt-5 px-5">
         <template #title>
-          <span class="text-h6 font-weight-medium">批量出单状态</span>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.printLabelShippingList.batchDialog.title') }}</span>
         </template>
         <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">批量导入批次列表、明细与面单打包下载</span>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.printLabelShippingList.batchDialog.subtitle') }}</span>
         </template>
         <template #append>
           <VBtn
             icon
             size="small"
             variant="text"
-            aria-label="关闭"
+            :aria-label="$t('pages.printLabelShippingList.batchDialog.close')"
             @click="closeDialog"
           >
             <VIcon icon="tabler-x" />
@@ -595,7 +597,7 @@ watch(() => props.modelValue, v => {
       <VCardText class="flex-grow-1 pa-4 pa-sm-5">
         <AppQueryPanel
           class="mb-4"
-          title="筛选条件"
+          :title="$t('pages.printLabelShippingList.batchDialog.filterTitle')"
           :loading="loading"
           actions-position="bottom"
           @search="searchBatches"
@@ -609,8 +611,8 @@ watch(() => props.modelValue, v => {
             >
               <AppTextField
                 v-model="filters.batch_sn"
-                label="批次号"
-                placeholder="精确匹配"
+                :label="$t('pages.printLabelShippingList.batchDialog.filters.batchNo')"
+                :placeholder="$t('pages.printLabelShippingList.batchDialog.filters.exact')"
                 density="compact"
                 hide-details
                 @keyup.enter="searchBatches"
@@ -626,7 +628,7 @@ watch(() => props.modelValue, v => {
                 :items="STATUS_ITEMS"
                 item-title="title"
                 item-value="value"
-                label="批量出单状态"
+                :label="$t('pages.printLabelShippingList.batchDialog.filters.status')"
                 clearable
                 hide-details
                 density="compact"
@@ -664,11 +666,11 @@ watch(() => props.modelValue, v => {
             <div
               class="shipping-batch-dialog__actions-toolbar"
               role="toolbar"
-              :aria-label="`批次操作 ${String(item?.batch_sn ?? item?.id ?? '').trim() || `#${item?.id ?? ''}`}`"
+              :aria-label="$t('pages.printLabelShippingList.batchDialog.aria.batchActions', { batch: String(item?.batch_sn ?? item?.id ?? '').trim() || `#${item?.id ?? ''}` })"
             >
               <VTooltip
                 location="top"
-                text="查看本批次订单明细"
+                :text="$t('pages.printLabelShippingList.batchDialog.tooltips.detail')"
               >
                 <template #activator="{ props: tipProps }">
                   <VBtn
@@ -681,13 +683,13 @@ watch(() => props.modelValue, v => {
                     prepend-icon="tabler-list-details"
                     @click="openBatchDetail(item)"
                   >
-                    明细
+                    {{ $t('pages.printLabelShippingList.batchDialog.actions.detail') }}
                   </VBtn>
                 </template>
               </VTooltip>
               <VTooltip
                 location="top"
-                text="打开上传的源表格"
+                :text="$t('pages.printLabelShippingList.batchDialog.tooltips.sourceFile')"
               >
                 <template #activator="{ props: tipProps }">
                   <VBtn
@@ -698,7 +700,7 @@ watch(() => props.modelValue, v => {
                     variant="tonal"
                     color="secondary"
                     class="shipping-batch-dialog__toolbar-btn"
-                    aria-label="源文件"
+                    :aria-label="$t('pages.printLabelShippingList.batchDialog.aria.sourceFile')"
                     :disabled="!item.xlspath"
                     @click="openSourceFile(item)"
                   >
@@ -712,7 +714,7 @@ watch(() => props.modelValue, v => {
               <VTooltip
                 v-if="showBatchZipButton(item)"
                 location="top"
-                text="下载面单 ZIP 压缩包"
+                :text="$t('pages.printLabelShippingList.batchDialog.tooltips.downloadZip')"
               >
                 <template #activator="{ props: tipProps }">
                   <VBtn
@@ -723,7 +725,7 @@ watch(() => props.modelValue, v => {
                     variant="tonal"
                     color="primary"
                     class="shipping-batch-dialog__toolbar-btn"
-                    aria-label="面单 ZIP"
+                    :aria-label="$t('pages.printLabelShippingList.batchDialog.aria.labelZip')"
                     :loading="downloadingId === item.id"
                     @click="downloadBatchZip(item)"
                   >
@@ -745,13 +747,13 @@ watch(() => props.modelValue, v => {
                 class="text-disabled mb-3"
               />
               <div class="text-body-1 text-medium-emphasis">
-                {{ loading ? '加载中…' : '暂无数据' }}
+                {{ loading ? $t('pages.printLabelShippingList.batchDialog.empty.loading') : $t('pages.printLabelShippingList.batchDialog.empty.noData') }}
               </div>
               <div
                 v-if="!loading"
                 class="text-body-2 text-disabled mt-1"
               >
-                可先上传批量文件，或调整批次号 / 状态筛选后重新查询。
+                {{ $t('pages.printLabelShippingList.batchDialog.empty.hint') }}
               </div>
             </div>
           </template>
@@ -762,10 +764,10 @@ watch(() => props.modelValue, v => {
 
       <VCardActions class="shipping-batch-dialog__footer px-4 px-sm-5 py-3">
         <div class="d-flex align-center justify-space-between flex-wrap gap-x-4 gap-y-2 w-100">
-          <span class="text-body-2 text-medium-emphasis flex-shrink-0">共 {{ total }} 条</span>
+          <span class="text-body-2 text-medium-emphasis flex-shrink-0">{{ $t('pages.printLabelShippingList.pagination.total', { total }) }}</span>
           <div class="d-flex align-center flex-wrap gap-x-4 gap-y-2 ms-auto">
             <div class="d-flex align-center gap-2 flex-shrink-0">
-              <span class="text-body-2 text-medium-emphasis text-no-wrap">每页</span>
+              <span class="text-body-2 text-medium-emphasis text-no-wrap">{{ $t('pages.printLabelShippingList.pagination.perPage') }}</span>
               <AppSelect
                 :model-value="itemsPerPage"
                 :items="[10, 20, 50, 100]"
@@ -798,11 +800,11 @@ watch(() => props.modelValue, v => {
     <VCard class="shipping-batch-detail-card d-flex flex-column rounded-lg">
       <VCardItem class="pb-2 pt-4 px-4 px-sm-5">
         <template #title>
-          <span class="text-h6 font-weight-medium">批次订单明细</span>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.printLabelShippingList.batchDialog.detailTitle') }}</span>
         </template>
         <template #subtitle>
           <span class="text-body-2 text-medium-emphasis d-flex flex-wrap align-center gap-2">
-            <span>共 {{ detailTotal }} 条</span>
+            <span>{{ $t('pages.printLabelShippingList.pagination.total', { total: detailTotal }) }}</span>
             <VChip
               v-if="detailBatch?.batch_sn"
               size="small"
@@ -818,7 +820,7 @@ watch(() => props.modelValue, v => {
             icon
             size="small"
             variant="text"
-            aria-label="关闭明细"
+            :aria-label="$t('pages.printLabelShippingList.batchDialog.closeDetail')"
             @click="onDetailDialogUpdate(false)"
           >
             <VIcon icon="tabler-x" />
@@ -831,7 +833,7 @@ watch(() => props.modelValue, v => {
       <VCardText class="flex-grow-1 pa-4 pa-sm-5">
         <AppQueryPanel
           class="mb-4"
-          title="筛选"
+          :title="$t('pages.printLabelShippingList.batchDialog.detailFilterTitle')"
           :loading="detailLoading"
           actions-position="bottom"
           @search="detailSearch"
@@ -845,8 +847,8 @@ watch(() => props.modelValue, v => {
             >
               <AppTextField
                 v-model="detailFilters.cankaohao"
-                label="参考号"
-                placeholder="模糊匹配"
+                :label="$t('pages.printLabelShippingList.filters.refNo')"
+                :placeholder="$t('pages.printLabelShippingList.filters.fuzzy')"
                 density="compact"
                 hide-details
                 clearable
@@ -894,7 +896,7 @@ watch(() => props.modelValue, v => {
             <div class="shipping-batch-dialog__actions-toolbar shipping-batch-dialog__actions-toolbar--solo">
               <VTooltip
                 location="top"
-                text="在新窗口打开面单"
+                :text="$t('pages.printLabelShippingList.batchDialog.tooltips.openLabel')"
               >
                 <template #activator="{ props: tipProps }">
                   <VBtn
@@ -908,7 +910,7 @@ watch(() => props.modelValue, v => {
                     :disabled="!item.label_url"
                     @click="openOrderLabel(item)"
                   >
-                    面单
+                    {{ $t('pages.printLabelShippingList.batchDialog.actions.label') }}
                   </VBtn>
                 </template>
               </VTooltip>
@@ -916,7 +918,7 @@ watch(() => props.modelValue, v => {
           </template>
           <template #no-data>
             <div class="text-medium-emphasis text-body-2 pa-4 text-center">
-              {{ detailLoading ? '加载中…' : '暂无订单数据' }}
+              {{ detailLoading ? $t('pages.printLabelShippingList.batchDialog.empty.loading') : $t('pages.printLabelShippingList.batchDialog.empty.noOrderData') }}
             </div>
           </template>
         </VDataTableServer>
@@ -926,10 +928,10 @@ watch(() => props.modelValue, v => {
 
       <VCardActions class="shipping-batch-dialog__footer shipping-batch-dialog__detail-footer px-4 px-sm-5 py-3">
         <div class="d-flex align-center justify-space-between flex-wrap gap-x-4 gap-y-2 w-100">
-          <span class="text-body-2 text-medium-emphasis flex-shrink-0">本页 {{ detailRows.length }} 条 · 合计 {{ detailTotal }} 条</span>
+          <span class="text-body-2 text-medium-emphasis flex-shrink-0">{{ $t('pages.printLabelShippingList.pagination.detailTotal', { count: detailRows.length, total: detailTotal }) }}</span>
           <div class="d-flex align-center flex-wrap gap-x-4 gap-y-2 ms-auto">
             <div class="d-flex align-center gap-2 flex-shrink-0">
-              <span class="text-body-2 text-medium-emphasis text-no-wrap">每页</span>
+              <span class="text-body-2 text-medium-emphasis text-no-wrap">{{ $t('pages.printLabelShippingList.pagination.perPage') }}</span>
               <AppSelect
                 :model-value="detailItemsPerPage"
                 :items="[10, 20, 50, 100]"
@@ -988,7 +990,7 @@ watch(() => props.modelValue, v => {
   padding-block: 10px !important;
 }
 
-/* 操作列：单行对齐，无外框分组 */
+/* Action column: single-line alignment without an outer grouped frame. */
 .shipping-batch-dialog__actions-toolbar {
   display: inline-flex;
   flex-direction: row;
@@ -1023,7 +1025,7 @@ watch(() => props.modelValue, v => {
   align-items: stretch;
 }
 
-/* AppSelect 默认带 flex-grow-1，底栏里与分页并排时会顶高一行；收窄且不拉伸 */
+/* AppSelect defaults to flex-grow: 1; keep it compact beside footer pagination. */
 .shipping-batch-dialog__per-page-select {
   flex: 0 0 auto;
   inline-size: 88px;

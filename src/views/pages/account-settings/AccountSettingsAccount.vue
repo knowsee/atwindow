@@ -4,6 +4,7 @@ import { $api } from '@/utils/api'
 const loading = ref(true)
 const loadError = ref('')
 const info = ref(null)
+const { t } = useI18n({ useScope: 'global' })
 
 function displayVal(v) {
   if (v == null || v === '')
@@ -16,12 +17,12 @@ const displayRows = computed(() => {
   const d = info.value || {}
 
   return [
-    { label: '用户名', value: displayVal(d.username) },
-    { label: '用户编码', value: displayVal(d.user_code) },
-    { label: '真实姓名', value: displayVal(d.realname) },
-    { label: '邮箱', value: displayVal(d.email) },
-    { label: '手机', value: displayVal(d.mobile) },
-    { label: '登录 IP', value: displayVal(d.loginip) },
+    { label: t('pages.accountSettings.account.fields.username'), value: displayVal(d.username) },
+    { label: t('pages.accountSettings.account.fields.userCode'), value: displayVal(d['user_code']) },
+    { label: t('pages.accountSettings.account.fields.realName'), value: displayVal(d.realname) },
+    { label: t('pages.accountSettings.account.fields.email'), value: displayVal(d.email) },
+    { label: t('pages.accountSettings.account.fields.mobile'), value: displayVal(d.mobile) },
+    { label: t('pages.accountSettings.account.fields.loginIp'), value: displayVal(d.loginip) },
   ]
 })
 
@@ -39,12 +40,12 @@ async function loadInfo() {
     }
     else {
       info.value = null
-      loadError.value = res?.msg || '加载用户信息失败'
+      loadError.value = res?.msg || t('pages.accountSettings.account.messages.loadFailed')
     }
   }
   catch (e) {
     info.value = null
-    loadError.value = e?.data?.msg || e?.message || '网络请求失败'
+    loadError.value = e?.data?.msg || e?.message || t('pages.accountSettings.account.messages.networkFailed')
   }
   finally {
     loading.value = false
@@ -57,7 +58,7 @@ onMounted(loadInfo)
 <template>
   <VRow>
     <VCol cols="12">
-      <VCard title="账户信息">
+      <VCard :title="$t('pages.accountSettings.account.title')">
         <VCardText>
           <VAlert
             v-if="loadError"

@@ -21,23 +21,27 @@ const props = defineProps({
   },
   uploadLabel: {
     type: String,
-    default: '点击上传',
+    default: '',
   },
   tips: {
     type: String,
-    default: 'JPG/PNG/WebP,\n5MB以内',
+    default: '',
   },
   uploadedText: {
     type: String,
-    default: '已上传',
+    default: '',
   },
 })
 
 const emit = defineEmits(['update:modelValue', 'uploaded', 'error'])
+const { t } = useI18n({ useScope: 'global' })
 
 const inputRef = ref(null)
 const uploading = ref(false)
 const isDisabled = computed(() => props.disabled || uploading.value)
+const uploadLabelText = computed(() => props.uploadLabel || t('components.upload.label'))
+const tipsText = computed(() => props.tips || t('components.upload.tips', { max: props.maxSizeMb }))
+const uploadedLabel = computed(() => props.uploadedText || t('components.upload.uploaded'))
 
 function openFilePicker() {
   if (isDisabled.value)
@@ -58,7 +62,7 @@ async function uploadOrderFile(file) {
   if (Number(res?.code) === 1 && res?.data?.file_url)
     return String(res.data.file_url)
 
-  throw new Error(res?.msg || '上传失败')
+  throw new Error(res?.msg || t('components.upload.failed'))
 }
 
 async function onPickFile(event) {
@@ -68,7 +72,7 @@ async function onPickFile(event) {
 
   const maxSizeBytes = props.maxSizeMb * 1024 * 1024
   if (file.size > maxSizeBytes) {
-    emit('error', `文件不能超过${props.maxSizeMb}MB`)
+    emit('error', t('components.upload.maxSize', { max: props.maxSizeMb }))
     event.target.value = ''
 
     return
@@ -82,7 +86,7 @@ async function onPickFile(event) {
     emit('uploaded', url)
   }
   catch (e) {
-    emit('error', e?.message || '上传失败')
+    emit('error', e?.message || t('components.upload.failed'))
   }
   finally {
     uploading.value = false
@@ -121,10 +125,10 @@ function clearFile() {
         class="mb-2"
       />
       <div class="text-primary text-body-2 font-weight-medium">
-        {{ uploadLabel }}
+        {{ uploadLabelText }}
       </div>
       <div class="text-medium-emphasis text-body-2 whitespace-pre-line">
-        {{ tips }}
+        {{ tipsText }}
       </div>
     </button>
 
@@ -146,7 +150,7 @@ function clearFile() {
         variant="tonal"
         color="primary"
       >
-        {{ uploadedText }}
+        {{ uploadedLabel }}
       </VChip>
       <VBtn
         size="small"
@@ -157,7 +161,7 @@ function clearFile() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        预览
+        {{ $t('common.actions.preview') }}
       </VBtn>
       <VBtn
         size="small"
@@ -167,7 +171,7 @@ function clearFile() {
         :disabled="isDisabled"
         @click="clearFile"
       >
-        清除
+        {{ $t('common.actions.clear') }}
       </VBtn>
     </div>
   </div>

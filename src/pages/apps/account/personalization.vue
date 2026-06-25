@@ -14,6 +14,7 @@ const loading = ref(false)
 const submitting = ref(false)
 const isValid = ref(true)
 const snack = ref({ show: false, text: '', color: 'info' })
+const { t } = useI18n({ useScope: 'global' })
 
 const form = ref({
   isEnabled: 0,
@@ -33,7 +34,7 @@ const logisticsList = [
 ]
 
 const logisticsItems = logisticsList.map(i => ({ title: i.name, value: i.id }))
-const optionalLogisticsItems = [{ title: '不配置（关闭）', value: 0 }, ...logisticsItems]
+const optionalLogisticsItems = computed(() => [{ title: t('pages.accountPersonalization.optionalDisabled'), value: 0 }, ...logisticsItems])
 
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
@@ -52,11 +53,11 @@ async function loadConfig() {
       }
     }
     else {
-      toast(res?.msg || '加载配置失败', 'error')
+      toast(res?.msg || t('pages.accountPersonalization.messages.loadFailed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountPersonalization.messages.networkFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -65,7 +66,7 @@ async function loadConfig() {
 
 function validatePrimary(value) {
   if (!value || Number(value) === 0)
-    return '请选择首选运输方式'
+    return t('pages.accountPersonalization.messages.primaryRequired')
 
   return true
 }
@@ -90,12 +91,12 @@ async function saveConfig() {
     })
 
     if (Number(res?.code) === 1)
-      toast(res?.msg || '保存成功', 'success')
+      toast(res?.msg || t('pages.accountPersonalization.messages.saveSuccess'), 'success')
     else
-      toast(res?.msg || '保存失败', 'error')
+      toast(res?.msg || t('pages.accountPersonalization.messages.saveFailed'), 'error')
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.accountPersonalization.messages.networkFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -135,15 +136,15 @@ onMounted(loadConfig)
             color="primary"
             size="24"
           />
-          <span class="text-body-2">正在加载配置...</span>
+          <span class="text-body-2">{{ $t('pages.accountPersonalization.loading') }}</span>
         </div>
       </VOverlay>
       <VCardItem class="pb-3 pt-5 px-6">
         <template #title>
-          <span class="text-h5 font-weight-medium">自动渠道配置</span>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.accountPersonalization.title') }}</span>
         </template>
         <template #subtitle>
-          <span class="text-body-2 text-medium-emphasis">自动选渠道策略 + 三级渠道降级。</span>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.accountPersonalization.subtitle') }}</span>
         </template>
       </VCardItem>
       <VDivider />
@@ -153,7 +154,7 @@ onMounted(loadConfig)
           variant="tonal"
           class="mb-4"
         >
-          当订单导入选择“自动渠道选择”时，系统按「首选 → 次选 → 兜底」顺序尝试下单，直到成功。
+          {{ $t('pages.accountPersonalization.alert') }}
         </VAlert>
 
         <VSheet
@@ -167,7 +168,7 @@ onMounted(loadConfig)
               label
               variant="tonal"
             >
-              1. 首选运输方式
+              {{ $t('pages.accountPersonalization.steps.primary') }}
             </VChip>
             <VIcon icon="tabler-arrow-right" />
             <VChip
@@ -175,7 +176,7 @@ onMounted(loadConfig)
               label
               variant="tonal"
             >
-              2. 次选运输方式
+              {{ $t('pages.accountPersonalization.steps.secondary') }}
             </VChip>
             <VIcon icon="tabler-arrow-right" />
             <VChip
@@ -183,7 +184,7 @@ onMounted(loadConfig)
               label
               variant="tonal"
             >
-              3. 兜底运输方式
+              {{ $t('pages.accountPersonalization.steps.fallback') }}
             </VChip>
           </div>
         </VSheet>
@@ -202,7 +203,7 @@ onMounted(loadConfig)
                 :true-value="1"
                 :false-value="0"
                 color="primary"
-                label="功能开关（开启 / 关闭）"
+                :label="$t('pages.accountPersonalization.fields.switch')"
                 inset
               />
             </VCol>
@@ -216,50 +217,50 @@ onMounted(loadConfig)
                 variant="tonal"
                 label
               >
-                {{ Number(form.isEnabled) === 1 ? '当前：已开启' : '当前：已关闭' }}
+                {{ Number(form.isEnabled) === 1 ? $t('pages.accountPersonalization.status.enabled') : $t('pages.accountPersonalization.status.disabled') }}
               </VChip>
             </VCol>
 
             <VCol cols="12">
               <AppSelect
                 v-model="form.primaryLogisticsId"
-                label="首选运输方式"
+                :label="$t('pages.accountPersonalization.fields.primary')"
                 :items="logisticsItems"
                 item-title="title"
                 item-value="value"
-                placeholder="请选择首选运输方式（必填）"
+                :placeholder="$t('pages.accountPersonalization.placeholders.primary')"
                 :rules="[validatePrimary]"
               />
               <div class="text-caption text-medium-emphasis mt-1">
-                系统优先尝试该渠道下单。
+                {{ $t('pages.accountPersonalization.hints.primary') }}
               </div>
             </VCol>
 
             <VCol cols="12">
               <AppSelect
                 v-model="form.secondaryLogisticsId"
-                label="次选运输方式"
+                :label="$t('pages.accountPersonalization.fields.secondary')"
                 :items="optionalLogisticsItems"
                 item-title="title"
                 item-value="value"
-                placeholder="请选择次选运输方式（可选）"
+                :placeholder="$t('pages.accountPersonalization.placeholders.secondary')"
               />
               <div class="text-caption text-medium-emphasis mt-1">
-                首选失败后自动重试该渠道。
+                {{ $t('pages.accountPersonalization.hints.secondary') }}
               </div>
             </VCol>
 
             <VCol cols="12">
               <AppSelect
                 v-model="form.fallbackLogisticsId"
-                label="兜底运输方式"
+                :label="$t('pages.accountPersonalization.fields.fallback')"
                 :items="optionalLogisticsItems"
                 item-title="title"
                 item-value="value"
-                placeholder="请选择兜底运输方式（可选）"
+                :placeholder="$t('pages.accountPersonalization.placeholders.fallback')"
               />
               <div class="text-caption text-medium-emphasis mt-1">
-                前两级都失败时启用，作为最终保障。
+                {{ $t('pages.accountPersonalization.hints.fallback') }}
               </div>
             </VCol>
 
@@ -271,7 +272,7 @@ onMounted(loadConfig)
                   :disabled="loading"
                   @click="saveConfig"
                 >
-                  保存配置
+                  {{ $t('pages.accountPersonalization.actions.save') }}
                 </VBtn>
               </div>
             </VCol>

@@ -15,6 +15,10 @@ const activeRechargeTab = ref('rmb')
 const activeUsdBankPanel = ref(['boa'])
 const wxDialogVisible = ref(false)
 const wxPollingTimer = ref(null)
+const { t } = useI18n({ useScope: 'global' })
+const TIME_RANGE_SEPARATOR = '\u81f3'
+const INCOME_TYPE = '\u6536\u5165'
+const EXPENSE_TYPE = '\u652f\u51fa'
 
 const filters = reactive({
   type: null,
@@ -63,34 +67,34 @@ const snack = ref({
   color: 'info',
 })
 
-const typeOptions = [
-  { title: '全部', value: null },
-  { title: '收入', value: '1' },
-  { title: '支出', value: '2' },
-]
+const typeOptions = computed(() => [
+  { title: t('pages.accountFundOverview.types.all'), value: null },
+  { title: t('pages.accountFundOverview.types.income'), value: '1' },
+  { title: t('pages.accountFundOverview.types.expense'), value: '2' },
+])
 
-const rechargeCurrencyOptions = [
-  { title: '人民币', value: 1 },
-  { title: '美元', value: 2 },
-]
+const rechargeCurrencyOptions = computed(() => [
+  { title: t('pages.accountFundOverview.currencies.rmb'), value: 1 },
+  { title: t('pages.accountFundOverview.currencies.usd'), value: 2 },
+])
 
-const rechargeEurCurrencyOptions = [
-  { title: '人民币', value: 1 },
-  { title: '欧元', value: 3 },
-]
+const rechargeEurCurrencyOptions = computed(() => [
+  { title: t('pages.accountFundOverview.currencies.rmb'), value: 1 },
+  { title: t('pages.accountFundOverview.currencies.eur'), value: 3 },
+])
 
 const autoAmountOptions = [500, 1000, 3000, 5000]
 
-const tableHeadersBase = [
-  { title: '创建时间', key: 'createtime', width: 148 },
-  { title: '订单号', key: 'order_sn', width: 200 },
-  { title: '运单号', key: 'ht_tracking_no', width: 200 },
-  { title: '交易类型', key: 'pay_type', width: 140 },
-  { title: '收支', key: 'type_name', width: 100, align: 'center' },
-  { title: '交易金额(USD)', key: 'change_money', width: 128, align: 'end' },
-  { title: '交易金额(EUR)', key: 'change_money_eur', width: 112, align: 'end' },
-  { title: '备注', key: 'remark', minWidth: 260 },
-]
+const tableHeadersBase = computed(() => [
+  { title: t('pages.accountFundOverview.headers.createTime'), key: 'createtime', width: 126 },
+  { title: t('pages.accountFundOverview.headers.orderNo'), key: 'order_sn', width: 220 },
+  { title: t('pages.accountFundOverview.headers.trackingNo'), key: 'ht_tracking_no', width: 160 },
+  { title: t('pages.accountFundOverview.headers.tradeType'), key: 'pay_type', width: 152 },
+  { title: t('pages.accountFundOverview.headers.incomeExpense'), key: 'type_name', width: 122, align: 'center' },
+  { title: t('pages.accountFundOverview.headers.amountUsd'), key: 'change_money', width: 168, align: 'end' },
+  { title: t('pages.accountFundOverview.headers.amountEur'), key: 'change_money_eur', width: 112, align: 'end' },
+  { title: t('pages.accountFundOverview.headers.remark'), key: 'remark', minWidth: 320 },
+])
 
 const totalPage = computed(() => Math.max(1, Math.ceil(pagination.total / pagination.limit)))
 
@@ -102,14 +106,14 @@ const autoDisplayAmount = computed(() => {
 
 function buildTimeRangeParam(rangeValue) {
   if (Array.isArray(rangeValue) && rangeValue.length === 2)
-    return rangeValue.join('至')
+    return rangeValue.join(TIME_RANGE_SEPARATOR)
 
   if (typeof rangeValue === 'string') {
     const text = rangeValue.trim()
     if (!text)
       return ''
     if (text.includes(' to '))
-      return text.split(' to ').map(item => item.trim()).filter(Boolean).join('至')
+      return text.split(' to ').map(item => item.trim()).filter(Boolean).join(TIME_RANGE_SEPARATOR)
     
     return text
   }
@@ -127,7 +131,6 @@ function parseMoney(val) {
   return Number.isFinite(n) ? n : 0
 }
 
-/** 账户无 EUR 余额且本页无 EUR 流水时不展示 EUR 列，避免整列「—」占宽 */
 const showEurColumn = computed(() => {
   if (Math.abs(parseMoney(summary.eur)) > 1e-6)
     return true
@@ -137,9 +140,9 @@ const showEurColumn = computed(() => {
 
 const tableHeaders = computed(() => {
   if (showEurColumn.value)
-    return tableHeadersBase
+    return tableHeadersBase.value
 
-  return tableHeadersBase.filter(h => h.key !== 'change_money_eur')
+  return tableHeadersBase.value.filter(h => h.key !== 'change_money_eur')
 })
 
 function formatCreatetimeLines(raw) {
@@ -169,7 +172,7 @@ async function copyText(text) {
     else
       throw new Error('clipboard-unavailable')
 
-    toast('已复制到剪贴板', 'success')
+    toast(t('pages.accountFundOverview.messages.copied'), 'success')
   }
   catch {
     try {
@@ -183,10 +186,10 @@ async function copyText(text) {
       const copied = document.execCommand('copy')
 
       document.body.removeChild(input)
-      toast(copied ? '已复制到剪贴板' : '复制失败，请手动复制', copied ? 'success' : 'error')
+      toast(copied ? t('pages.accountFundOverview.messages.copied') : t('pages.accountFundOverview.messages.copyFailed'), copied ? 'success' : 'error')
     }
     catch {
-      toast('当前环境不支持自动复制', 'error')
+      toast(t('pages.accountFundOverview.messages.copyUnsupported'), 'error')
     }
   }
 }
@@ -196,8 +199,8 @@ function normalizeRows(data) {
   
   return rows.map(item => ({
     ...item,
-    change_money: String(item.change_money ?? '0'),
-    change_money_eur: String(item.change_money_eur ?? '0'),
+    ['change_money']: String(item['change_money'] ?? '0'),
+    ['change_money_eur']: String(item['change_money_eur'] ?? '0'),
   }))
 }
 
@@ -205,10 +208,10 @@ async function fetchFinanceList() {
   loading.value = true
   try {
     const payload = {
-      current_page: pagination.page,
-      per_page_num: pagination.limit,
+      ['current_page']: pagination.page,
+      ['per_page_num']: pagination.limit,
       type: filters.type || '',
-      order_sn: filters.keyword || '',
+      ['order_sn']: filters.keyword || '',
       remark: filters.remark || '',
       time: buildTimeRangeParam(filters.timeRange),
     }
@@ -222,15 +225,15 @@ async function fetchFinanceList() {
       financeRows.value = normalizeRows(res?.data)
       pagination.total = Number(res?.data?.count || 0)
       summary.usd = String(res?.data?.balance ?? '0.00')
-      summary.eur = String(res?.data?.balance_eur ?? '0.00')
+      summary.eur = String(res?.data?.['balance_eur'] ?? '0.00')
       summary.deposit = String(res?.data?.yajin ?? '0.00')
     }
     else {
-      toast(res?.msg || '加载资金列表失败', 'error')
+      toast(res?.msg || t('pages.accountFundOverview.messages.loadFailed'), 'error')
     }
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '加载资金列表失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.accountFundOverview.messages.loadFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -247,7 +250,7 @@ async function fetchRate(isEur = false) {
     
     return res?.data || {}
   }
-  throw new Error(res?.msg || '获取汇率失败')
+  throw new Error(res?.msg || t('pages.accountFundOverview.messages.rateFailed'))
 }
 
 async function refreshRateForTab(tabName) {
@@ -256,7 +259,7 @@ async function refreshRateForTab(tabName) {
     await fetchRate(isEur)
   }
   catch (error) {
-    toast(error?.message || '汇率更新失败', 'warning')
+    toast(error?.message || t('pages.accountFundOverview.messages.rateUpdateFailed'), 'warning')
   }
 }
 
@@ -347,13 +350,13 @@ async function submitRecharge(tabName) {
 
   if (tabName !== 'auto') {
     if (!form.amount || !form.orderNo) {
-      toast('请填写完整充值信息', 'warning')
+      toast(t('pages.accountFundOverview.messages.incompleteRecharge'), 'warning')
       
       return
     }
   }
   else if (!autoDisplayAmount.value) {
-    toast('请选择或输入充值金额', 'warning')
+    toast(t('pages.accountFundOverview.messages.amountRequired'), 'warning')
     
     return
   }
@@ -365,41 +368,41 @@ async function submitRecharge(tabName) {
 
     if (tabName === 'rmb') {
       body = {
-        pay_type1: form.payType,
-        need_chongzhi_money1: form.amount,
-        pay_num1: form.orderNo,
-        need_money_usd1: form.result,
+        ['pay_type1']: form.payType,
+        ['need_chongzhi_money1']: form.amount,
+        ['pay_num1']: form.orderNo,
+        ['need_money_usd1']: form.result,
         huilv1: form.rate,
       }
     }
     else if (tabName === 'usd') {
       path = '/user/operatePayUsd'
       body = {
-        pay_type2: form.payType,
-        need_chongzhi_money2: form.amount,
-        pay_num2: form.orderNo,
-        need_money_usd2: form.result,
+        ['pay_type2']: form.payType,
+        ['need_chongzhi_money2']: form.amount,
+        ['pay_num2']: form.orderNo,
+        ['need_money_usd2']: form.result,
         huilv2: form.rate,
       }
     }
     else if (tabName === 'eur') {
       path = '/user/operatePayEur'
       body = {
-        pay_type22: form.payType,
-        need_chongzhi_money22: form.amount,
-        pay_num22: form.orderNo,
-        need_money_usd22: form.result,
+        ['pay_type22']: form.payType,
+        ['need_chongzhi_money22']: form.amount,
+        ['pay_num22']: form.orderNo,
+        ['need_money_usd22']: form.result,
         huilv22: form.rate,
       }
     }
     else {
       path = '/user/onlinePay'
       body = {
-        zd_payType: form.method,
-        zd_need_chongzhi_money: autoDisplayAmount.value,
-        zd_change_money: autoDisplayAmount.value,
-        zd_need_money_usd: form.result,
-        zd_huilv: form.rate,
+        ['zd_payType']: form.method,
+        ['zd_need_chongzhi_money']: autoDisplayAmount.value,
+        ['zd_change_money']: autoDisplayAmount.value,
+        ['zd_need_money_usd']: form.result,
+        ['zd_huilv']: form.rate,
       }
     }
 
@@ -409,7 +412,7 @@ async function submitRecharge(tabName) {
     })
 
     if (Number(res?.code) !== 1) {
-      toast(res?.msg || '提交充值失败', 'error')
+      toast(res?.msg || t('pages.accountFundOverview.messages.submitFailed'), 'error')
       
       return
     }
@@ -417,7 +420,7 @@ async function submitRecharge(tabName) {
     if (tabName === 'auto') {
       if (Number(form.method) === 1 && res?.data?.url) {
         window.open(res.data.url, '_blank', 'noopener')
-        toast('已打开支付页面，请完成支付', 'success')
+        toast(t('pages.accountFundOverview.messages.payPageOpened'), 'success')
       }
       else {
         await loadWxPayInfo(res?.data)
@@ -429,7 +432,7 @@ async function submitRecharge(tabName) {
       return
     }
 
-    toast(res?.msg || '充值申请提交成功', 'success')
+    toast(res?.msg || t('pages.accountFundOverview.messages.submitSuccess'), 'success')
     form.amount = ''
     form.result = ''
     form.orderNo = ''
@@ -437,7 +440,7 @@ async function submitRecharge(tabName) {
     fetchFinanceList()
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '提交充值失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.accountFundOverview.messages.submitFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -466,15 +469,15 @@ async function loadWxPayInfo(onlinePayData) {
   })
 
   if (Number(res?.code) !== 1) {
-    throw new Error(res?.msg || '微信支付二维码获取失败')
+    throw new Error(res?.msg || t('pages.accountFundOverview.messages.wxQrFailed'))
   }
 
   const data = res?.data || {}
   const wxRawUrl = String(data.url || '')
 
   wxPayInfo.username = String(data.username || onlinePayData?.username || '')
-  wxPayInfo.ownPayNum = String(data.own_pay_num || onlinePayData?.own_pay_num || '')
-  wxPayInfo.amount = String(data.change_money || onlinePayData?.change_money || autoDisplayAmount.value)
+  wxPayInfo.ownPayNum = String(data['own_pay_num'] || onlinePayData?.['own_pay_num'] || '')
+  wxPayInfo.amount = String(data['change_money'] || onlinePayData?.['change_money'] || autoDisplayAmount.value)
   wxPayInfo.qrCodeUrl = buildQrCodeImageUrl(wxRawUrl)
 }
 
@@ -487,11 +490,11 @@ function startWxPolling() {
     try {
       const res = await $api('/user/wxCheck', {
         method: 'POST',
-        body: { own_pay_num: wxPayInfo.ownPayNum },
+        body: { ['own_pay_num']: wxPayInfo.ownPayNum },
       })
 
       if (Number(res?.code) === 1) {
-        toast('微信支付成功，余额已更新', 'success')
+        toast(t('pages.accountFundOverview.messages.wxPaid'), 'success')
         wxDialogVisible.value = false
         stopWxPolling()
         fetchFinanceList()
@@ -511,7 +514,7 @@ function closeWxDialog() {
 async function exportFinance() {
   const createTime = buildTimeRangeParam(filters.timeRange)
   if (!filters.type && !createTime) {
-    toast('请选择导出条件（类型或时间范围）', 'warning')
+    toast(t('pages.accountFundOverview.messages.exportConditionRequired'), 'warning')
     
     return
   }
@@ -520,19 +523,28 @@ async function exportFinance() {
     const res = await $api('/user/excelFinance', {
       method: 'POST',
       body: {
-        create_time: createTime,
+        ['create_time']: createTime,
         type: filters.type || '',
       },
     })
 
     if (Number(res?.code) === 1)
-      toast('导出任务已提交', 'success')
+      toast(t('pages.accountFundOverview.messages.exportSubmitted'), 'success')
     else
-      toast(res?.msg || '导出失败', 'error')
+      toast(res?.msg || t('pages.accountFundOverview.messages.exportFailed'), 'error')
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '导出失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.accountFundOverview.messages.exportFailed'), 'error')
   }
+}
+
+function resolveFlowTypeName(typeName) {
+  if (typeName === INCOME_TYPE)
+    return t('pages.accountFundOverview.types.income')
+  if (typeName === EXPENSE_TYPE)
+    return t('pages.accountFundOverview.types.expense')
+
+  return typeName || '-'
 }
 
 watch(() => [pagination.page, pagination.limit], fetchFinanceList)
@@ -567,15 +579,15 @@ onBeforeUnmount(() => stopWxPolling())
   <VCard class="rounded-lg">
     <VCardItem class="pb-3">
       <template #title>
-        <span class="text-h5 font-weight-medium">财务管理</span>
+        <span class="text-h5 font-weight-medium">{{ $t('pages.accountFundOverview.title') }}</span>
       </template>
     </VCardItem>
     <VDivider />
     <VCardText class="pa-4 pa-sm-6">
-      <VRow class="mb-2">
+      <VRow class="mb-4">
         <VCol
           cols="12"
-          md="4"
+          md="6"
         >
           <VSheet
             rounded="lg"
@@ -583,9 +595,9 @@ onBeforeUnmount(() => stopWxPolling())
             class="pa-4 h-100"
           >
             <div class="text-caption text-medium-emphasis mb-1">
-              账户余额
+              {{ $t('pages.accountFundOverview.accountBalance') }}
             </div>
-            <div class="d-flex align-center justify-space-between gap-3">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-3">
               <div>
                 <div class="text-h5 font-weight-bold">
                   $ {{ summary.usd }}
@@ -597,16 +609,17 @@ onBeforeUnmount(() => stopWxPolling())
               <VBtn
                 color="primary"
                 size="small"
+                class="flex-shrink-0"
                 @click="openRecharge"
               >
-                充值
+                {{ $t('pages.accountFundOverview.actions.recharge') }}
               </VBtn>
             </div>
           </VSheet>
         </VCol>
         <VCol
           cols="12"
-          md="4"
+          md="6"
         >
           <VSheet
             rounded="lg"
@@ -614,7 +627,7 @@ onBeforeUnmount(() => stopWxPolling())
             class="pa-4 h-100"
           >
             <div class="text-caption text-medium-emphasis mb-1">
-              出标押金 (USD)
+              {{ $t('pages.accountFundOverview.depositUsd') }}
             </div>
             <div class="text-h5 font-weight-bold">
               $ {{ summary.deposit }}
@@ -638,19 +651,20 @@ onBeforeUnmount(() => stopWxPolling())
             prepend-icon="tabler-download"
             @click="exportFinance"
           >
-            导出账单明细
+            {{ $t('pages.accountFundOverview.actions.export') }}
           </VBtn>
         </template>
         <VRow dense>
           <VCol
             cols="12"
             sm="6"
+            md="6"
             lg="3"
           >
             <AppSelect
               v-model="filters.type"
               :items="typeOptions"
-              label="类型"
+              :label="$t('pages.accountFundOverview.filters.type')"
               item-title="title"
               item-value="value"
               density="compact"
@@ -661,42 +675,45 @@ onBeforeUnmount(() => stopWxPolling())
           <VCol
             cols="12"
             sm="6"
+            md="6"
             lg="3"
           >
             <AppTextField
               v-model="filters.keyword"
-              label="订单号 / 运单号"
+              :label="$t('pages.accountFundOverview.filters.keyword')"
               density="compact"
               hide-details
-              placeholder="请输入关键词"
+              :placeholder="$t('pages.accountFundOverview.placeholders.keyword')"
               @keyup.enter="searchFinance"
             />
           </VCol>
           <VCol
             cols="12"
             sm="6"
+            md="6"
             lg="3"
           >
             <AppTextField
               v-model="filters.remark"
-              label="备注关键词"
+              :label="$t('pages.accountFundOverview.filters.remark')"
               density="compact"
               hide-details
-              placeholder="请输入备注"
+              :placeholder="$t('pages.accountFundOverview.placeholders.remark')"
               @keyup.enter="searchFinance"
             />
           </VCol>
           <VCol
             cols="12"
             sm="6"
+            md="6"
             lg="3"
           >
             <AppDateTimePicker
               v-model="filters.timeRange"
-              label="交易时间"
+              :label="$t('pages.accountFundOverview.filters.time')"
               density="compact"
               hide-details
-              placeholder="选择时间范围"
+              :placeholder="$t('pages.accountFundOverview.placeholders.time')"
               :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
             />
           </VCol>
@@ -707,9 +724,12 @@ onBeforeUnmount(() => stopWxPolling())
         :headers="tableHeaders"
         :items="financeRows"
         :loading="loading"
-        density="compact"
+        :items-per-page="pagination.limit"
+        hide-default-footer
+        density="comfortable"
         hover
         class="text-body-2 fund-flow-table"
+        :class="{ 'fund-flow-table--with-eur': showEurColumn }"
         item-value="id"
       >
         <template #item.createtime="{ item }">
@@ -728,12 +748,16 @@ onBeforeUnmount(() => stopWxPolling())
           >—</span>
         </template>
         <template #item.order_sn="{ item }">
-          <div class="d-flex align-center gap-1 min-w-0">
-            <span class="text-truncate">{{ item.order_sn || '—' }}</span>
+          <div class="fund-reference-cell d-flex align-center gap-1 min-w-0">
+            <span
+              class="fund-reference-text text-truncate"
+              :title="item.order_sn || ''"
+            >{{ item.order_sn || '—' }}</span>
             <IconBtn
               v-if="item.order_sn"
               size="small"
               variant="text"
+              color="secondary"
               class="flex-shrink-0 fund-copy-btn"
               @click.stop="copyText(item.order_sn)"
             >
@@ -745,12 +769,16 @@ onBeforeUnmount(() => stopWxPolling())
           </div>
         </template>
         <template #item.ht_tracking_no="{ item }">
-          <div class="d-flex align-center gap-1 min-w-0">
-            <span class="text-truncate">{{ item.ht_tracking_no || '—' }}</span>
+          <div class="fund-reference-cell d-flex align-center gap-1 min-w-0">
+            <span
+              class="fund-reference-text text-truncate"
+              :title="item.ht_tracking_no || ''"
+            >{{ item.ht_tracking_no || '—' }}</span>
             <IconBtn
               v-if="item.ht_tracking_no"
               size="small"
               variant="text"
+              color="secondary"
               class="flex-shrink-0 fund-copy-btn"
               @click.stop="copyText(item.ht_tracking_no)"
             >
@@ -761,17 +789,23 @@ onBeforeUnmount(() => stopWxPolling())
             </IconBtn>
           </div>
         </template>
+        <template #item.pay_type="{ item }">
+          <span
+            class="fund-type-text d-inline-block text-truncate"
+            :title="item['pay_type'] || ''"
+          >{{ item['pay_type'] || '—' }}</span>
+        </template>
         <template #item.type_name="{ item }">
           <VChip
-            :color="item.type_name === '收入' ? 'success' : 'error'"
+            :color="item.type_name === INCOME_TYPE ? 'success' : 'error'"
             size="small"
-            label
+            variant="tonal"
           >
-            {{ item.type_name || '-' }}
+            {{ resolveFlowTypeName(item.type_name) }}
           </VChip>
         </template>
         <template #item.change_money="{ item }">
-          <div class="text-end">
+          <div class="fund-money-cell text-end">
             <span
               class="tabular-nums"
               :class="parseMoney(item.change_money) >= 0 ? 'text-success' : 'text-error'"
@@ -781,7 +815,7 @@ onBeforeUnmount(() => stopWxPolling())
           </div>
         </template>
         <template #item.change_money_eur="{ item }">
-          <div class="text-end">
+          <div class="fund-money-cell text-end">
             <span
               v-if="Math.abs(parseMoney(item.change_money_eur)) < 1e-9"
               class="text-medium-emphasis"
@@ -805,7 +839,7 @@ onBeforeUnmount(() => stopWxPolling())
             <template #activator="{ props: tipProps }">
               <span
                 v-bind="tipProps"
-                class="fund-remark text-body-2 d-inline-block"
+                class="fund-remark text-body-2 d-block"
               >
                 {{ item.remark }}
               </span>
@@ -818,21 +852,25 @@ onBeforeUnmount(() => stopWxPolling())
           >—</span>
         </template>
         <template #bottom>
-          <div class="d-flex align-center justify-space-between flex-wrap gap-3 px-4 py-3">
+          <VDivider />
+          <div class="fund-pagination-bar d-flex align-center justify-space-between flex-wrap gap-3 px-4 px-sm-6 py-4">
             <div class="text-body-2 text-medium-emphasis">
-              共 {{ pagination.total }} 条
+              {{ $t('pages.dropShippingOrderList.pagination.total', { total: pagination.total }) }}
             </div>
-            <div class="d-flex align-center gap-3">
+            <div class="fund-pagination-controls d-flex align-center gap-3">
               <AppSelect
                 v-model="pagination.limit"
                 :items="[10, 20, 50, 100]"
                 density="compact"
-                style="min-inline-size: 110px"
+                hide-details
+                style="min-inline-size: 100px"
               />
               <VPagination
                 v-model="pagination.page"
                 :length="totalPage"
-                rounded
+                :total-visible="5"
+                size="small"
+                active-color="primary"
               />
             </div>
           </div>
@@ -843,13 +881,14 @@ onBeforeUnmount(() => stopWxPolling())
 
   <VDialog
     v-model="rechargeVisible"
+    width="calc(100vw - 32px)"
     max-width="980"
     scrollable
   >
     <VCard class="rounded-lg">
       <VCardItem class="px-6 pt-5 pb-3">
         <template #title>
-          <span class="text-h6 font-weight-medium">账户充值</span>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.accountFundOverview.recharge.title') }}</span>
         </template>
         <template #append>
           <IconBtn @click="closeRecharge">
@@ -862,18 +901,19 @@ onBeforeUnmount(() => stopWxPolling())
         <VTabs
           v-model="activeRechargeTab"
           color="primary"
+          show-arrows
         >
           <VTab value="rmb">
-            人工充值(¥)
+            {{ $t('pages.accountFundOverview.recharge.tabs.rmb') }}
           </VTab>
           <VTab value="usd">
-            人工充值($)
+            {{ $t('pages.accountFundOverview.recharge.tabs.usd') }}
           </VTab>
           <VTab value="eur">
-            人工充值(€)
+            {{ $t('pages.accountFundOverview.recharge.tabs.eur') }}
           </VTab>
           <VTab value="auto">
-            自动充值
+            {{ $t('pages.accountFundOverview.recharge.tabs.auto') }}
           </VTab>
         </VTabs>
 
@@ -893,13 +933,13 @@ onBeforeUnmount(() => stopWxPolling())
                   class="pa-4 h-100"
                 >
                   <div class="text-subtitle-2 mb-3">
-                    转账账户：浙商银行
+                    {{ $t('pages.accountFundOverview.recharge.bank.transferAccount') }}
                   </div>
                   <div class="text-body-2">
-                    户名：潘威文 (PAN WEIWEN)
+                    {{ $t('pages.accountFundOverview.recharge.bank.accountName') }}
                   </div>
                   <div class="text-body-2 mt-2">
-                    账号：6223095840810042306
+                    {{ $t('pages.accountFundOverview.recharge.bank.accountNo') }}
                   </div>
                 </VSheet>
               </VCol>
@@ -910,7 +950,7 @@ onBeforeUnmount(() => stopWxPolling())
                 <VForm class="d-flex flex-column gap-3">
                   <AppSelect
                     v-model="rechargeForms.rmb.payType"
-                    label="充值币种"
+                    :label="$t('pages.accountFundOverview.recharge.fields.currency')"
                     :items="rechargeCurrencyOptions"
                     item-title="title"
                     item-value="value"
@@ -918,25 +958,25 @@ onBeforeUnmount(() => stopWxPolling())
                   <AppTextField
                     v-model="rechargeForms.rmb.amount"
                     type="number"
-                    label="充值金额"
+                    :label="$t('pages.accountFundOverview.recharge.fields.amount')"
                     :suffix="rechargeForms.rmb.payType === 1 ? 'CNY' : 'USD'"
                   />
                   <AppTextField
                     v-model="rechargeForms.rmb.result"
-                    label="实际到账"
+                    :label="$t('pages.accountFundOverview.recharge.fields.arrival')"
                     readonly
                   />
                   <AppTextField
                     v-model="rechargeForms.rmb.orderNo"
-                    label="转账凭据"
-                    placeholder="请输入银行转账订单号"
+                    :label="$t('pages.accountFundOverview.recharge.fields.proof')"
+                    :placeholder="$t('pages.accountFundOverview.placeholders.transferProof')"
                   />
                   <VBtn
                     color="primary"
                     :loading="submitting"
                     @click="submitRecharge('rmb')"
                   >
-                    提交充值申请
+                    {{ $t('pages.accountFundOverview.actions.submitRecharge') }}
                   </VBtn>
                 </VForm>
               </VCol>
@@ -965,11 +1005,11 @@ onBeforeUnmount(() => stopWxPolling())
                     </VExpansionPanelText>
                   </VExpansionPanel>
                   <VExpansionPanel value="zelle">
-                    <VExpansionPanelTitle>Zelle 账户</VExpansionPanelTitle>
-                    <VExpansionPanelText>请联系客服获取账户</VExpansionPanelText>
+                    <VExpansionPanelTitle>{{ $t('pages.accountFundOverview.recharge.bank.zelle') }}</VExpansionPanelTitle>
+                    <VExpansionPanelText>{{ $t('pages.accountFundOverview.recharge.bank.contactService') }}</VExpansionPanelText>
                   </VExpansionPanel>
                   <VExpansionPanel value="airwallex">
-                    <VExpansionPanelTitle>Airwallex 账户</VExpansionPanelTitle>
+                    <VExpansionPanelTitle>{{ $t('pages.accountFundOverview.recharge.bank.airwallex') }}</VExpansionPanelTitle>
                     <VExpansionPanelText>
                       Account Name: Hong Kong Atwindow Company Limited<br>
                       Institution: Standard Chartered Bank (Hong Kong) Ltd<br>
@@ -986,7 +1026,7 @@ onBeforeUnmount(() => stopWxPolling())
                 <VForm class="d-flex flex-column gap-3">
                   <AppSelect
                     v-model="rechargeForms.usd.payType"
-                    label="充值币种"
+                    :label="$t('pages.accountFundOverview.recharge.fields.currency')"
                     :items="rechargeCurrencyOptions"
                     item-title="title"
                     item-value="value"
@@ -994,25 +1034,25 @@ onBeforeUnmount(() => stopWxPolling())
                   <AppTextField
                     v-model="rechargeForms.usd.amount"
                     type="number"
-                    label="充值金额"
+                    :label="$t('pages.accountFundOverview.recharge.fields.amount')"
                     :suffix="rechargeForms.usd.payType === 1 ? 'CNY' : 'USD'"
                   />
                   <AppTextField
                     v-model="rechargeForms.usd.result"
-                    label="实际到账"
+                    :label="$t('pages.accountFundOverview.recharge.fields.arrival')"
                     readonly
                   />
                   <AppTextField
                     v-model="rechargeForms.usd.orderNo"
-                    label="转账凭据"
-                    placeholder="请输入银行转账订单号"
+                    :label="$t('pages.accountFundOverview.recharge.fields.proof')"
+                    :placeholder="$t('pages.accountFundOverview.placeholders.transferProof')"
                   />
                   <VBtn
                     color="primary"
                     :loading="submitting"
                     @click="submitRecharge('usd')"
                   >
-                    提交充值申请
+                    {{ $t('pages.accountFundOverview.actions.submitRecharge') }}
                   </VBtn>
                 </VForm>
               </VCol>
@@ -1051,7 +1091,7 @@ onBeforeUnmount(() => stopWxPolling())
                 <VForm class="d-flex flex-column gap-3">
                   <AppSelect
                     v-model="rechargeForms.eur.payType"
-                    label="充值币种"
+                    :label="$t('pages.accountFundOverview.recharge.fields.currency')"
                     :items="rechargeEurCurrencyOptions"
                     item-title="title"
                     item-value="value"
@@ -1059,25 +1099,25 @@ onBeforeUnmount(() => stopWxPolling())
                   <AppTextField
                     v-model="rechargeForms.eur.amount"
                     type="number"
-                    label="充值金额"
+                    :label="$t('pages.accountFundOverview.recharge.fields.amount')"
                     :suffix="rechargeForms.eur.payType === 1 ? 'CNY' : 'EUR'"
                   />
                   <AppTextField
                     v-model="rechargeForms.eur.result"
-                    label="实际到账"
+                    :label="$t('pages.accountFundOverview.recharge.fields.arrival')"
                     readonly
                   />
                   <AppTextField
                     v-model="rechargeForms.eur.orderNo"
-                    label="转账凭据"
-                    placeholder="请输入银行转账订单号"
+                    :label="$t('pages.accountFundOverview.recharge.fields.proof')"
+                    :placeholder="$t('pages.accountFundOverview.placeholders.transferProof')"
                   />
                   <VBtn
                     color="primary"
                     :loading="submitting"
                     @click="submitRecharge('eur')"
                   >
-                    提交充值申请
+                    {{ $t('pages.accountFundOverview.actions.submitRecharge') }}
                   </VBtn>
                 </VForm>
               </VCol>
@@ -1090,33 +1130,34 @@ onBeforeUnmount(() => stopWxPolling())
               variant="tonal"
               class="mb-4"
             >
-              5000 元内自动充值，即充即到，方便快捷。
+              {{ $t('pages.accountFundOverview.recharge.autoAlert') }}
             </VAlert>
             <VForm class="d-flex flex-column gap-4">
               <VRadioGroup
                 v-model="rechargeForms.auto.method"
                 inline
-                label="支付方式"
+                :label="$t('pages.accountFundOverview.recharge.fields.paymentMethod')"
               >
                 <VRadio
                   :value="1"
-                  label="支付宝"
+                  :label="$t('pages.accountFundOverview.recharge.payment.alipay')"
                 />
                 <VRadio
                   :value="2"
-                  label="微信"
+                  :label="$t('pages.accountFundOverview.recharge.payment.wechat')"
                 />
               </VRadioGroup>
 
               <div>
                 <div class="text-body-2 mb-2">
-                  充值金额
+                  {{ $t('pages.accountFundOverview.recharge.fields.amount') }}
                 </div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="fund-amount-chips d-flex flex-wrap gap-2">
                   <VChip
                     v-for="amount in autoAmountOptions"
                     :key="amount"
                     label
+                    class="fund-amount-chip justify-center"
                     :color="rechargeForms.auto.selectedAmount === amount ? 'primary' : 'default'"
                     :variant="rechargeForms.auto.selectedAmount === amount ? 'flat' : 'outlined'"
                     @click="onAutoSelectAmount(amount)"
@@ -1129,19 +1170,19 @@ onBeforeUnmount(() => stopWxPolling())
               <AppTextField
                 v-model="rechargeForms.auto.customAmount"
                 type="number"
-                label="其他金额"
+                :label="$t('pages.accountFundOverview.recharge.fields.customAmount')"
                 suffix="CNY"
-                placeholder="请输入金额"
+                :placeholder="$t('pages.accountFundOverview.placeholders.amount')"
               />
               <AppTextField
                 v-model="rechargeForms.auto.result"
                 readonly
-                label="美金到账"
+                :label="$t('pages.accountFundOverview.recharge.fields.usdArrival')"
               />
               <div class="text-body-1">
-                应付金额：
+                {{ $t('pages.accountFundOverview.recharge.payableAmount') }}
                 <span class="text-primary font-weight-bold text-h6">
-                  {{ autoDisplayAmount }} 元
+                  {{ autoDisplayAmount }} {{ $t('pages.accountFundOverview.recharge.yuan') }}
                 </span>
               </div>
               <VBtn
@@ -1149,7 +1190,7 @@ onBeforeUnmount(() => stopWxPolling())
                 :loading="submitting"
                 @click="submitRecharge('auto')"
               >
-                扫码支付
+                {{ $t('pages.accountFundOverview.actions.scanPay') }}
               </VBtn>
             </VForm>
           </VWindowItem>
@@ -1160,12 +1201,13 @@ onBeforeUnmount(() => stopWxPolling())
 
   <VDialog
     v-model="wxDialogVisible"
+    width="calc(100vw - 32px)"
     max-width="640"
   >
     <VCard class="rounded-lg">
       <VCardItem class="px-6 pt-5 pb-3">
         <template #title>
-          <span class="text-h6 font-weight-medium">微信支付</span>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.accountFundOverview.wxPay.title') }}</span>
         </template>
         <template #append>
           <IconBtn @click="closeWxDialog">
@@ -1174,7 +1216,7 @@ onBeforeUnmount(() => stopWxPolling())
         </template>
       </VCardItem>
       <VDivider />
-      <VCardText class="pa-6 text-center">
+      <VCardText class="pa-4 pa-sm-6 text-center">
         <VIcon
           icon="tabler-circle-check"
           color="success"
@@ -1182,10 +1224,10 @@ onBeforeUnmount(() => stopWxPolling())
           class="mb-2"
         />
         <div class="text-h6 font-weight-medium mb-2">
-          提交成功，等待支付...
+          {{ $t('pages.accountFundOverview.wxPay.submitted') }}
         </div>
         <div class="text-body-2 text-medium-emphasis mb-4">
-          请确认金额并及时微信扫码支付订单
+          {{ $t('pages.accountFundOverview.wxPay.instruction') }}
         </div>
 
         <VSheet
@@ -1196,25 +1238,25 @@ onBeforeUnmount(() => stopWxPolling())
           <template v-if="wxPayInfo.qrCodeUrl">
             <VImg
               :src="wxPayInfo.qrCodeUrl"
-              alt="微信支付二维码"
+              :alt="$t('pages.accountFundOverview.wxPay.qrAlt')"
               max-width="180"
               class="mx-auto"
             />
           </template>
           <template v-else>
             <div class="text-body-2 text-medium-emphasis">
-              未返回二维码图片，请联系客服处理支付。
+              {{ $t('pages.accountFundOverview.wxPay.noQr') }}
             </div>
           </template>
         </VSheet>
 
         <div class="text-body-2 text-start mx-auto fund-wx-meta">
-          <div>账号：{{ wxPayInfo.username || '-' }}</div>
+          <div>{{ $t('pages.accountFundOverview.wxPay.account', { value: wxPayInfo.username || '-' }) }}</div>
           <div class="mt-2">
-            单号：{{ wxPayInfo.ownPayNum || '-' }}
+            {{ $t('pages.accountFundOverview.wxPay.orderNo', { value: wxPayInfo.ownPayNum || '-' }) }}
           </div>
           <div class="mt-2">
-            金额：{{ wxPayInfo.amount || '-' }} 元
+            {{ $t('pages.accountFundOverview.wxPay.amount', { value: wxPayInfo.amount || '-' }) }}
           </div>
         </div>
       </VCardText>
@@ -1228,18 +1270,59 @@ onBeforeUnmount(() => stopWxPolling())
   white-space: nowrap;
 }
 
-.fund-time {
-  line-height: 1.25;
+.fund-flow-table :deep(.v-table__wrapper) {
+  overflow-x: auto;
 }
 
-/* 单行省略 + 悬停看全文，避免多行 clamp 与 tooltip 叠层在部分浏览器出现色块感 */
+.fund-flow-table :deep(table) {
+  min-inline-size: 1180px;
+}
+
+.fund-flow-table :deep(td) {
+  vertical-align: middle;
+}
+
+.fund-flow-table--with-eur :deep(table) {
+  min-inline-size: 1290px;
+}
+
+.fund-time {
+  color: rgba(var(--v-theme-on-surface), 0.76);
+  line-height: 1.22;
+}
+
+.fund-reference-cell {
+  max-inline-size: 100%;
+}
+
+.fund-reference-text,
+.fund-type-text {
+  color: rgba(var(--v-theme-on-surface), 0.76);
+  max-inline-size: 100%;
+}
+
+.fund-type-text {
+  inline-size: 100%;
+}
+
+.fund-money-cell {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
 .fund-remark {
-  max-inline-size: min(520px, 46vw);
+  display: -webkit-box !important;
+  max-inline-size: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: rgba(var(--v-theme-on-surface), 0.7);
   cursor: help;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  white-space: normal;
   vertical-align: top;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .fund-copy-btn {
@@ -1250,12 +1333,55 @@ onBeforeUnmount(() => stopWxPolling())
   opacity: 1;
 }
 
+.fund-pagination-controls {
+  min-inline-size: 0;
+}
+
+.fund-pagination-bar {
+  min-block-size: 72px;
+}
+
+.fund-amount-chip {
+  min-inline-size: 86px;
+}
+
 .fund-wx-qrcode {
   max-inline-size: 240px;
 }
 
 .fund-wx-meta {
   max-inline-size: 320px;
+}
+
+@media (max-width: 600px) {
+  .fund-flow-table :deep(table) {
+    min-inline-size: 1080px;
+  }
+
+  .fund-pagination-bar {
+    align-items: stretch !important;
+    flex-direction: column;
+  }
+
+  .fund-pagination-controls {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .fund-pagination-controls :deep(.v-pagination) {
+    inline-size: 100%;
+    justify-content: center;
+  }
+
+  .fund-remark {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .fund-wx-meta {
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
+  }
 }
 </style>
 

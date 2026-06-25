@@ -1,5 +1,6 @@
-import { canNavigate } from '@layouts/plugins/casl'
 import { $api } from '@/utils/api'
+import { checkVersion, newVersionAvailable } from '@/composables/useVersionCheck'
+import { canNavigate } from '@layouts/plugins/casl'
 
 const defaultAbilityRules = [{ action: 'manage', subject: 'all' }]
 let lastFailedCookieToken = ''
@@ -35,7 +36,9 @@ async function ensureLoginFromDomainCookie() {
       try {
         accessToken.value = domainToken
 
-        const res = await $api('/apiOrdernew/checkToken', { method: 'GET' })
+        // 使用空的 onResponseError 覆盖实例级钩子，避免 401 同时触发
+        // handleHttpUnauthorized 导致两次并发导航 → 白屏
+        const res = await $api('/Ordernew/checkToken', { method: 'GET', onResponseError: () => {} })
 
         if (res?.accessToken) {
           useCookie('userAbilityRules').value = res.userAbilityRules?.length ? res.userAbilityRules : defaultAbilityRules
@@ -118,5 +121,9 @@ export const setupGuards = router => {
                 }
             /* eslint-enable indent */
     }
+
+    await checkVersion()
+    if (newVersionAvailable.value)
+      return false
   })
 }

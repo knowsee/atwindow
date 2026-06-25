@@ -11,6 +11,7 @@ import {
 
 export function usePrintLabelCreate() {
   const router = useRouter()
+  const { t } = useI18n({ useScope: 'global' })
   const channels = PRINT_LABEL_CHANNELS
 
   const legacyOrigin = import.meta.env.VITE_LEGACY_ASSET_ORIGIN || 'https://www.atwindow.com'
@@ -77,6 +78,7 @@ export function usePrintLabelCreate() {
   /** 主界面收发件只读：从地址簿选择或浮窗新增/编辑成功后锁定 */
   const senderAddressLocked = ref(false)
   const receiverAddressLocked = ref(false)
+  const senderSelectedFromBeianAddr = ref(false)
 
   const addrFormDialog = ref(false)
   const addrFormTarget = ref('sender')
@@ -85,6 +87,7 @@ export function usePrintLabelCreate() {
   const addrFormSubmitting = ref(false)
   const addrFormCountriesLoading = ref(false)
   const addrFormCountryList = ref([])
+
   const addrForm = ref({
     name: '',
     country: '',
@@ -123,6 +126,18 @@ export function usePrintLabelCreate() {
   const receiverCountryLock = computed(() => selectedChannel.value?.receiverCountryLock || null)
   const senderNeedBeianAddr = computed(() => !!selectedChannel.value?.senderNeedBeianAddr)
 
+  const anySelectedNeedBeianAddr = computed(() => {
+    const activeQids = compareMode.value
+      ? normalizeCompareQids(compareQids.value)
+      : [selectedQid.value]
+
+    return activeQids.some(qid => {
+      const channel = channels.find(c => Number(c.qid) === Number(qid))
+
+      return !!channel?.senderNeedBeianAddr
+    })
+  })
+
   const selectedChannelAlert = computed(() => {
     if (!CHANNEL_ALERT_CONFIG)
       return null
@@ -150,7 +165,7 @@ export function usePrintLabelCreate() {
       return d.wuliu_name
     const first = Array.isArray(d.rate_list) && d.rate_list.length ? d.rate_list[0] : null
     
-    return first?.wuliu_name || first?.serviceType || '报价结果'
+    return first?.wuliu_name || first?.serviceType || t('pages.printLabelCreate.messages.rateTitleFallback')
   })
 
   const primaryQuoteAmount = computed(() => {
@@ -256,15 +271,16 @@ export function usePrintLabelCreate() {
     const picked = routeInfo != null
       ? routeInfo
       : (routeOptions.value.find(r => r.key === selectedRouteKey.value) || null)
-    if (picked?.entryport)
-      return String(picked.entryport).trim()
+
+    if (picked?.rateName)
+      return String(picked.rateName).trim()
     const rl = rateBest.value?.rate_list
     const first = Array.isArray(rl) && rl.length ? rl[0] : null
     const rt = first?.rate
-    if (rt?.entryport)
-      return String(rt.entryport).trim()
-    if (typeof rt?.totalFee === 'object' && rt?.entryport)
-      return String(rt.entryport).trim()
+    if (rt?.rateName)
+      return String(rt.rateName).trim()
+    if (typeof rt?.totalFee === 'object' && rt?.rateName)
+      return String(rt.rateName).trim()
 
     return ''
   }
@@ -298,7 +314,7 @@ export function usePrintLabelCreate() {
     }
     if (compareQids.value.includes(qid)) {
       if (compareQids.value.length <= 1) {
-        toast('比价模式下至少保留一个渠道', 'warning')
+        toast(t('pages.printLabelCreate.messages.keepCompareChannel'), 'warning')
         
         return
       }
@@ -325,6 +341,26 @@ export function usePrintLabelCreate() {
     rateCompareList.value = []
   }
 
+  function resetSenderAddressSelection() {
+    sender.value = {
+      id: '',
+      name: '',
+      country: senderCountryLock.value && senderCountryList.value.length
+        ? matchCountryValue(senderCountryList.value, senderCountryLock.value)
+        : '',
+      province: '',
+      city: '',
+      streetno: '',
+      address: '',
+      address2: '',
+      postCode: '',
+      telephone: '',
+      company: '',
+    }
+    senderAddressLocked.value = false
+    senderSelectedFromBeianAddr.value = false
+  }
+
   watch(selectedQid, () => {
     resetRateState()
     if (compareMode.value && !compareQids.value.includes(selectedQid.value))
@@ -341,6 +377,16 @@ export function usePrintLabelCreate() {
     else
       compareQids.value = selectedQid.value ? [selectedQid.value] : []
     resetRateState()
+  })
+
+  watch(anySelectedNeedBeianAddr, (needsBeian, previousNeedsBeian) => {
+    if (previousNeedsBeian === undefined || needsBeian === previousNeedsBeian)
+      return
+
+    if (senderAddressLocked.value)
+      toast(t('pages.printLabelCreate.messages.senderAddressResetForChannelChange'), 'warning')
+
+    resetSenderAddressSelection()
   })
 
   async function loadSenderCountries() {
@@ -378,84 +424,90 @@ export function usePrintLabelCreate() {
 
   function validate() {
     if (!selectedQid.value) {
-      toast('请选择一个渠道', 'warning')
+      toast(t('pages.printLabelCreate.messages.selectChannel'), 'warning')
       
       return false
     }
-    cankaohao.value = String(cankaohao.value ?? '').replace(/[^A-Za-z0-9_]/g, '')
+    cankaohao.value = String(cankaohao.value ?? '').replace(/\W/g, '')
+
     const ck = String(cankaohao.value).trim()
     if (!ck) {
-      toast('请输入参考号', 'warning')
+      toast(t('pages.printLabelCreate.messages.referenceRequired'), 'warning')
       
       return false
     }
-    if (!/^[A-Za-z0-9_]+$/.test(ck)) {
-      toast('参考号仅允许英文字母、数字与下划线', 'warning')
+    if (!/^\w+$/.test(ck)) {
+      toast(t('pages.printLabelCreate.messages.referenceInvalid'), 'warning')
       
       return false
     }
     const s = sender.value
     if (!s.name || !s.province || !s.city || !s.address || !s.postCode || !s.telephone) {
-      toast('请完善发件人必填信息（姓名、地址第 1 行、城市、省/州、邮编、电话）', 'warning')
+      toast(t('pages.printLabelCreate.messages.senderRequired'), 'warning')
       
       return false
     }
     const r = receiver.value
     if (!r.name || !r.province || !r.city || !r.address || !r.postCode || !r.telephone) {
-      toast('请完善收件人必填信息（姓名、地址第 1 行、城市、省/州、邮编、电话）', 'warning')
+      toast(t('pages.printLabelCreate.messages.receiverRequired'), 'warning')
       
       return false
     }
     if (!senderAddressLocked.value || !receiverAddressLocked.value) {
-      toast('请通过「从地址簿选择」或「添加地址」确认发件与收件地址后再试算或下单', 'warning')
+      toast(t('pages.printLabelCreate.messages.addressMustBeLocked'), 'warning')
       
+      return false
+    }
+    if (anySelectedNeedBeianAddr.value && !senderSelectedFromBeianAddr.value) {
+      toast(t('pages.printLabelCreate.messages.senderBeianRequired'), 'warning')
+
       return false
     }
     const p = pkg.value
     if (!p.weight || !p.length || !p.width || !p.height) {
-      toast('请填写包裹的重量和尺寸（长、宽、高）', 'warning')
+      toast(t('pages.printLabelCreate.messages.packageRequired'), 'warning')
       
       return false
     }
     if (!products.value.length) {
-      toast('请至少添加一条货品信息', 'warning')
+      toast(t('pages.printLabelCreate.messages.productRequired'), 'warning')
       
       return false
     }
     for (let i = 0; i < products.value.length; i++) {
       const row = products.value[i] || {}
-      const line = `第${i + 1}行货品`
+      const line = t('pages.printLabelCreate.messages.productLine', { line: i + 1 })
       if (!String(row.sku || '').trim()) {
-        toast(`${line}：请填写SKU`, 'warning')
+        toast(t('pages.printLabelCreate.messages.productSkuRequired', { line }), 'warning')
         
         return false
       }
       if (!String(row.en_name || '').trim()) {
-        toast(`${line}：请填写英文名称`, 'warning')
+        toast(t('pages.printLabelCreate.messages.productEnNameRequired', { line }), 'warning')
         
         return false
       }
       if (selectedCnNameRequired.value && !String(row.cn_name || '').trim()) {
-        toast(`${line}：请填写中文名称`, 'warning')
+        toast(t('pages.printLabelCreate.messages.productCnNameRequired', { line }), 'warning')
         
         return false
       }
       const skuNum = Number(row.sku_num)
       if (!Number.isFinite(skuNum) || skuNum <= 0) {
-        toast(`${line}：数量必须大于0`, 'warning')
+        toast(t('pages.printLabelCreate.messages.productQtyPositive', { line }), 'warning')
         
         return false
       }
       const itemWeight = Number(row.weight)
       if (!Number.isFinite(itemWeight) || itemWeight <= 0) {
-        toast(`${line}：重量必须大于0`, 'warning')
+        toast(t('pages.printLabelCreate.messages.productWeightPositive', { line }), 'warning')
         
         return false
       }
       if (selectedValueRequired.value) {
         const itemValue = Number(row.value)
         if (!Number.isFinite(itemValue) || itemValue <= 0) {
-          toast(`${line}：请填写有效的申报价值`, 'warning')
+          toast(t('pages.printLabelCreate.messages.productValueRequired', { line }), 'warning')
           
           return false
         }
@@ -470,7 +522,7 @@ export function usePrintLabelCreate() {
       return
     let qidList = compareMode.value ? normalizeCompareQids(compareQids.value) : [selectedQid.value]
     if (!qidList.length) {
-      toast('请选择至少一个渠道进行试算', 'warning')
+      toast(t('pages.printLabelCreate.messages.selectRateChannel'), 'warning')
       
       return
     }
@@ -485,6 +537,7 @@ export function usePrintLabelCreate() {
 
     try {
       const base = buildShippingCommonBody()
+
       const body = compareMode.value
         ? { ...base, providers: qidList.map(q => channelProvider(channels.find(c => Number(c.qid) === Number(q)))).filter(Boolean) }
         : { ...base, provider: channelProvider(selectedChannel.value) }
@@ -493,7 +546,7 @@ export function usePrintLabelCreate() {
 
       rateLoading.value = false
       if (Number(res?.code) !== 1 || !res.data) {
-        toast(res?.msg || '试算失败，请检查填写内容', 'error')
+        toast(res?.msg || t('pages.printLabelCreate.messages.rateFailed'), 'error')
         
         return
       }
@@ -503,25 +556,25 @@ export function usePrintLabelCreate() {
       if (compareMode.value) {
         rateCompareList.value = extractCompareRateList(legacyData, channels)
         if (!rateCompareList.value.length)
-          toast('比价请求成功，但未返回可展示的渠道报价数据', 'warning')
+          toast(t('pages.printLabelCreate.messages.compareNoData'), 'warning')
         else
-          toast('比价获取成功', 'success')
+          toast(t('pages.printLabelCreate.messages.compareSuccess'), 'success')
       }
       else {
         rateBest.value = legacyData
         if (selectedNeedRouteSelect.value) {
           routeOptions.value = extractRouteOptions(legacyData)
           if (!routeOptions.value.length)
-            toast('该渠道需要选择线路，但报价未返回可选线路，请检查地址和包裹信息', 'warning')
+            toast(t('pages.printLabelCreate.messages.routeMissingAfterRate'), 'warning')
         }
-        toast('报价获取成功', 'success')
+        toast(t('pages.printLabelCreate.messages.rateSuccess'), 'success')
       }
       await nextTick()
       document.getElementById('rate-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
     catch (e) {
       rateLoading.value = false
-      toast(e?.data?.msg || e?.message || '网络请求失败，请重试', 'error')
+      toast(e?.data?.msg || e?.message || t('pages.printLabelCreate.messages.networkRetry'), 'error')
       console.error(e)
     }
   }
@@ -544,7 +597,7 @@ export function usePrintLabelCreate() {
 
     const addrType = addrDialogTarget.value === 'sender' ? 1 : 2
     const lock = addrDialogTarget.value === 'sender' ? senderCountryLock.value : receiverCountryLock.value
-    const path = (addrDialogTarget.value === 'sender' && senderNeedBeianAddr.value) ? '/order/beianAddr' : '/order/queryAddr'
+    const path = (addrDialogTarget.value === 'sender' && anySelectedNeedBeianAddr.value) ? '/order/beianAddr' : '/order/queryAddr'
     try {
       const params = {
         type: addrType,
@@ -565,12 +618,12 @@ export function usePrintLabelCreate() {
         addrTotal.value = res.data.count || 0
       }
       else {
-        toast(res?.msg || '加载地址列表失败', 'error')
+        toast(res?.msg || t('pages.printLabelCreate.messages.addressListFailed'), 'error')
       }
     }
     catch (e) {
       addrLoading.value = false
-      toast('网络请求失败', 'error')
+      toast(t('pages.printLabelCreate.messages.networkFailed'), 'error')
       console.error(e)
     }
   }
@@ -598,16 +651,19 @@ export function usePrintLabelCreate() {
     target.value.postCode = row.postcode || ''
     target.value.telephone = row.telephone || ''
     target.value.company = row.company || ''
-    if (addrDialogTarget.value === 'sender')
+    if (addrDialogTarget.value === 'sender') {
       senderAddressLocked.value = true
-    else
+      senderSelectedFromBeianAddr.value = anySelectedNeedBeianAddr.value
+    }
+    else {
       receiverAddressLocked.value = true
+    }
     addrDialog.value = false
-    toast('地址已填入', 'success')
+    toast(t('pages.printLabelCreate.messages.addressFilled'), 'success')
   }
 
   function requiredAddrField(v) {
-    return String(v || '').trim() ? true : '必填项'
+    return String(v || '').trim() ? true : t('pages.printLabelCreate.messages.requiredField')
   }
 
   async function loadAddrFormCountries() {
@@ -664,18 +720,28 @@ export function usePrintLabelCreate() {
     target.value.postCode = addrForm.value.postcode.trim()
     target.value.telephone = addrForm.value.telephone.trim()
     target.value.company = (addrForm.value.company || '').trim()
-    if (addrFormTarget.value === 'sender')
+    if (addrFormTarget.value === 'sender') {
       senderAddressLocked.value = true
-    else
+      senderSelectedFromBeianAddr.value = false
+    }
+    else {
       receiverAddressLocked.value = true
+    }
   }
 
   async function openAddrFormDialog(target, isEdit) {
     addrFormTarget.value = target === 'receiver' ? 'receiver' : 'sender'
+    if (addrFormTarget.value === 'sender' && anySelectedNeedBeianAddr.value) {
+      toast(t('pages.printLabelCreate.messages.senderBeianAddressOnly'), 'warning')
+
+      return
+    }
+
     addrFormIsEdit.value = !!isEdit
     await loadAddrFormCountries()
     if (isEdit) {
       const src = addrFormTarget.value === 'sender' ? sender.value : receiver.value
+
       addrFormEditingId.value = String(src.id || '').trim()
       addrForm.value = {
         name: src.name || '',
@@ -693,6 +759,7 @@ export function usePrintLabelCreate() {
     }
     else {
       resetAddrFormFields()
+
       const lock = addrFormTarget.value === 'sender' ? senderCountryLock.value : receiverCountryLock.value
       if (lock)
         addrForm.value.country = lock
@@ -707,6 +774,7 @@ export function usePrintLabelCreate() {
   async function submitAddrFormDialog() {
     const t = addrFormTarget.value === 'sender' ? 1 : 2
     const token = useCookie('accessToken').value || ''
+
     const payload = {
       name: addrForm.value.name.trim(),
       country: addrForm.value.country,
@@ -722,6 +790,7 @@ export function usePrintLabelCreate() {
       type: t,
       token,
     }
+
     if (addrFormIsEdit.value)
       payload.id = String(addrFormEditingId.value)
 
@@ -730,17 +799,18 @@ export function usePrintLabelCreate() {
       const path = addrFormIsEdit.value ? '/order/editAddr' : '/order/addAddr'
       const res = await $api(path, { method: 'POST', body: payload })
       if (Number(res?.code) !== 1) {
-        toast(res?.msg || '保存失败', 'error')
+        toast(res?.msg || t('pages.printLabelCreate.messages.saveFailed'), 'error')
         
         return
       }
       const newId = res?.data?.id ?? res?.data?.addr_id ?? payload.id
+
       applyAddrFormToTarget(String(newId || ''))
       addrFormDialog.value = false
-      toast(res?.msg || '保存成功', 'success')
+      toast(res?.msg || t('pages.printLabelCreate.messages.saveSuccess'), 'success')
     }
     catch (e) {
-      toast(e?.data?.msg || e?.message || '网络请求失败', 'error')
+      toast(e?.data?.msg || e?.message || t('pages.printLabelCreate.messages.networkFailed'), 'error')
     }
     finally {
       addrFormSubmitting.value = false
@@ -753,7 +823,7 @@ export function usePrintLabelCreate() {
 
   function removeProduct(idx) {
     if (products.value.length <= 1) {
-      toast('至少保留一行货品', 'warning')
+      toast(t('pages.printLabelCreate.messages.keepOneProduct'), 'warning')
       
       return
     }
@@ -764,7 +834,7 @@ export function usePrintLabelCreate() {
     const ch = channels.find(c => String(c.qid) === String(qidStr))
     const provider = channelProvider(ch)
     if (!provider) {
-      toast('渠道配置异常，无法下单', 'error')
+      toast(t('pages.printLabelCreate.messages.providerInvalid'), 'error')
       
       return
     }
@@ -774,6 +844,7 @@ export function usePrintLabelCreate() {
     const pickedRoute = routeInfo != null
       ? routeInfo
       : (routeOptions.value.find(r => r.key === selectedRouteKey.value) || null)
+
     const common = buildShippingCommonBody()
     const extraOrder = { ...common.extra }
     if (pickedRoute) {
@@ -793,6 +864,7 @@ export function usePrintLabelCreate() {
         provider,
         extra: extraOrder,
       }
+
       if (channelCode)
         body.channel_code = channelCode
 
@@ -801,24 +873,24 @@ export function usePrintLabelCreate() {
       submitting.value = false
       orderLoading.value = false
       if (Number(res?.code) === 1) {
-        toast('订单创建成功，正在出单中，请前往订单列表查看', 'success')
+        toast(t('pages.printLabelCreate.messages.orderSuccess'), 'success')
         setTimeout(() => {
-          router.push({ name: 'apps-print-label-orders' })
+          router.push({ name: 'apps-print-label-shipping-list' })
         }, 1200)
         
         return
       }
       if (Number(res?.code) === 401) {
-        toast('登录已过期，请重新登录', 'error')
+        toast(t('pages.printLabelCreate.messages.unauthorized'), 'error')
         
         return
       }
-      toast(res?.msg || '下单失败', 'error')
+      toast(res?.msg || t('pages.printLabelCreate.messages.orderFailed'), 'error')
     }
     catch (e) {
       submitting.value = false
       orderLoading.value = false
-      toast(e?.data?.msg || e?.message || '网络请求失败，请重试', 'error')
+      toast(e?.data?.msg || e?.message || t('pages.printLabelCreate.messages.networkRetry'), 'error')
       console.error(e)
     }
   }
@@ -829,8 +901,15 @@ export function usePrintLabelCreate() {
     if (item.failed)
       return
     const feeDisplay = routeObj ? routeObj.totalFee.toFixed(2) : Number(item.singleFee ?? 0).toFixed(2)
-    const routeName = routeObj ? routeObj.rateName : (item.singleRateName || '标准线路')
-    const ok = window.confirm(`确认通过渠道「${item.channelName}」下单？\n线路：${routeName} · 费用：${feeDisplay} ${item.currency}`)
+    const routeName = routeObj ? routeObj.rateName : (item.singleRateName || t('pages.printLabelCreate.rate.standardRoute'))
+
+    const ok = window.confirm(t('pages.printLabelCreate.messages.compareOrderConfirm', {
+      channel: item.channelName,
+      route: routeName,
+      fee: feeDisplay,
+      currency: item.currency,
+    }))
+
     if (!ok)
       return
 
@@ -843,7 +922,7 @@ export function usePrintLabelCreate() {
 
   function doSubmit() {
     if (compareMode.value) {
-      toast('比价模式仅用于试算。请关闭比价模式后选择单个渠道下单', 'warning')
+      toast(t('pages.printLabelCreate.messages.compareModeSubmitBlocked'), 'warning')
       
       return
     }
@@ -851,17 +930,17 @@ export function usePrintLabelCreate() {
       return
     if (selectedNeedRouteSelect.value) {
       if (!rateBest.value) {
-        toast('该渠道下单前需要先试算运费并选择线路', 'warning')
+        toast(t('pages.printLabelCreate.messages.rateBeforeOrder'), 'warning')
         
         return
       }
       if (!routeOptions.value.length) {
-        toast('该渠道未返回可选线路，暂不能下单', 'warning')
+        toast(t('pages.printLabelCreate.messages.noRouteForOrder'), 'warning')
         
         return
       }
       if (!selectedRouteKey.value) {
-        toast('请选择线路后再提交订单', 'warning')
+        toast(t('pages.printLabelCreate.messages.selectRouteBeforeOrder'), 'warning')
         
         return
       }
@@ -869,10 +948,19 @@ export function usePrintLabelCreate() {
     const chName = getChannelName(selectedQid.value)
 
     const routeMsg = (selectedNeedRouteSelect.value && selectedRoute.value)
-      ? `\n已选线路：${selectedRoute.value.rateName || '-'} / ${selectedRoute.value.totalFee} ${selectedCurrency.value}`
+      ? t('pages.printLabelCreate.messages.selectedRoute', {
+        route: selectedRoute.value.rateName || '-',
+        fee: selectedRoute.value.totalFee,
+        currency: selectedCurrency.value,
+      })
       : ''
 
-    const ok = window.confirm(`确认通过渠道「${chName}」（QID: ${selectedQid.value}）下单？${routeMsg}`)
+    const ok = window.confirm(t('pages.printLabelCreate.messages.submitConfirm', {
+      channel: chName,
+      qid: selectedQid.value,
+      route: routeMsg,
+    }))
+
     if (!ok)
       return
     submitOrder(String(selectedQid.value), undefined)
@@ -933,6 +1021,7 @@ export function usePrintLabelCreate() {
     senderCountryLock,
     receiverCountryLock,
     senderNeedBeianAddr,
+    anySelectedNeedBeianAddr,
     selectedChannelAlert,
     hasRateResult,
     selectedRoute,

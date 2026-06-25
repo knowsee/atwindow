@@ -1,40 +1,52 @@
-/* eslint-disable camelcase -- 与 ordernew/orderDdList、getChannelList 接口字段一致 */
+/* eslint-disable camelcase -- Fields match ordernew/orderDdList and getChannelList APIs. */
+import { getI18n } from '@/plugins/i18n'
 import { $api } from '@/utils/api'
 
-/** 筛选「全部」占位，勿与合法 status/type 冲突 */
+/** Filter "all" sentinel; keep it distinct from valid status/type values. */
 export const ORDER_DD_FILTER_ALL = -1
 
-/** 订单列表 status 筛选下拉（含服务端约定 status=6：含 error_message 的异常单） */
-export const ORDER_DD_STATUS_FILTER_ITEMS = [
-  { title: '全部状态', value: ORDER_DD_FILTER_ALL },
-  { title: '已支付等待出单', value: 1 },
-  { title: '出单完成', value: 2 },
-  { title: '已取消', value: 3 },
-  { title: '取消中', value: 33 },
-  { title: '出单失败', value: 4 },
-  { title: '已下单，等待出单扣费', value: 5 },
-  { title: '异常', value: 6 },
+/** Legacy order status filter options, including status=6 for rows with error_message. */
+export const ORDER_DD_STATUS_FILTER_DEFS = [
+  { titleKey: 'pages.printLabelOrders.statusFilters.all', value: ORDER_DD_FILTER_ALL },
+  { titleKey: 'pages.printLabelOrders.statuses.paidWaiting', value: 1 },
+  { titleKey: 'pages.printLabelOrders.statuses.completed', value: 2 },
+  { titleKey: 'pages.printLabelOrders.statuses.cancelled', value: 3 },
+  { titleKey: 'pages.printLabelOrders.statuses.cancelling', value: 33 },
+  { titleKey: 'pages.printLabelOrders.statuses.failed', value: 4 },
+  { titleKey: 'pages.printLabelOrders.statuses.orderedWaitingFee', value: 5 },
+  { titleKey: 'pages.printLabelOrders.statuses.exception', value: 6 },
 ]
 
-/** 行上状态 Chip 展示（与后端枚举不一致时在此改） */
+/** Row status chip definitions. Adjust here if backend enums change. */
 export const YUNDAN_STATUS_MAP = {
-  1: { text: '已支付等待出单', color: 'warning' },
-  2: { text: '出单完成', color: 'success' },
-  3: { text: '已取消', color: 'secondary' },
-  33: { text: '取消中', color: 'warning' },
-  4: { text: '出单失败', color: 'error' },
-  5: { text: '已下单，等待出单扣费', color: 'info' },
-  6: { text: '异常', color: 'error' },
+  1: { textKey: 'pages.printLabelOrders.statuses.paidWaiting', color: 'warning' },
+  2: { textKey: 'pages.printLabelOrders.statuses.completed', color: 'success' },
+  3: { textKey: 'pages.printLabelOrders.statuses.cancelled', color: 'secondary' },
+  33: { textKey: 'pages.printLabelOrders.statuses.cancelling', color: 'warning' },
+  4: { textKey: 'pages.printLabelOrders.statuses.failed', color: 'error' },
+  5: { textKey: 'pages.printLabelOrders.statuses.orderedWaitingFee', color: 'info' },
+  6: { textKey: 'pages.printLabelOrders.statuses.exception', color: 'error' },
 }
 
-export function resolveYundanStatus(status) {
+function globalT(key, params) {
+  try {
+    return getI18n().global.t(key, params)
+  }
+  catch {
+    return key
+  }
+}
+
+export function resolveYundanStatus(status, translate = globalT) {
   const n = Number(status)
   const row = YUNDAN_STATUS_MAP[n]
 
-  return row || { text: `状态(${Number.isFinite(n) ? n : '—'})`, color: 'secondary' }
+  return row
+    ? { text: translate(row.textKey), color: row.color }
+    : { text: translate('pages.printLabelOrders.statuses.unknown', { status: Number.isFinite(n) ? n : '—' }), color: 'secondary' }
 }
 
-/** 运费：取金额前缀，避免整段说明过长 */
+/** Shipping fee: take the amount prefix to avoid overlong descriptive text. */
 export function formatYundanShippingFee(raw) {
   if (raw == null || raw === '')
     return '—'
@@ -53,6 +65,7 @@ export function formatTotalWeight(raw) {
 }
 
 export function useYundanList() {
+  const { t } = useI18n({ useScope: 'global' })
   const items = ref([])
   const total = ref(0)
   const loading = ref(false)
@@ -66,8 +79,16 @@ export function useYundanList() {
   const filterRecipientName = ref('')
   const filterCreateRange = ref('')
 
-  const channelTypeItems = ref([
-    { title: '全部渠道', value: ORDER_DD_FILTER_ALL },
+  const loadedChannelTypeItems = ref([])
+
+  const statusFilterItems = computed(() => ORDER_DD_STATUS_FILTER_DEFS.map(item => ({
+    title: t(item.titleKey),
+    value: item.value,
+  })))
+
+  const channelTypeItems = computed(() => [
+    { title: t('pages.printLabelOrders.filters.allChannels'), value: ORDER_DD_FILTER_ALL },
+    ...loadedChannelTypeItems.value,
   ])
 
   async function loadChannelList() {
@@ -75,14 +96,11 @@ export function useYundanList() {
       const res = await $api('/ordernew/getChannelList', { method: 'GET' })
       if (Number(res?.code) === 1 && Array.isArray(res.data)) {
         const mapped = res.data.map(c => ({
-          title: String(c.name ?? '').trim() || '未命名渠道',
+          title: String(c.name ?? '').trim() || t('pages.printLabelOrders.filters.unnamedChannel'),
           value: Number(c.qid),
         }))
 
-        channelTypeItems.value = [
-          { title: '全部渠道', value: ORDER_DD_FILTER_ALL },
-          ...mapped,
-        ]
+        loadedChannelTypeItems.value = mapped
       }
     }
     catch (e) {
@@ -120,7 +138,7 @@ export function useYundanList() {
   }
 
   /**
-   * AppDateTimePicker range 常见值：
+    * Common AppDateTimePicker range values:
    * - "2026-04-01 to 2026-04-16"
    * - "2026-04-01 - 2026-04-16"
    */
@@ -150,13 +168,13 @@ export function useYundanList() {
       else {
         items.value = []
         total.value = 0
-        loadError.value = res?.msg || '加载订单列表失败'
+        loadError.value = res?.msg || t('pages.printLabelOrders.messages.loadFailed')
       }
     }
     catch (e) {
       items.value = []
       total.value = 0
-      loadError.value = e?.data?.msg || e?.message || '网络请求失败'
+      loadError.value = e?.data?.msg || e?.message || t('pages.printLabelOrders.messages.networkFailed')
       console.error(e)
     }
     finally {
@@ -164,7 +182,7 @@ export function useYundanList() {
     }
   }
 
-  /** 条件查询：回到第 1 页；若已在第 1 页则需直接拉取（避免 watch 不触发） */
+  /** Search from page 1; load directly when already on page 1 because the watcher will not fire. */
   function searchOrders() {
     const alreadyFirst = page.value === 1
 
@@ -202,6 +220,7 @@ export function useYundanList() {
     filterCankaohao,
     filterRecipientName,
     filterCreateRange,
+    statusFilterItems,
     channelTypeItems,
     searchOrders,
     resetFilters,

@@ -1,4 +1,5 @@
 <script setup>
+import { newVersionAvailable } from '@/composables/useVersionCheck'
 import { useConfigStore } from '@core/stores/config'
 import { AppContentLayoutNav } from '@layouts/enums'
 import { switchToVerticalNavOnLtOverlayNavBreakpoint } from '@layouts/utils'
@@ -49,6 +50,8 @@ watch([
       </Suspense>
     </RouterView>
   </Component>
+
+  <VersionUpdateDialog v-model="newVersionAvailable" />
 </template>
 
 <style lang="scss">

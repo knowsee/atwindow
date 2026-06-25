@@ -1,14 +1,17 @@
 <script setup>
-defineProps({
+const props = defineProps({
   loading: {
     type: Boolean,
     default: false,
   },
   message: {
     type: String,
-    default: '正在加载...',
+    default: '',
   },
 })
+
+const { t } = useI18n({ useScope: 'global' })
+const displayedMessage = computed(() => props.message || t('components.loadingOverlay.defaultMessage'))
 </script>
 
 <template>
@@ -28,7 +31,7 @@ defineProps({
           color="primary"
           class="me-3"
         />
-        <span>{{ message }}</span>
+        <span>{{ displayedMessage }}</span>
       </div>
     </VOverlay>
     <slot />

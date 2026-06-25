@@ -10,6 +10,7 @@ declare global {
   const $apiJson: typeof import('./src/utils/api.js')['$apiJson']
   const BACKEND_FILE_ORIGIN: typeof import('./src/utils/backendFileUrl.js')['BACKEND_FILE_ORIGIN']
   const COOKIE_MAX_AGE_1_YEAR: typeof import('./src/utils/constants.js')['COOKIE_MAX_AGE_1_YEAR']
+  const DOWNLOAD_TEMPLATES: typeof import('./src/utils/constants.js')['DOWNLOAD_TEMPLATES']
   const EXPORT_PAGE_SIZE: typeof import('./src/utils/exportXlsx.js')['EXPORT_PAGE_SIZE']
   const EffectScope: typeof import('vue')['EffectScope']
   const FORM_URLENCODED_CT: typeof import('./src/utils/formUrlEncodedPost.js')['FORM_URLENCODED_CT']
@@ -17,10 +18,12 @@ declare global {
   const alphaDashValidator: typeof import('./src/@core/utils/validators.js')['alphaDashValidator']
   const alphaValidator: typeof import('./src/@core/utils/validators.js')['alphaValidator']
   const applyFormUrlEncodedPost: typeof import('./src/utils/formUrlEncodedPost.js')['applyFormUrlEncodedPost']
+  const applyUpdate: typeof import('./src/composables/useVersionCheck.js')['applyUpdate']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const avatarText: typeof import('./src/@core/utils/formatters.js')['avatarText']
   const betweenValidator: typeof import('./src/@core/utils/validators.js')['betweenValidator']
+  const checkVersion: typeof import('./src/composables/useVersionCheck.js')['checkVersion']
   const clearAppAbilityRules: typeof import('./src/utils/authAbilityRegistry.js')['clearAppAbilityRules']
   const computed: typeof import('vue')['computed']
   const computedAsync: typeof import('@vueuse/core')['computedAsync']
@@ -58,6 +61,7 @@ declare global {
   const formatDate: typeof import('./src/@core/utils/formatters.js')['formatDate']
   const formatDateToMonthShort: typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']
   const getActivePinia: typeof import('pinia')['getActivePinia']
+  const getAppAbility: typeof import('./src/utils/authAbilityRegistry.js')['getAppAbility']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getPreferredWarehouseId: typeof import('./src/utils/warehousePreference.js')['getPreferredWarehouseId']
@@ -91,11 +95,12 @@ declare global {
   const mapStores: typeof import('pinia')['mapStores']
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
+  const newVersionAvailable: typeof import('./src/composables/useVersionCheck.js')['newVersionAvailable']
   const nextTick: typeof import('vue')['nextTick']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
-  const onBeforeRouteLeave: typeof import('vue-router/auto')['onBeforeRouteLeave']
-  const onBeforeRouteUpdate: typeof import('vue-router/auto')['onBeforeRouteUpdate']
+  const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
+  const onBeforeRouteUpdate: typeof import('vue-router')['onBeforeRouteUpdate']
   const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
   const onBeforeUpdate: typeof import('vue')['onBeforeUpdate']
   const onClickOutside: typeof import('@vueuse/core')['onClickOutside']
@@ -298,8 +303,8 @@ declare global {
   const useResizeObserver: typeof import('@vueuse/core')['useResizeObserver']
   const useResponsiveLeftSidebar: typeof import('./src/@core/composable/useResponsiveSidebar.js')['useResponsiveLeftSidebar']
   const useRound: typeof import('@vueuse/math')['useRound']
-  const useRoute: typeof import('vue-router/auto')['useRoute']
-  const useRouter: typeof import('vue-router/auto')['useRouter']
+  const useRoute: typeof import('vue-router')['useRoute']
+  const useRouter: typeof import('vue-router')['useRouter']
   const useScreenOrientation: typeof import('@vueuse/core')['useScreenOrientation']
   const useScreenSafeArea: typeof import('@vueuse/core')['useScreenSafeArea']
   const useScriptTag: typeof import('@vueuse/core')['useScriptTag']
@@ -384,6 +389,7 @@ declare module 'vue' {
     readonly $apiJson: UnwrapRef<typeof import('./src/utils/api.js')['$apiJson']>
     readonly BACKEND_FILE_ORIGIN: UnwrapRef<typeof import('./src/utils/backendFileUrl.js')['BACKEND_FILE_ORIGIN']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./src/utils/constants.js')['COOKIE_MAX_AGE_1_YEAR']>
+    readonly DOWNLOAD_TEMPLATES: UnwrapRef<typeof import('./src/utils/constants.js')['DOWNLOAD_TEMPLATES']>
     readonly EXPORT_PAGE_SIZE: UnwrapRef<typeof import('./src/utils/exportXlsx.js')['EXPORT_PAGE_SIZE']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FORM_URLENCODED_CT: UnwrapRef<typeof import('./src/utils/formUrlEncodedPost.js')['FORM_URLENCODED_CT']>
@@ -391,10 +397,12 @@ declare module 'vue' {
     readonly alphaDashValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['alphaDashValidator']>
     readonly alphaValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['alphaValidator']>
     readonly applyFormUrlEncodedPost: UnwrapRef<typeof import('./src/utils/formUrlEncodedPost.js')['applyFormUrlEncodedPost']>
+    readonly applyUpdate: UnwrapRef<typeof import('./src/composables/useVersionCheck.js')['applyUpdate']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly avatarText: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['avatarText']>
     readonly betweenValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['betweenValidator']>
+    readonly checkVersion: UnwrapRef<typeof import('./src/composables/useVersionCheck.js')['checkVersion']>
     readonly clearAppAbilityRules: UnwrapRef<typeof import('./src/utils/authAbilityRegistry.js')['clearAppAbilityRules']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
@@ -422,7 +430,6 @@ declare module 'vue' {
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
-    readonly definePage: UnwrapRef<typeof import('unplugin-vue-router/runtime')['definePage']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
     readonly downloadXlsx: UnwrapRef<typeof import('./src/utils/exportXlsx.js')['downloadXlsx']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
@@ -432,6 +439,7 @@ declare module 'vue' {
     readonly formatDate: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDate']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getAppAbility: UnwrapRef<typeof import('./src/utils/authAbilityRegistry.js')['getAppAbility']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getPreferredWarehouseId: UnwrapRef<typeof import('./src/utils/warehousePreference.js')['getPreferredWarehouseId']>
@@ -465,11 +473,12 @@ declare module 'vue' {
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly newVersionAvailable: UnwrapRef<typeof import('./src/composables/useVersionCheck.js')['newVersionAvailable']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
-    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteLeave']>
-    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router/auto')['onBeforeRouteUpdate']>
+    readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
+    readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
     readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('@vueuse/core')['onClickOutside']>
@@ -672,8 +681,8 @@ declare module 'vue' {
     readonly useResizeObserver: UnwrapRef<typeof import('@vueuse/core')['useResizeObserver']>
     readonly useResponsiveLeftSidebar: UnwrapRef<typeof import('./src/@core/composable/useResponsiveSidebar.js')['useResponsiveLeftSidebar']>
     readonly useRound: UnwrapRef<typeof import('@vueuse/math')['useRound']>
-    readonly useRoute: UnwrapRef<typeof import('vue-router/auto')['useRoute']>
-    readonly useRouter: UnwrapRef<typeof import('vue-router/auto')['useRouter']>
+    readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
+    readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useScreenOrientation: UnwrapRef<typeof import('@vueuse/core')['useScreenOrientation']>
     readonly useScreenSafeArea: UnwrapRef<typeof import('@vueuse/core')['useScreenSafeArea']>
     readonly useScriptTag: UnwrapRef<typeof import('@vueuse/core')['useScriptTag']>

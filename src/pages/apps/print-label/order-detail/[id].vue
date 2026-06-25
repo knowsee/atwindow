@@ -13,6 +13,7 @@ definePage({
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
 const detailLoading = ref(false)
 const detailError = ref('')
@@ -31,7 +32,7 @@ async function fetchOrderDetail() {
     else if (orderSn)
       body['order_sn'] = orderSn
     else
-      throw new Error('缺少订单标识')
+      throw new Error(t('pages.printLabelOrders.messages.missingOrderIdentifier'))
 
     const res = await $api('/ordernew/getOrderDdDetail', {
       method: 'POST',
@@ -41,10 +42,10 @@ async function fetchOrderDetail() {
     if (Number(res?.code) === 1 && res.data)
       detailData.value = res.data
     else
-      detailError.value = res?.msg || '加载详情失败'
+      detailError.value = res?.msg || t('pages.printLabelOrders.messages.detailLoadFailed')
   }
   catch (e) {
-    detailError.value = e?.data?.msg || e?.message || '网络请求失败'
+    detailError.value = e?.data?.msg || e?.message || t('pages.printLabelOrders.messages.networkFailed')
   }
   finally {
     detailLoading.value = false
@@ -59,7 +60,7 @@ function downloadLabelPdf() {
   const label = detailData.value?.label || {}
   const source = label.ht_pdf || label.wp_data || ''
   if (!source) {
-    snack.value = { show: true, text: '暂无面单文件', color: 'warning' }
+    snack.value = { show: true, text: t('pages.printLabelOrders.messages.noLabelFile'), color: 'warning' }
 
     return
   }
@@ -96,6 +97,10 @@ function downloadLabelPdf() {
   a.remove()
 }
 
+function resolveStatus(status) {
+  return resolveYundanStatus(status, t)
+}
+
 onMounted(fetchOrderDetail)
 </script>
 
@@ -121,7 +126,7 @@ onMounted(fetchOrderDetail)
           </IconBtn>
         </template>
         <template #title>
-          <span class="text-h6 font-weight-medium">运单详情</span>
+          <span class="text-h6 font-weight-medium">{{ $t('pages.printLabelOrders.detail.title') }}</span>
         </template>
         <template #subtitle>
           <span class="text-body-2 text-medium-emphasis">{{ detailData?.order_sn || '—' }}</span>
@@ -134,7 +139,7 @@ onMounted(fetchOrderDetail)
             :disabled="detailLoading || !detailData"
             @click="downloadLabelPdf"
           >
-            下载面单
+            {{ $t('pages.printLabelOrders.actions.downloadLabel') }}
           </VBtn>
         </template>
       </VCardItem>
@@ -162,19 +167,19 @@ onMounted(fetchOrderDetail)
           >
             <VCardText>
               <div class="text-subtitle-2 font-weight-medium mb-2">
-                基础信息
+                {{ $t('pages.printLabelOrders.detail.basicInfo') }}
               </div>
               <div class="text-body-2 py-1">
-                状态：{{ resolveYundanStatus(detailData?.status).text }}
+                {{ $t('pages.printLabelOrders.detail.status') }}: {{ resolveStatus(detailData?.status).text }}
               </div>
               <div class="text-body-2 py-1">
-                线路：{{ detailData?.transport_line || '—' }}
+                {{ $t('pages.printLabelOrders.detail.line') }}: {{ detailData?.transport_line || '—' }}
               </div>
               <div class="text-body-2 py-1">
-                跟踪号：{{ detailData?.label?.ht_tracking_no || '—' }}
+                {{ $t('pages.printLabelOrders.detail.trackingNo') }}: {{ detailData?.label?.ht_tracking_no || '—' }}
               </div>
               <div class="text-body-2 py-1">
-                参考号：{{ detailData?.order_meta?.cankaohao || '—' }}
+                {{ $t('pages.printLabelOrders.detail.refNo') }}: {{ detailData?.order_meta?.cankaohao || '—' }}
               </div>
             </VCardText>
           </VCard>
@@ -185,7 +190,7 @@ onMounted(fetchOrderDetail)
           >
             <VCardText>
               <div class="text-subtitle-2 font-weight-medium mb-2">
-                发件人
+                {{ $t('pages.printLabelOrders.detail.sender') }}
               </div>
               <div class="text-body-2">
                 {{ detailData?.send?.name || '—' }}
@@ -208,7 +213,7 @@ onMounted(fetchOrderDetail)
           >
             <VCardText>
               <div class="text-subtitle-2 font-weight-medium mb-2">
-                收件人
+                {{ $t('pages.printLabelOrders.detail.recipient') }}
               </div>
               <div class="text-body-2">
                 {{ detailData?.receive?.name || '—' }}
@@ -228,14 +233,20 @@ onMounted(fetchOrderDetail)
           <VCard variant="outlined">
             <VCardText>
               <div class="text-subtitle-2 font-weight-medium mb-2">
-                包裹信息
+                {{ $t('pages.printLabelOrders.detail.packageInfo') }}
+              </div>
+              <div
+                v-if="!(detailData?.packages || []).length"
+                class="text-body-2 text-medium-emphasis"
+              >
+                {{ $t('pages.printLabelOrders.empty.noPackageInfo') }}
               </div>
               <div
                 v-for="(p, idx) in (detailData?.packages || [])"
                 :key="idx"
                 class="text-body-2 py-1"
               >
-                #{{ idx + 1 }} 重量 {{ p.weight ?? '—' }}，尺寸 {{ p.length ?? '—' }} × {{ p.width ?? '—' }} × {{ p.height ?? '—' }}，申报 {{ p.value ?? '—' }}
+                {{ $t('pages.printLabelOrders.detail.packageNo', { index: idx + 1 }) }} {{ $t('pages.printLabelOrders.detail.packageMetrics', { weight: p.weight ?? '—', length: p.length ?? '—', width: p.width ?? '—', height: p.height ?? '—' }) }} {{ $t('pages.printLabelOrders.detail.packageDeclaration', { value: p.value ?? '—' }) }}
               </div>
             </VCardText>
           </VCard>

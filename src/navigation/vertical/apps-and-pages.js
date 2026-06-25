@@ -51,6 +51,7 @@ export default [
       { title: 'nav.account.auth', to: 'apps-account-auth-management' },
       { title: 'nav.account.funds', to: 'apps-account-fund-overview' },
       { title: 'nav.account.addresses', to: 'apps-account-address-management' },
+      { title: 'nav.account.tiktok', to: 'apps-account-tiktok-service' },
     ],
   },
 ]

@@ -1,8 +1,10 @@
 <script setup>
 import { $api } from '@/utils/api'
-import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
+import { DOWNLOAD_TEMPLATES } from '@/utils/constants'
 import { resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
 import { loadWarehouseOptions } from '@/views/apps/drop-shipping/useDropShippingShared'
+import { DROP_SHIPPING_CHANNELS as RAW_TRANSPORT_OPTIONS } from '@/views/apps/print-label/printLabelConfig'
+import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
 
 definePage({
   meta: {
@@ -16,23 +18,22 @@ const submitting = ref(false)
 const snack = ref({ show: false, text: '', color: 'info' })
 const warehouseOptions = ref([])
 const warehousePersistReady = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
 const excelInputRef = ref()
 const zipInputRef = ref()
 
-/** 与退货订单创建页一致，transport_type 传后端线路 ID（同 /order/batchThReturn 约定） */
-const transportOptions = [
-  { title: '自提', value: 200 },
-  { title: 'USPS（T5）', value: 27 },
-  { title: 'SPEEDX', value: 53 },
-  { title: 'Amazon', value: 56 },
-  { title: 'UPS Ground（限重1-150磅，2-6个工作日签收）', value: 50 },
-  { title: 'Fedex（限重1-150磅，2-6个工作日签收）', value: 59 },
-  { title: 'Gofo', value: 210 },
-  { title: 'UNI（重量≤13.5kg，最小尺寸:10*15cm，单边不得超过50cm，三边之和不得超过120cm）', value: 211 },
-  { title: 'NEXTDAY（限重50磅）', value: 213 },
-  { title: 'USPS-Y（限重5磅）', value: 214 },
-]
+/** transport_type follows the same backend route ID contract as the single return order page. */
+const transportTitleKeys = {
+  99999: 'pages.dropShippingOrderCreate.transport.autoTrial',
+  200: 'pages.dropShippingOrderCreate.transport.pickup',
+  27: 'pages.dropShippingOrderCreate.transport.uspsT5',
+}
+
+const transportOptions = computed(() => RAW_TRANSPORT_OPTIONS.map(option => ({
+  ...option,
+  title: transportTitleKeys[Number(option.value)] ? t(transportTitleKeys[Number(option.value)]) : option.title,
+})))
 
 const form = ref({
   transportType: null,
@@ -79,26 +80,30 @@ function buildFormData() {
   return data
 }
 
+function templateName(file) {
+  return t('pages.dropShippingReturnOrderBatch.upload.templateName', { ext: file.ext || 'xls' })
+}
+
 function validateForm() {
   if (form.value.transportType == null || form.value.transportType === '') {
-    toast('请选择发货渠道', 'warning')
+    toast(t('pages.dropShippingReturnOrderBatch.messages.selectTransport'), 'warning')
 
     return false
   }
   if (!form.value.warehouseId) {
-    toast('请选择仓库', 'warning')
+    toast(t('pages.dropShippingReturnOrderBatch.messages.selectWarehouse'), 'warning')
 
     return false
   }
   if (!form.value.excelFile) {
-    toast('请先选择 Excel 文件', 'warning')
+    toast(t('pages.dropShippingReturnOrderBatch.messages.selectExcel'), 'warning')
 
     return false
   }
 
   const ext = form.value.excelFile.name.split('.').pop()?.toLowerCase()
   if (!['xls', 'xlsx'].includes(ext || '')) {
-    toast('仅支持 .xls / .xlsx 文件', 'warning')
+    toast(t('pages.dropShippingReturnOrderBatch.messages.invalidExcel'), 'warning')
 
     return false
   }
@@ -118,15 +123,15 @@ async function submitBatch() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '批量创建成功', 'success')
+      toast(res?.msg || t('pages.dropShippingReturnOrderBatch.messages.success'), 'success')
       setTimeout(goList, 600)
     }
     else {
-      toast(res?.msg || '批量创建失败', 'error')
+      toast(res?.msg || t('pages.dropShippingReturnOrderBatch.messages.failed'), 'error')
     }
   }
   catch (e) {
-    toast(e?.data?.msg || e?.message || '批量创建失败', 'error')
+    toast(e?.data?.msg || e?.message || t('pages.dropShippingReturnOrderBatch.messages.failed'), 'error')
   }
   finally {
     submitting.value = false
@@ -140,7 +145,7 @@ watch(() => form.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  warehouseOptions.value = await loadWarehouseOptions()
+  warehouseOptions.value = await loadWarehouseOptions(t)
   form.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: true })
   await nextTick()
   warehousePersistReady.value = true
@@ -155,10 +160,10 @@ onMounted(async () => {
     <div class="app-batch-page__inner pb-12">
       <div class="app-batch-page__hero mb-6">
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          批量创建退货订单
+          {{ $t('pages.dropShippingReturnOrderBatch.title') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-          选择发货渠道与仓库，上传 Excel（及可选自提 ZIP）后提交批量创建退货。
+          {{ $t('pages.dropShippingReturnOrderBatch.subtitle') }}
         </p>
       </div>
 
@@ -172,8 +177,8 @@ onMounted(async () => {
       </VSnackbar>
 
       <PrintLabelSectionCard
-        title="渠道与仓库"
-        subtitle="与单笔退货一致，将应用于本批 Excel 中的订单。"
+        :title="$t('pages.dropShippingReturnOrderBatch.settings.title')"
+        :subtitle="$t('pages.dropShippingReturnOrderBatch.settings.subtitle')"
         class="mb-4"
       >
         <template #append>
@@ -182,7 +187,7 @@ onMounted(async () => {
             prepend-icon="tabler-arrow-left"
             @click="goList"
           >
-            返回列表
+            {{ $t('pages.dropShippingOrderCreate.actions.backToList') }}
           </VBtn>
         </template>
         <VRow>
@@ -195,7 +200,7 @@ onMounted(async () => {
               :items="transportOptions"
               item-title="title"
               item-value="value"
-              label="发货渠道"
+              :label="$t('pages.dropShippingReturnOrderBatch.settings.transport')"
               density="comfortable"
             />
           </VCol>
@@ -208,7 +213,7 @@ onMounted(async () => {
               :items="warehouseOptions"
               item-title="title"
               item-value="value"
-              label="仓库"
+              :label="$t('pages.dropShippingReturnOrderBatch.settings.warehouse')"
               density="comfortable"
             />
           </VCol>
@@ -216,8 +221,8 @@ onMounted(async () => {
       </PrintLabelSectionCard>
 
       <PrintLabelSectionCard
-        title="上传文件"
-        subtitle="退货 Excel 必填；自提场景可再传面单 ZIP。仅支持 .xls / .xlsx 与 .zip。"
+        :title="$t('pages.dropShippingReturnOrderBatch.upload.title')"
+        :subtitle="$t('pages.dropShippingReturnOrderBatch.upload.subtitle')"
         class="mb-4"
       >
         <input
@@ -254,7 +259,7 @@ onMounted(async () => {
                   class="text-primary mb-2"
                 />
                 <div class="text-subtitle-2">
-                  点击选择退货 Excel
+                  {{ $t('pages.dropShippingReturnOrderBatch.upload.pickExcel') }}
                 </div>
                 <div
                   v-if="form.excelFile"
@@ -266,7 +271,7 @@ onMounted(async () => {
                   v-else
                   class="text-caption text-medium-emphasis mt-2"
                 >
-                  未选择文件
+                  {{ $t('pages.dropShippingReturnOrderBatch.upload.noFile') }}
                 </div>
               </div>
             </VSheet>
@@ -289,7 +294,7 @@ onMounted(async () => {
                   class="text-primary mb-2"
                 />
                 <div class="text-subtitle-2">
-                  点击选择自提面单 ZIP（可选）
+                  {{ $t('pages.dropShippingReturnOrderBatch.upload.pickZip') }}
                 </div>
                 <div
                   v-if="form.zipFile"
@@ -301,15 +306,29 @@ onMounted(async () => {
                   v-else
                   class="text-caption text-medium-emphasis mt-2"
                 >
-                  未选择文件
+                  {{ $t('pages.dropShippingReturnOrderBatch.upload.noFile') }}
                 </div>
               </div>
             </VSheet>
           </VCol>
         </VRow>
 
-        <div class="mt-3 text-body-2 text-medium-emphasis">
-          Excel 列字段请以运营提供的批量模板为准。
+        <div class="mt-3 text-body-2 d-flex flex-wrap align-center gap-x-4 gap-y-1">
+          <span>{{ $t('pages.dropShippingReturnOrderBatch.upload.templateDownload') }}</span>
+          <a
+            v-for="file in DOWNLOAD_TEMPLATES.RETURN_ORDER_BATCH.files"
+            :key="file.path"
+            :href="file.path"
+            class="text-primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ templateName(file) }}
+          </a>
+        </div>
+
+        <div class="mt-2 text-body-2 text-medium-emphasis">
+          {{ $t('pages.dropShippingReturnOrderBatch.upload.templateNote') }}
         </div>
       </PrintLabelSectionCard>
 
@@ -324,7 +343,7 @@ onMounted(async () => {
             :loading="submitting"
             @click="submitBatch"
           >
-            提交批量创建退货
+            {{ $t('pages.dropShippingReturnOrderBatch.actions.submit') }}
           </VBtn>
         </VCardText>
       </VCard>

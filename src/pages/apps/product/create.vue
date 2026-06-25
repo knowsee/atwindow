@@ -11,6 +11,7 @@ definePage({
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 const routeType = String(route.query.type || 'create')
 const isEditInit = routeType === 'edit' || routeType === 'detail'
 
@@ -25,6 +26,8 @@ const subSkuList = ref([])
 
 const snack = ref({ show: false, text: '', color: 'info' })
 const IMAGE_BASE_URL = 'https://backend.atwindow.com/'
+const SKU_MAX_LENGTH = 20
+const SKU_ALLOWED_PATTERN = /^[\w-]+$/
 
 const form = reactive({
   id: null,
@@ -66,29 +69,62 @@ const isEditLike = computed(() => mode.value === 'edit' || mode.value === 'detai
 
 const pageTitle = computed(() => {
   if (mode.value === 'edit')
-    return '编辑产品'
+    return t('pages.productCreate.titles.edit')
   if (mode.value === 'detail')
-    return '产品详情'
+    return t('pages.productCreate.titles.detail')
   
-  return '新建产品'
+  return t('pages.productCreate.titles.create')
 })
 
 const pageSubtitle = computed(() => {
   if (mode.value === 'detail')
-    return '查看产品基础资料、规格参数、图片及子 SKU'
+    return t('pages.productCreate.subtitles.detail')
   if (mode.value === 'edit')
-    return '更新产品信息后保存生效'
+    return t('pages.productCreate.subtitles.edit')
   
-  return '填写产品信息后保存创建'
+  return t('pages.productCreate.subtitles.create')
 })
 
 const categoryItems = computed(() => categories.value.map(item => ({
-  title: item.cn_en_name || item.name || `分类#${item.id}`,
+  title: item.cn_en_name || item.name || t('pages.productCreate.categoryFallback', { id: item.id }),
   value: Number(item.id),
 })))
 
+const unitOptions = computed(() => [
+  { title: t('pages.productCreate.options.metric'), value: 1 },
+  { title: t('pages.productCreate.options.imperial'), value: 2 },
+])
+
+const batteryOptions = computed(() => [
+  { title: t('pages.productCreate.options.batteryNo'), value: 0 },
+  { title: t('pages.productCreate.options.batteryYes'), value: 1 },
+])
+
+const statusOptions = computed(() => [
+  { title: t('pages.productCreate.options.enabled'), value: 1 },
+  { title: t('pages.productCreate.options.disabled'), value: 0 },
+])
+
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
+}
+
+function normalizeSkuValue(value) {
+  return String(value || '')
+    .replace(/[^\w-]/g, '')
+    .slice(0, SKU_MAX_LENGTH)
+}
+
+function validateSkuValue(value, label = t('pages.productCreate.fields.sku')) {
+  const raw = String(value || '').trim()
+  if (!raw)
+    return t('pages.productCreate.messages.skuRequired', { label })
+  if (!SKU_ALLOWED_PATTERN.test(raw))
+    return t('pages.productCreate.messages.skuInvalid', { label })
+  if (raw.length > SKU_MAX_LENGTH)
+    return t('pages.productCreate.messages.skuTooLong', { label, max: SKU_MAX_LENGTH })
+
+  return ''
 }
 
 function resolveImageUrl(path) {
@@ -160,7 +196,7 @@ async function loadDetail() {
 
   if (!id) {
     loading.value = false
-    toast('缺少产品 ID，无法加载详情', 'warning')
+    toast(t('pages.productCreate.messages.missingId'), 'warning')
     
     return
   }
@@ -173,7 +209,7 @@ async function loadDetail() {
     })
 
     if (Number(res?.code) !== 1) {
-      toast(res?.msg || '加载产品详情失败', 'error')
+      toast(res?.msg || t('pages.productCreate.messages.loadDetailFailed'), 'error')
       
       return
     }
@@ -209,7 +245,7 @@ async function loadDetail() {
     subSkuList.value = normalizeSubSkuFromDetail(data)
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '加载产品详情失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productCreate.messages.loadDetailFailed'), 'error')
   }
   finally {
     loading.value = false
@@ -255,7 +291,7 @@ async function uploadOneImage(file) {
   })
 
   if (Number(res?.code) !== 1)
-    throw new Error(res?.msg || '图片上传失败')
+    throw new Error(res?.msg || t('pages.productCreate.messages.uploadFailed'))
   const list = Array.isArray(res?.data?.images) ? res.data.images : []
   
   return list.map((img, idx) => ({
@@ -277,12 +313,12 @@ async function onPickFiles(event) {
   uploading.value = true
   try {
     for (const file of files) {
-      if (!/^image\/(jpeg|jpg|png|gif|webp)$/.test(file.type)) {
-        toast('仅支持 jpg/png/gif/webp 图片', 'warning')
+      if (!/^image\/(?:jpeg|jpg|png|gif|webp)$/.test(file.type)) {
+        toast(t('pages.productCreate.messages.imageType'), 'warning')
         continue
       }
       if (file.size / 1024 / 1024 > 5) {
-        toast('图片大小不能超过 5MB', 'warning')
+        toast(t('pages.productCreate.messages.imageSize'), 'warning')
         continue
       }
       const uploaded = await uploadOneImage(file)
@@ -291,7 +327,7 @@ async function onPickFiles(event) {
     }
   }
   catch (error) {
-    toast(error?.message || '图片上传失败', 'error')
+    toast(error?.message || t('pages.productCreate.messages.uploadFailed'), 'error')
   }
   finally {
     uploading.value = false
@@ -301,18 +337,23 @@ async function onPickFiles(event) {
 }
 
 function validateForm() {
-  if (!form.en_sku || /[\u4e00-\u9fa5]/.test(form.en_sku))
-    return 'SKU 必填且不能包含中文'
+  const skuError = validateSkuValue(form.en_sku)
+  if (skuError)
+    return skuError
   if (!form.cn_name)
-    return '请填写产品中文名'
+    return t('pages.productCreate.messages.cnNameRequired')
   if (!form.en_name)
-    return '请填写产品英文名'
+    return t('pages.productCreate.messages.enNameRequired')
   if (!form.en_brand)
-    return '请填写英文品牌'
+    return t('pages.productCreate.messages.enBrandRequired')
+  const subSkuLabel = t('pages.productCreate.subSkuLabel', { index: '' }).trim()
+  const invalidSubSku = subSkuList.value.find(item => String(item.subSku || '').trim() && validateSkuValue(item.subSku, subSkuLabel))
+  if (invalidSubSku)
+    return validateSkuValue(invalidSubSku.subSku, subSkuLabel)
   if (!form.weight || !form.length || !form.width || !form.height)
-    return '请完善重量和长宽高'
+    return t('pages.productCreate.messages.sizeRequired')
   if (!images.value.length)
-    return '请至少上传一张产品图片'
+    return t('pages.productCreate.messages.imageRequired')
   
   return ''
 }
@@ -331,6 +372,7 @@ function buildSubmitPayload() {
 
   const payload = {
     ...form,
+    en_sku: String(form.en_sku || '').trim(),
     subSkuList: subSkuList.value
       .map(item => ({ subSkuId: item.subSkuId || null, subSku: String(item.subSku || '').trim() }))
       .filter(item => item.subSku),
@@ -366,15 +408,15 @@ async function saveProduct() {
     })
 
     if (Number(res?.code) === 1) {
-      toast(res?.msg || '保存成功', 'success')
+      toast(res?.msg || t('pages.productCreate.messages.saveSuccess'), 'success')
       setTimeout(() => goList(), 600)
     }
     else {
-      toast(res?.msg || '保存失败', 'error')
+      toast(res?.msg || t('pages.productCreate.messages.saveFailed'), 'error')
     }
   }
   catch (error) {
-    toast(error?.data?.msg || error?.message || '保存失败', 'error')
+    toast(error?.data?.msg || error?.message || t('pages.productCreate.messages.saveFailed'), 'error')
   }
   finally {
     submitting.value = false
@@ -407,7 +449,7 @@ onMounted(async () => {
           prepend-icon="tabler-arrow-left"
           @click="goList"
         >
-          返回列表
+          {{ $t('common.actions.backToList') }}
         </VBtn>
       </div>
 
@@ -432,14 +474,14 @@ onMounted(async () => {
               color="primary"
               size="28"
             />
-            <span class="text-body-1">加载中...</span>
+            <span class="text-body-1">{{ $t('pages.productCreate.overlay') }}</span>
           </div>
         </VCard>
       </VOverlay>
 
       <PrintLabelSectionCard
-        title="基础信息"
-        subtitle="维护产品名称、品牌与 SKU。"
+        :title="$t('pages.productCreate.sections.basic')"
+        :subtitle="$t('pages.productCreate.sections.basicSubtitle')"
       >
         <VRow>
           <VCol
@@ -448,9 +490,12 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.en_sku"
-              label="产品 SKU"
-              placeholder="请输入SKU（英文/数字）"
+              :label="$t('pages.productCreate.fields.sku')"
+              :placeholder="$t('pages.productCreate.placeholders.sku')"
+              :maxlength="SKU_MAX_LENGTH"
+              :counter="SKU_MAX_LENGTH"
               :disabled="isEditLike"
+              @update:model-value="form.en_sku = normalizeSkuValue($event)"
             />
           </VCol>
           <VCol
@@ -459,8 +504,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.barcode"
-              label="条形码"
-              placeholder="请输入条形码"
+              :label="$t('pages.productCreate.fields.barcode')"
+              :placeholder="$t('pages.productCreate.placeholders.barcode')"
               :disabled="isDetail"
             />
           </VCol>
@@ -470,8 +515,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.cn_name"
-              label="产品中文名"
-              placeholder="请输入中文名"
+              :label="$t('pages.productCreate.fields.cnName')"
+              :placeholder="$t('pages.productCreate.placeholders.cnName')"
               :disabled="isDetail"
             />
           </VCol>
@@ -481,8 +526,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.en_name"
-              label="产品英文名"
-              placeholder="请输入英文名"
+              :label="$t('pages.productCreate.fields.enName')"
+              :placeholder="$t('pages.productCreate.placeholders.enName')"
               :disabled="isDetail"
             />
           </VCol>
@@ -492,8 +537,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.cn_brand"
-              label="中文品牌"
-              placeholder="请输入中文品牌"
+              :label="$t('pages.productCreate.fields.cnBrand')"
+              :placeholder="$t('pages.productCreate.placeholders.cnBrand')"
               :disabled="isDetail"
             />
           </VCol>
@@ -503,8 +548,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.en_brand"
-              label="英文品牌"
-              placeholder="请输入英文品牌"
+              :label="$t('pages.productCreate.fields.enBrand')"
+              :placeholder="$t('pages.productCreate.placeholders.enBrand')"
               :disabled="isDetail"
             />
           </VCol>
@@ -512,8 +557,8 @@ onMounted(async () => {
       </PrintLabelSectionCard>
 
       <PrintLabelSectionCard
-        title="规格参数"
-        subtitle="重量、尺寸和商品基础属性。"
+        :title="$t('pages.productCreate.sections.spec')"
+        :subtitle="$t('pages.productCreate.sections.specSubtitle')"
       >
         <VRow>
           <VCol
@@ -523,7 +568,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.weight"
               type="number"
-              label="重量"
+              :label="$t('pages.productCreate.fields.weight')"
               :suffix="form.danwei === 1 ? 'kg' : 'lb'"
               :disabled="isDetail"
             />
@@ -535,7 +580,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.length"
               type="number"
-              label="长度"
+              :label="$t('pages.productCreate.fields.length')"
               :suffix="form.danwei === 1 ? 'cm' : 'in'"
               :disabled="isDetail"
             />
@@ -547,7 +592,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.width"
               type="number"
-              label="宽度"
+              :label="$t('pages.productCreate.fields.width')"
               :suffix="form.danwei === 1 ? 'cm' : 'in'"
               :disabled="isDetail"
             />
@@ -559,7 +604,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.height"
               type="number"
-              label="高度"
+              :label="$t('pages.productCreate.fields.height')"
               :suffix="form.danwei === 1 ? 'cm' : 'in'"
               :disabled="isDetail"
             />
@@ -570,8 +615,8 @@ onMounted(async () => {
           >
             <AppSelect
               v-model="form.danwei"
-              label="计量单位"
-              :items="[{ title: '公制(kg/cm)', value: 1 }, { title: '英制(lb/in)', value: 2 }]"
+              :label="$t('pages.productCreate.fields.unit')"
+              :items="unitOptions"
               :disabled="isDetail"
             />
           </VCol>
@@ -581,7 +626,7 @@ onMounted(async () => {
           >
             <AppSelect
               v-model="form.cat_id"
-              label="产品分类"
+              :label="$t('pages.productCreate.fields.category')"
               :items="categoryItems"
               item-title="title"
               item-value="value"
@@ -595,8 +640,8 @@ onMounted(async () => {
           >
             <AppSelect
               v-model="form.is_with_battery"
-              label="是否带电池"
-              :items="[{ title: '不含电池', value: 0 }, { title: '含电池', value: 1 }]"
+              :label="$t('pages.productCreate.fields.battery')"
+              :items="batteryOptions"
               :disabled="isDetail"
             />
           </VCol>
@@ -606,8 +651,8 @@ onMounted(async () => {
           >
             <AppSelect
               v-model="form.status"
-              label="产品状态"
-              :items="[{ title: '启用', value: 1 }, { title: '禁用', value: 0 }]"
+              :label="$t('pages.productCreate.fields.status')"
+              :items="statusOptions"
               :disabled="isDetail"
             />
           </VCol>
@@ -615,8 +660,8 @@ onMounted(async () => {
       </PrintLabelSectionCard>
 
       <PrintLabelSectionCard
-        title="商品属性"
-        subtitle="用于报关与定价信息。"
+        :title="$t('pages.productCreate.sections.attributes')"
+        :subtitle="$t('pages.productCreate.sections.attributesSubtitle')"
       >
         <VRow>
           <VCol
@@ -625,8 +670,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.haiguan_code"
-              label="海关编码"
-              placeholder="请输入 HS 编码"
+              :label="$t('pages.productCreate.fields.hsCode')"
+              :placeholder="$t('pages.productCreate.placeholders.hsCode')"
               :disabled="isDetail"
             />
           </VCol>
@@ -636,8 +681,8 @@ onMounted(async () => {
           >
             <AppTextField
               v-model="form.original_places"
-              label="原产地"
-              placeholder="例如：中国"
+              :label="$t('pages.productCreate.fields.origin')"
+              :placeholder="$t('pages.productCreate.placeholders.origin')"
               :disabled="isDetail"
             />
           </VCol>
@@ -648,7 +693,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.value"
               type="number"
-              label="申报价值"
+              :label="$t('pages.productCreate.fields.declaredValue')"
               :disabled="isDetail"
             />
           </VCol>
@@ -659,7 +704,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.price1"
               type="number"
-              label="销售价1"
+              :label="$t('pages.productCreate.fields.price1')"
               :disabled="isDetail"
             />
           </VCol>
@@ -670,7 +715,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.price2"
               type="number"
-              label="销售价2"
+              :label="$t('pages.productCreate.fields.price2')"
               :disabled="isDetail"
             />
           </VCol>
@@ -681,7 +726,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.price3"
               type="number"
-              label="销售价3"
+              :label="$t('pages.productCreate.fields.price3')"
               :disabled="isDetail"
             />
           </VCol>
@@ -689,8 +734,8 @@ onMounted(async () => {
       </PrintLabelSectionCard>
 
       <PrintLabelSectionCard
-        title="图片与子 SKU"
-        subtitle="建议上传清晰主图，子 SKU 用于变体管理。"
+        :title="$t('pages.productCreate.sections.images')"
+        :subtitle="$t('pages.productCreate.sections.imagesSubtitle')"
       >
         <div class="product-image-grid mb-4">
           <VSheet
@@ -722,10 +767,10 @@ onMounted(async () => {
                   class="mb-2 text-primary"
                 />
                 <div class="text-body-2 font-weight-medium text-primary">
-                  点击上传
+                  {{ $t('pages.productCreate.images.upload') }}
                 </div>
                 <div class="text-caption text-medium-emphasis mt-1">
-                  JPG/PNG/WebP, 5MB以内
+                  {{ $t('pages.productCreate.images.tips') }}
                 </div>
               </template>
             </div>
@@ -749,7 +794,7 @@ onMounted(async () => {
                 :color="img.is_main ? 'primary' : 'default'"
                 label
               >
-                {{ img.is_main ? '主图' : '图片' }}
+                {{ img.is_main ? $t('pages.productCreate.images.main') : $t('pages.productCreate.images.image') }}
               </VChip>
               <div class="d-flex align-center gap-1">
                 <IconBtn
@@ -787,9 +832,12 @@ onMounted(async () => {
             <div class="d-flex align-center gap-2">
               <AppTextField
                 v-model="item.subSku"
-                :label="`子SKU ${idx + 1}`"
-                placeholder="请输入子SKU"
+                :label="$t('pages.productCreate.subSkuLabel', { index: idx + 1 })"
+                :placeholder="$t('pages.productCreate.placeholders.subSku')"
+                :maxlength="SKU_MAX_LENGTH"
+                :counter="SKU_MAX_LENGTH"
                 :disabled="isDetail || !!(isEditLike && item.subSkuId)"
+                @update:model-value="item.subSku = normalizeSkuValue($event)"
               />
               <IconBtn
                 v-if="!isDetail"
@@ -808,15 +856,15 @@ onMounted(async () => {
               prepend-icon="tabler-plus"
               @click="addSubSku"
             >
-              添加子 SKU
+              {{ $t('pages.productCreate.actions.addSubSku') }}
             </VBtn>
           </VCol>
         </VRow>
       </PrintLabelSectionCard>
 
       <PrintLabelSectionCard
-        title="描述信息"
-        subtitle="补充中英文说明。"
+        :title="$t('pages.productCreate.sections.description')"
+        :subtitle="$t('pages.productCreate.sections.descriptionSubtitle')"
       >
         <VRow>
           <VCol
@@ -825,7 +873,7 @@ onMounted(async () => {
           >
             <AppTextarea
               v-model="form.desc"
-              label="中文描述"
+              :label="$t('pages.productCreate.fields.cnDesc')"
               rows="4"
               :disabled="isDetail"
             />
@@ -836,7 +884,7 @@ onMounted(async () => {
           >
             <AppTextarea
               v-model="form.en_desc"
-              label="英文描述"
+              :label="$t('pages.productCreate.fields.enDesc')"
               rows="4"
               :disabled="isDetail"
             />
@@ -854,7 +902,7 @@ onMounted(async () => {
             prepend-icon="tabler-arrow-left"
             @click="goList"
           >
-            返回
+            {{ $t('pages.productCreate.actions.back') }}
           </VBtn>
           <VBtn
             v-if="!isDetail"
@@ -863,7 +911,7 @@ onMounted(async () => {
             prepend-icon="tabler-device-floppy"
             @click="saveProduct"
           >
-            保存产品
+            {{ $t('pages.productCreate.actions.save') }}
           </VBtn>
         </VCardText>
       </VCard>
