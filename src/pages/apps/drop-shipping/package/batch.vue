@@ -100,7 +100,7 @@ watch(() => form.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  warehouseOptions.value = await loadWarehouseOptions(t)
+  warehouseOptions.value = await loadWarehouseOptions(t, 3)
   form.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: false })
   await nextTick()
   warehousePersistReady.value = true

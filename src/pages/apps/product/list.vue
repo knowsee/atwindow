@@ -458,6 +458,7 @@ onMounted(async () => {
         :headers="headers"
         :items="tableRows"
         :loading="tableLoading"
+        :items-per-page="-1"
         show-select
         item-value="id"
       >

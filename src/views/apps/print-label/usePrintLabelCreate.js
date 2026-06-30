@@ -110,6 +110,7 @@ export function usePrintLabelCreate() {
 
   const submitting = ref(false)
   const orderLoading = ref(false)
+  const copyLoading = ref(false)
 
   const snack = ref({ show: false, text: '', color: 'info' })
   function toast(text, color = 'info') {
@@ -821,6 +822,19 @@ export function usePrintLabelCreate() {
     products.value.push({ sku: '', sku_num: 1, en_name: '', cn_name: '', weight: '', value: '' })
   }
 
+  function addDefaultProduct() {
+    const emptyIdx = products.value.findIndex(
+      p => !p.sku && !p.en_name && !p.cn_name && !p.weight && !p.value,
+    )
+
+    if (emptyIdx === -1) {
+      toast(t('pages.printLabelCreate.messages.noEmptyProductRow'), 'warning')
+      
+      return
+    }
+    products.value[emptyIdx] = { sku: 'item', sku_num: 1, en_name: 'item', cn_name: '货品', weight: '100', value: '1' }
+  }
+
   function removeProduct(idx) {
     if (products.value.length <= 1) {
       toast(t('pages.printLabelCreate.messages.keepOneProduct'), 'warning')
@@ -966,6 +980,81 @@ export function usePrintLabelCreate() {
     submitOrder(String(selectedQid.value), undefined)
   }
 
+  function mapSnapshotToAddress(snapshot) {
+    if (!snapshot)
+      return null
+
+    return {
+      id: String(snapshot.id || ''),
+      name: String(snapshot.name || ''),
+      country: String(snapshot.country_code || snapshot.country || ''),
+      province: String(snapshot.state || snapshot.province || ''),
+      city: String(snapshot.city || ''),
+      streetno: String(snapshot.street || ''),
+      address: String(snapshot.address1 || snapshot.address || ''),
+      address2: String(snapshot.address2 || ''),
+      postCode: String(snapshot.postcode || ''),
+      telephone: String(snapshot.telephone || ''),
+      company: String(snapshot.company || ''),
+    }
+  }
+
+  const copyFromId = computed(() => {
+    const raw = route.query.copyFrom
+    
+    return raw ? Number(raw) : null
+  })
+
+  onMounted(async () => {
+    if (!copyFromId.value)
+      return
+
+    copyLoading.value = true
+    try {
+      const res = await $api('/Ordernewapi/shippingDetail', {
+        method: 'GET',
+        query: { order_id: copyFromId.value },
+      })
+
+      if ((Number(res?.code) === 1 || Number(res?.code) === 200) && res?.data) {
+        const detail = res.data
+
+        if (detail.provider != null)
+          selectedQid.value = Number(detail.provider)
+
+        const senderAddr = mapSnapshotToAddress(detail.sender_snapshot)
+        if (senderAddr)
+          sender.value = senderAddr
+
+        const receiverAddr = mapSnapshotToAddress(detail.recipient_snapshot)
+        if (receiverAddr)
+          receiver.value = receiverAddr
+
+        if (Array.isArray(detail.sku_items) && detail.sku_items.length) {
+          products.value = detail.sku_items.map(item => ({
+            sku: String(item.sku || ''),
+            sku_num: item.qty != null ? Number(item.qty) : 1,
+            en_name: String(item.en_name || ''),
+            cn_name: String(item.cn_name || ''),
+            weight: item.weight != null ? String(item.weight) : '',
+            value: item.value != null ? String(item.value) : '',
+          }))
+        }
+
+        toast(t('pages.printLabelCreate.messages.copyLoaded'))
+      }
+      else {
+        toast(res?.msg || t('pages.printLabelCreate.messages.copyLoadFailed'), 'error')
+      }
+    }
+    catch (e) {
+      toast(e?.data?.msg || e?.message || t('pages.printLabelCreate.messages.copyLoadFailed'), 'error')
+    }
+    finally {
+      copyLoading.value = false
+    }
+  })
+
   return {
     channels,
     legacyOrigin,
@@ -1010,6 +1099,7 @@ export function usePrintLabelCreate() {
     selectedRouteKey,
     submitting,
     orderLoading,
+    copyLoading,
     snack,
     toast,
     unitLabel,
@@ -1040,6 +1130,7 @@ export function usePrintLabelCreate() {
     searchAddr,
     selectAddr,
     addProduct,
+    addDefaultProduct,
     removeProduct,
     submitOrder,
     orderFromCompare,

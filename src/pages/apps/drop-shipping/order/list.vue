@@ -272,7 +272,7 @@ watch(() => filters.value.warehouseId, v => {
 })
 
 onMounted(async () => {
-  const remote = await loadWarehouseOptions(t)
+  const remote = await loadWarehouseOptions(t, 3)
 
   warehouseOptions.value = [
     { title: t('pages.dropShippingOrderList.filters.allWarehouses'), value: null },

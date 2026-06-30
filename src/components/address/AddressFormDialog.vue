@@ -147,13 +147,14 @@ const countryDisabled = computed(() => !!String(props.countryLock || '').trim())
               />
             </VCol>
             <VCol cols="12">
-              <AppSelect
+              <AppAutocomplete
                 v-model="form.country"
                 :items="countryItems"
                 :loading="countriesLoading"
                 :label="$t('components.addressForm.fields.country')"
                 :disabled="countryDisabled"
                 :rules="[requiredField]"
+                clearable
               />
             </VCol>
             <VCol

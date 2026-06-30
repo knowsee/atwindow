@@ -514,7 +514,7 @@ onMounted(async () => {
         form.value.warehouseId = cachedWarehouseId
     }
 
-    warehouseOptions.value = await loadWarehouseOptions(t)
+    warehouseOptions.value = await loadWarehouseOptions(t, 3)
     cartonOptions.value = await loadCartonOptions(t)
     countryOptions.value = await loadCountryOptions()
     skuOptions.value = await loadSkuOptions()
@@ -525,6 +525,8 @@ onMounted(async () => {
       form.value.cankaohao = ''
     await nextTick()
     warehousePersistReady.value = true
+    if (form.value.warehouseId)
+      skuOptions.value = await loadSkuOptions(form.value.warehouseId)
   }
   finally {
     if (shouldPreload)
@@ -653,20 +655,7 @@ onMounted(async () => {
                 <VCol
                   cols="12"
                   md="4"
-                >
-                  <AppSelect
-                    v-model="form.transportType"
-                    :items="transportOptions"
-                    item-title="title"
-                    item-value="value"
-                    :label="$t('pages.dropShippingOrderCreate.sections.logistics.transport')"
-                    :rules="[v => !!v || $t('pages.dropShippingOrderCreate.rules.transportRequired')]"
-                    :disabled="pageBlocking"
-                  />
-                </VCol>
-                <VCol
-                  cols="12"
-                  md="4"
+                  class="warehouse-field"
                 >
                   <AppSelect
                     v-model="form.warehouseId"
@@ -675,6 +664,20 @@ onMounted(async () => {
                     item-value="value"
                     :label="$t('pages.dropShippingOrderCreate.sections.logistics.warehouse')"
                     :rules="[v => !!v || $t('pages.dropShippingOrderCreate.rules.warehouseRequired')]"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.transportType"
+                    :items="transportOptions"
+                    item-title="title"
+                    item-value="value"
+                    :label="$t('pages.dropShippingOrderCreate.sections.logistics.transport')"
+                    :rules="[v => !!v || $t('pages.dropShippingOrderCreate.rules.transportRequired')]"
                     :disabled="pageBlocking"
                   />
                 </VCol>
@@ -1014,5 +1017,10 @@ onMounted(async () => {
     position: sticky;
     top: 5rem;
   }
+}
+
+.warehouse-field :deep(.v-label) {
+  font-weight: 700;
+  color: rgb(var(--v-theme-error));
 }
 </style>

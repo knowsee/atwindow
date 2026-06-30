@@ -16,6 +16,9 @@ export const useConfigStore = defineStore('config', () => {
 
   const theme = cookieRef('theme', themeConfig.app.theme)
 
+  // 👉 Font size
+  const fontSize = cookieRef('font-size', 'standard')
+
   // 👉 isVerticalNavSemiDark
   const isVerticalNavSemiDark = cookieRef('isVerticalNavSemiDark', themeConfig.verticalNav.isVerticalNavSemiDark)
 
@@ -27,6 +30,7 @@ export const useConfigStore = defineStore('config', () => {
   
   return {
     theme,
+    fontSize,
     isVerticalNavSemiDark,
     skin,
 
@@ -61,5 +65,20 @@ export const initConfigStore = () => {
     if (configStore.theme === 'system')
       vuetifyTheme.change(userPreferredColorScheme.value)
   })
+
+  const fontSizeMap = {
+    standard: null,
+    large: '18px',
+    xlarge: '20px',
+  }
+
+  watch(() => configStore.fontSize, val => {
+    if (typeof document !== 'undefined') {
+      if (fontSizeMap[val] != null)
+        document.documentElement.style.fontSize = fontSizeMap[val]
+      else
+        document.documentElement.style.removeProperty('font-size')
+    }
+  }, { immediate: true })
 }
 // !SECTION

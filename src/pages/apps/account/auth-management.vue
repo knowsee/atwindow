@@ -23,7 +23,6 @@ const { t } = useI18n({ useScope: 'global' })
 const platformOptions = computed(() => [
   { title: t('pages.accountAuthManagement.platforms.mabang'), value: 1 },
   { title: t('pages.accountAuthManagement.platforms.thirdParty'), value: 3 },
-  { title: t('pages.accountAuthManagement.platforms.tiktok'), value: 2 },
   { title: t('pages.accountAuthManagement.platforms.temu'), value: 5 },
 ])
 

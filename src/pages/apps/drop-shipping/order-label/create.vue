@@ -27,6 +27,7 @@ const snack = ref({ show: false, text: '', color: 'info' })
 
 const mode = computed(() => String(route.query.mode || 'create'))
 const isEdit = computed(() => mode.value === 'edit')
+const isCopy = computed(() => mode.value === 'copy')
 const editingId = computed(() => Number(route.query.id || 0) || null)
 
 const warehouseOptions = ref([])
@@ -303,7 +304,7 @@ function buildSubmitBody() {
     ],
   }
 
-  if (editingId.value)
+  if (isEdit.value && editingId.value)
     body['id'] = editingId.value
 
   return body
@@ -442,7 +443,7 @@ watch(() => orderMeta.value.warehouseId, async v => {
 
 onMounted(async () => {
   try {
-    warehouseOptions.value = await loadWarehouseOptions(t)
+    warehouseOptions.value = await loadWarehouseOptions(t, 3)
     cartonTypeItems.value = await loadCartonOptions(t)
     countryOptions.value = await loadCountryOptionsLabel()
     await loadDetail()
@@ -481,7 +482,7 @@ onMounted(async () => {
           {{ $t('pages.dropShippingOrderLabelCreate.eyebrow') }}
         </div>
         <h1 class="text-h4 font-weight-medium text-high-emphasis">
-          {{ isEdit ? $t('pages.dropShippingOrderLabelCreate.title.edit') : $t('pages.dropShippingOrderLabelCreate.title.create') }}
+          {{ isEdit ? $t('pages.dropShippingOrderLabelCreate.title.edit') : isCopy ? $t('pages.dropShippingOrderLabelCreate.title.copy') : $t('pages.dropShippingOrderLabelCreate.title.create') }}
         </h1>
         <p class="text-body-2 text-medium-emphasis mb-0 mt-2 text-wrap">
           {{ $t('pages.dropShippingOrderLabelCreate.subtitle') }}
@@ -816,7 +817,7 @@ onMounted(async () => {
                     :disabled="pageBlocking"
                     @click="submitForm"
                   >
-                    {{ isEdit ? $t('pages.dropShippingOrderLabelCreate.actions.submitEdit') : $t('pages.dropShippingOrderLabelCreate.actions.submitCreate') }}
+                    {{ isEdit ? $t('pages.dropShippingOrderLabelCreate.actions.submitEdit') : isCopy ? $t('pages.dropShippingOrderLabelCreate.actions.submitCopy') : $t('pages.dropShippingOrderLabelCreate.actions.submitCreate') }}
                   </VBtn>
                   <VBtn
                     block

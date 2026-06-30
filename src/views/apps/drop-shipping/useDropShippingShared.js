@@ -89,10 +89,10 @@ export function resolvePackageYjdcTimeRange(pkg) {
   return `${fmtDate(sa)} to ${fmtDate(sb)}`
 }
 
-export async function loadWarehouseOptions(translate = globalT) {
+export async function loadWarehouseOptions(translate = globalT, warehouseId = 1) {
   const res = await $api('/package/queryWarehouses', {
     method: 'POST',
-    body: { id: 1 },
+    body: { id: warehouseId },
   })
 
   if (Number(res?.code) !== 1 || !Array.isArray(res?.data))

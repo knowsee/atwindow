@@ -249,6 +249,20 @@ const onSubmit = () => {
                   {{ t('login.form.submit') }}
                 </VBtn>
               </VCol>
+
+              <VCol
+                cols="12"
+                class="text-center"
+              >
+                <a
+                  href="https://www.atwindow.com/?m=member&a=register"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-body-2 text-decoration-none"
+                >
+                  {{ t('login.register') }}
+                </a>
+              </VCol>
             </VRow>
           </VForm>
         </VCardText>

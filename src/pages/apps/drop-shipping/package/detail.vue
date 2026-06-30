@@ -65,7 +65,7 @@ async function loadDetail() {
   }
   try {
     const [wh, res] = await Promise.all([
-      loadWarehouseOptions(),
+      loadWarehouseOptions(undefined, 3),
       $api('/ordernew/packageDetail', { method: 'POST', body: { id: packageId.value } }),
     ])
 

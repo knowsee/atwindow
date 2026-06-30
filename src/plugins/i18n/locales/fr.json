@@ -47,6 +47,7 @@
   "login": {
     "title": "Connexion",
     "subtitle": "Utilisez votre compte et votre mot de passe pour accéder à la console d'administration",
+    "register": "Inscription gratuite",
     "form": {
       "account": {
         "label": "Compte",
@@ -120,6 +121,7 @@
       "title": "Informations articles",
       "subtitle": "Renseignez le SKU, les noms anglais/chinois, la quantité et la valeur déclarée ligne par ligne. Conservez au moins une ligne.",
       "add": "Ajouter un article",
+      "addDefault": "Ajouter article par défaut",
       "headers": {
         "sku": "SKU",
         "enName": "Nom anglais",
@@ -177,9 +179,19 @@
       "reset": "Réinitialiser",
       "search": "Rechercher",
       "select": "Sélectionner",
+      "edit": "Éditer",
+      "editSuccess": "Adresse mise à jour",
+      "editFailed": "Échec de la mise à jour de l'adresse",
+      "countryLoadFailed": "Échec du chargement des pays",
       "emptyTitle": "Aucun enregistrement d'adresse",
       "emptyHint": "Essayez d'effacer le mot-clé du nom ou ajoutez d'abord les contacts dans le carnet d'adresses WMS.",
       "pagination": "{total} au total · {pageSize} par page"
+    },
+    "fontSizeSwitcher": {
+      "tooltip": "Taille de police",
+      "standard": "Standard",
+      "large": "Grand",
+      "xlarge": "Très grand"
     },
     "loadingOverlay": {
       "defaultMessage": "Chargement..."
@@ -336,7 +348,9 @@
         "batchStatus": "Statut d'expédition groupée",
         "create": "Créer une étiquette",
         "batchDetail": "Détails du lot",
-        "cancelShipment": "Annuler l'expédition"
+        "cancelShipment": "Annuler l'expédition",
+        "mergeDownload": "Téléchargement fusionné",
+        "cancelSelection": "Annuler la sélection"
       },
       "filters": {
         "refNo": "Référence",
@@ -368,11 +382,13 @@
         "success": "Réussi",
         "failed": "Échec",
         "cancelled": "Annulé",
-        "cancelling": "Annulation en cours"
+        "cancelling": "Annulation en cours",
+        "shipping": "Récupération de l'étiquette"
       },
       "tooltips": {
         "view": "Voir",
-        "label": "Étiquette"
+        "label": "Étiquette",
+        "copy": "Copier"
       },
       "pagination": {
         "total": "Total {total}",
@@ -388,7 +404,13 @@
         "cancelConfirm": "Annuler cette expédition ?",
         "cancelSubmitted": "Annulation envoyée",
         "cancelFailed": "Échec de l'annulation",
-        "cancelling": "Annulation en cours..."
+        "cancelling": "Annulation en cours...",
+        "selectMergeDownloadRequired": "Veuillez sélectionner les expéditions à télécharger",
+        "mergeDownloadFailed": "Échec du téléchargement fusionné",
+        "mergeDownloadSuccess": "Téléchargement fusionné réussi"
+      },
+      "selection": {
+        "selected": "{count} sélectionné(s)"
       },
       "batchDialog": {
         "title": "Statut d'expédition groupée",
@@ -1040,7 +1062,7 @@
         "totalFee": "Frais totaux",
         "emptyFees": "Aucune information détaillée sur les frais",
         "timelineTitle": "Chronologie",
-        "erpSource": "Source ERP"
+        "erpSource": "Source"
       },
       "timeline": {
         "created": "Commande créée",
@@ -1087,6 +1109,7 @@
         "fee": "Frais",
         "status": "Statut",
         "remark": "Remarque",
+        "trackingNo": "N° de suivi",
         "adminRemark": "Remarque admin",
         "createdAt": "Créée le",
         "actions": "Actions"
@@ -1110,7 +1133,8 @@
       },
       "tooltips": {
         "detail": "Détails",
-        "edit": "Modifier"
+        "edit": "Modifier",
+        "copy": "Copier"
       },
       "pagination": {
         "total": "Total {total}"
@@ -1125,7 +1149,8 @@
       "eyebrow": "Dropshipping · Réétiquetage",
       "title": {
         "create": "Créer une commande de réétiquetage",
-        "edit": "Modifier la commande de réétiquetage"
+        "edit": "Modifier la commande de réétiquetage",
+        "copy": "Copier la commande de réétiquetage"
       },
       "subtitle": "Renseignez l'adresse destinataire, l'entrepôt et les informations produit. Importez les fichiers d'étiquette et d'étiquette carton avant de soumettre.",
       "loading": {
@@ -1174,6 +1199,7 @@
       "actions": {
         "submitCreate": "Confirmer et soumettre la commande de réétiquetage",
         "submitEdit": "Enregistrer les modifications",
+        "submitCopy": "Soumettre la commande de réétiquetage copiée",
         "cancel": "Annuler"
       },
       "messages": {
@@ -2133,7 +2159,9 @@
     "printLabelCreate": {
       "hero": {
         "title": "Créer une expédition",
-        "subtitle": "Après avoir choisi un canal, sélectionnez les adresses expéditeur/destinataire dans le carnet d'adresses ou ajoutez/modifiez-les dans la fenêtre. Renseignez le colis et les articles pour calculer le tarif. Le mode comparaison permet de comparer plusieurs canaux."
+        "subtitle": "Après avoir choisi un canal, sélectionnez les adresses expéditeur/destinataire dans le carnet d'adresses ou ajoutez/modifiez-les dans la fenêtre. Renseignez le colis et les articles pour calculer le tarif. Le mode comparaison permet de comparer plusieurs canaux.",
+        "titleCopy": "Copier l'expédition",
+        "subtitleCopy": "Données pré-remplies depuis la commande d'origine. Veuillez modifier le numéro de référence avant de soumettre."
       },
       "globalNotice": {
         "insurance": "Pour protéger votre envoi et souscrire une assurance, veuillez contacter le service client."
@@ -2152,7 +2180,7 @@
       "basic": {
         "title": "Informations de base",
         "subtitle": "La référence et les unités sont utilisées pour le calcul du tarif et la commande.",
-        "referenceLabel": "Référence",
+        "referenceLabel": "Référence (N° de commande interne)",
         "referencePlaceholder": "Lettres, chiffres et tirets bas uniquement. 15 caractères ou plus recommandés",
         "referenceHint": "Seuls les lettres, chiffres et tirets bas sont autorisés. Les caractères invalides sont retirés après perte de focus ou fin de composition IME.",
         "unitLabel": "Unités poids/dimensions",
@@ -2213,7 +2241,8 @@
         "addressBookSubtitle": "Filtrez par nom côté serveur. Cliquez sur Sélectionner ou double-cliquez une ligne pour remplir le formulaire."
       },
       "submit": {
-        "now": "Commander maintenant"
+        "now": "Commander maintenant",
+        "nowCopy": "Soumettre l'expédition copiée"
       },
       "messages": {
         "referenceRequired": "Saisissez une référence",
@@ -2251,10 +2280,13 @@
         "saveFailed": "Échec de l'enregistrement",
         "saveSuccess": "Enregistré avec succès",
         "keepOneProduct": "Conservez au moins une ligne article",
+        "noEmptyProductRow": "Toutes les lignes contiennent déjà des données, impossible de remplir l'article par défaut",
         "providerInvalid": "Configuration du canal invalide, commande impossible",
         "orderSuccess": "Commande créée. La génération de l'étiquette est en cours. Consultez la liste des commandes.",
         "unauthorized": "Connexion expirée. Veuillez vous reconnecter.",
         "orderFailed": "Échec de la commande",
+        "copyLoaded": "Données de commande chargées. Veuillez modifier le numéro de référence avant de soumettre.",
+        "copyLoadFailed": "Échec du chargement des données de commande",
         "compareModeSubmitBlocked": "Le mode comparaison sert uniquement au calcul. Désactivez-le et choisissez un seul canal pour commander.",
         "rateBeforeOrder": "Calculez le tarif et sélectionnez une route avant de commander avec ce canal",
         "noRouteForOrder": "Ce canal n'a retourné aucune route sélectionnable et ne peut pas être commandé maintenant",

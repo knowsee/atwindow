@@ -100,7 +100,7 @@ async function loadDetail() {
   }
   try {
     const [wh, carton, res] = await Promise.all([
-      loadWarehouseOptions(t),
+      loadWarehouseOptions(t, 3),
       loadCartonOptions(t),
       $api('/orderv2/detail', { method: 'POST', body: { id: orderId.value } }),
     ])

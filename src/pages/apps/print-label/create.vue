@@ -11,7 +11,10 @@ definePage({
 })
 
 const router = useRouter()
+const currentRoute = useRoute()
 const { t } = useI18n({ useScope: 'global' })
+
+const isCopy = computed(() => !!currentRoute.query.copyFrom)
 
 const {
   channels,
@@ -59,6 +62,7 @@ const {
   selectedRouteKey,
   submitting,
   orderLoading,
+  copyLoading,
   snack,
   unitLabel,
   selectedCurrency,
@@ -80,6 +84,7 @@ const {
   searchAddr,
   selectAddr,
   addProduct,
+  addDefaultProduct,
   removeProduct,
   orderFromCompare,
   doSubmit,
@@ -120,6 +125,8 @@ function goList() {
 }
 
 /** 参考号过滤：不在 composable 里 watch v-model，否则会打断中文 IME；在组合结束/失焦时再清理非法字符 */
+const pageBlocking = computed(() => orderLoading.value || copyLoading.value)
+
 function sanitizeCankaohaoField() {
   const raw = String(cankaohao.value ?? '')
   const s = raw.replace(/\W/g, '')
@@ -167,10 +174,10 @@ async function onSubmit() {
       <div class="print-label-create__hero mb-6 d-flex align-center justify-space-between flex-wrap gap-3">
         <div>
           <h1 class="text-h4 font-weight-medium text-high-emphasis">
-            {{ $t('pages.printLabelCreate.hero.title') }}
+            {{ isCopy ? $t('pages.printLabelCreate.hero.titleCopy') : $t('pages.printLabelCreate.hero.title') }}
           </h1>
           <p class="text-body-2 text-medium-emphasis mb-0 mt-2">
-            {{ $t('pages.printLabelCreate.hero.subtitle') }}
+            {{ isCopy ? $t('pages.printLabelCreate.hero.subtitleCopy') : $t('pages.printLabelCreate.hero.subtitle') }}
           </p>
         </div>
         <VBtn
@@ -192,7 +199,7 @@ async function onSubmit() {
       </VSnackbar>
 
       <VOverlay
-        v-model="orderLoading"
+        :model-value="pageBlocking"
         class="align-center justify-center"
         persistent
       >
@@ -596,6 +603,7 @@ async function onSubmit() {
         :selected-cn-name-required="selectedCnNameRequired"
         :selected-value-required="selectedValueRequired"
         @add="addProduct"
+        @add-default="addDefaultProduct"
         @remove="removeProduct"
       />
 
@@ -876,7 +884,7 @@ async function onSubmit() {
             prepend-icon="tabler-send"
             @click="onSubmit"
           >
-            {{ $t('pages.printLabelCreate.submit.now') }}
+            {{ isCopy ? $t('pages.printLabelCreate.submit.nowCopy') : $t('pages.printLabelCreate.submit.now') }}
           </VBtn>
         </VCardText>
       </VCard>
@@ -889,6 +897,7 @@ async function onSubmit() {
         :title="addrDialogTarget === 'sender' ? $t('pages.printLabelCreate.dialogs.senderAddressTitle') : $t('pages.printLabelCreate.dialogs.receiverAddressTitle')"
         :subtitle="$t('pages.printLabelCreate.dialogs.addressBookSubtitle')"
         :country-lock="addrDialogTarget === 'sender' ? (senderCountryLock || '') : (receiverCountryLock || '')"
+        :addr-type="addrDialogTarget === 'sender' ? 1 : 2"
         :items="addrList"
         :total="addrTotal"
         :loading="addrLoading"

@@ -1,4 +1,7 @@
 <script setup>
+import AddressFormDialog from '@/components/address/AddressFormDialog.vue'
+import { $api } from '@/utils/api'
+
 const props = defineProps({
   title: {
     type: String,
@@ -36,6 +39,11 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  addrType: {
+    type: Number,
+    default: 2,
+    validator: v => v === 1 || v === 2,
+  },
 })
 
 const emit = defineEmits(['close', 'search', 'reset-search', 'select', 'load-page'])
@@ -54,7 +62,7 @@ const tableHeaders = computed(() => [
   { title: t('components.addressForm.fields.country'), key: 'country', minWidth: '88' },
   { title: t('components.addressForm.fields.street'), key: 'streetno', minWidth: '80' },
   { title: t('components.addressForm.fields.telephone'), key: 'telephone', minWidth: '112' },
-  { title: t('pages.accountAddressManagement.headers.actions'), key: 'actions', sortable: false, align: 'end', width: '96' },
+  { title: t('pages.accountAddressManagement.headers.actions'), key: 'actions', sortable: false, align: 'end', width: '120' },
 ])
 
 function rowProps({ item }) {
@@ -84,9 +92,124 @@ function onLoadPage() {
 function onSelect(item) {
   emit('select', item)
 }
+
+const editDialog = ref(false)
+
+const editForm = ref({
+  name: '', address: '', address2: '', streetno: '', city: '', province: '',
+  postcode: '', country: '', telephone: '', company: '', email: '',
+})
+
+const editEditingId = ref('')
+const editSubmitting = ref(false)
+const editCountries = ref([])
+const editCountriesLoaded = ref(false)
+const snack = ref({ show: false, text: '', color: 'info' })
+
+const editCountryItems = computed(() =>
+  editCountries.value.map(item => ({
+    title: [item.short_name, item.en_name, item.cn_name].filter(Boolean).join(' - ') || item.short_name || item.cn_name || item.en_name,
+    value: item.short_name || item.cn_name || item.en_name,
+  })),
+)
+
+function toast(text, color = 'info') {
+  snack.value = { show: true, text, color }
+}
+
+async function loadEditCountries() {
+  if (editCountriesLoaded.value)
+    return
+  try {
+    const res = await $api('/order/queryCountry', { method: 'POST', body: {} })
+    if (Number(res?.code) === 1 && Array.isArray(res?.data))
+      editCountries.value = res.data
+    else
+      toast(t('components.addressBookPicker.countryLoadFailed'), 'error')
+  }
+  catch (e) {
+    toast(t('components.addressBookPicker.countryLoadFailed'), 'error')
+  }
+  finally {
+    editCountriesLoaded.value = true
+  }
+}
+
+function openAddrEdit(row) {
+  if (!row?.id) {
+    toast(t('components.addressBookPicker.editFailed'), 'warning')
+    
+    return
+  }
+  editForm.value = {
+    name: row.name || '',
+    country: row.country_code || row.country || '',
+    province: row.province || '',
+    city: row.city || '',
+    streetno: row.streetno || row.street_no || '',
+    address: row.address || '',
+    address2: row.address2 || row.address_2 || '',
+    email: row.email || '',
+    postcode: row.postcode || '',
+    telephone: row.telephone || row.phone || '',
+    company: row.company || '',
+  }
+  editEditingId.value = String(row.id)
+  loadEditCountries()
+  editDialog.value = true
+}
+
+async function submitAddrEdit() {
+  const token = useCookie('accessToken').value || ''
+
+  const payload = {
+    name: editForm.value.name.trim(),
+    country: editForm.value.country,
+    province: editForm.value.province.trim(),
+    city: editForm.value.city.trim(),
+    streetno: (editForm.value.streetno || '').trim(),
+    address: editForm.value.address.trim(),
+    address2: (editForm.value.address2 || '').trim(),
+    email: (editForm.value.email || '').trim(),
+    postcode: editForm.value.postcode.trim(),
+    telephone: editForm.value.telephone.trim(),
+    company: (editForm.value.company || '').trim(),
+    type: Number(props.addrType),
+    token,
+    id: String(editEditingId.value),
+  }
+
+  editSubmitting.value = true
+  try {
+    const res = await $api('/order/editAddr', { method: 'POST', body: payload })
+    if (Number(res?.code) === 1) {
+      editDialog.value = false
+      emit('load-page')
+      toast(t('components.addressBookPicker.editSuccess'), 'success')
+    }
+    else {
+      toast(res?.msg || t('components.addressBookPicker.editFailed'), 'error')
+    }
+  }
+  catch (e) {
+    toast(e?.data?.msg || e?.message || t('components.addressBookPicker.editFailed'), 'error')
+  }
+  finally {
+    editSubmitting.value = false
+  }
+}
 </script>
 
 <template>
+  <VSnackbar
+    v-model="snack.show"
+    :color="snack.color"
+    location="top"
+    :timeout="2600"
+  >
+    {{ snack.text }}
+  </VSnackbar>
+
   <VDialog
     v-model="visible"
     max-width="960"
@@ -209,15 +332,32 @@ function onSelect(item) {
             >{{ item.telephone }}</span>
           </template>
           <template #item.actions="{ item }">
-            <VBtn
-              variant="tonal"
-              color="primary"
-              size="small"
-              class="text-none"
-              @click.stop="onSelect(item)"
-            >
-              {{ $t('components.addressBookPicker.select') }}
-            </VBtn>
+            <div class="d-flex align-center justify-end gap-1">
+              <VTooltip :text="$t('components.addressBookPicker.edit')">
+                <template #activator="{ props: tooltipProps }">
+                  <IconBtn
+                    v-bind="tooltipProps"
+                    size="small"
+                    color="secondary"
+                    @click.stop="openAddrEdit(item)"
+                  >
+                    <VIcon
+                      icon="tabler-pencil"
+                      size="20"
+                    />
+                  </IconBtn>
+                </template>
+              </VTooltip>
+              <VBtn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="text-none"
+                @click.stop="onSelect(item)"
+              >
+                {{ $t('components.addressBookPicker.select') }}
+              </VBtn>
+            </div>
           </template>
           <template #no-data>
             <div class="text-center py-10 px-4">
@@ -255,6 +395,17 @@ function onSelect(item) {
         />
       </VCardActions>
     </VCard>
+
+    <AddressFormDialog
+      v-model="editDialog"
+      v-model:form="editForm"
+      :addr-type="addrType"
+      :is-edit="true"
+      :editing-id="editEditingId"
+      :country-items="editCountryItems"
+      :submitting="editSubmitting"
+      @submit="submitAddrEdit"
+    />
   </VDialog>
 </template>
 

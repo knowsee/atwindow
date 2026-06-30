@@ -47,6 +47,7 @@
   "login": {
     "title": "Sign in",
     "subtitle": "Use your account and password to access the admin console",
+    "register": "Sign up for free",
     "form": {
       "account": {
         "label": "Account",
@@ -120,6 +121,7 @@
       "title": "Item information",
       "subtitle": "Fill in SKU, English/Chinese item names, quantity, and declaration value row by row. Keep at least one row.",
       "add": "Add item",
+      "addDefault": "Add default item",
       "headers": {
         "sku": "SKU",
         "enName": "English name",
@@ -177,9 +179,19 @@
       "reset": "Reset",
       "search": "Search",
       "select": "Select",
+      "edit": "Edit",
+      "editSuccess": "Address updated",
+      "editFailed": "Failed to update address",
+      "countryLoadFailed": "Failed to load countries",
       "emptyTitle": "No address records",
       "emptyHint": "Try clearing the name keyword, or maintain contacts in the WMS address book first.",
       "pagination": "{total} total · {pageSize} per page"
+    },
+    "fontSizeSwitcher": {
+      "tooltip": "Font size",
+      "standard": "Standard",
+      "large": "Large",
+      "xlarge": "Extra large"
     },
     "loadingOverlay": {
       "defaultMessage": "Loading..."
@@ -336,7 +348,9 @@
         "batchStatus": "Batch shipping status",
         "create": "Create label",
         "batchDetail": "Batch details",
-        "cancelShipment": "Cancel shipment"
+        "cancelShipment": "Cancel shipment",
+        "mergeDownload": "Merge download labels",
+        "cancelSelection": "Cancel selection"
       },
       "filters": {
         "refNo": "Reference no.",
@@ -368,11 +382,13 @@
         "success": "Success",
         "failed": "Failed",
         "cancelled": "Cancelled",
-        "cancelling": "Cancelling"
+        "cancelling": "Cancelling",
+        "shipping": "Fetching label"
       },
       "tooltips": {
         "view": "View",
-        "label": "Label"
+        "label": "Label",
+        "copy": "Copy"
       },
       "pagination": {
         "total": "Total {total}",
@@ -388,7 +404,13 @@
         "cancelConfirm": "Cancel this shipment?",
         "cancelSubmitted": "Cancellation submitted",
         "cancelFailed": "Cancellation failed",
-        "cancelling": "Cancelling..."
+        "cancelling": "Cancelling...",
+        "selectMergeDownloadRequired": "Please select shipments to merge download",
+        "mergeDownloadFailed": "Merge download failed",
+        "mergeDownloadSuccess": "Merge download succeeded"
+      },
+      "selection": {
+        "selected": "Selected {count}"
       },
       "batchDialog": {
         "title": "Batch shipping status",
@@ -1040,7 +1062,7 @@
         "totalFee": "Total fee",
         "emptyFees": "No detailed fee information",
         "timelineTitle": "Timeline",
-        "erpSource": "ERP source"
+        "erpSource": "Source"
       },
       "timeline": {
         "created": "Order created",
@@ -1087,6 +1109,7 @@
         "fee": "Fee",
         "status": "Status",
         "remark": "Remark",
+        "trackingNo": "Tracking no.",
         "adminRemark": "Admin remark",
         "createdAt": "Created at",
         "actions": "Actions"
@@ -1110,7 +1133,8 @@
       },
       "tooltips": {
         "detail": "Details",
-        "edit": "Edit"
+        "edit": "Edit",
+        "copy": "Copy"
       },
       "pagination": {
         "total": "Total {total}"
@@ -1125,7 +1149,8 @@
       "eyebrow": "Dropshipping · Relabel",
       "title": {
         "create": "Create relabel order",
-        "edit": "Edit relabel order"
+        "edit": "Edit relabel order",
+        "copy": "Copy relabel order"
       },
       "subtitle": "Enter recipient address, warehouse, and product information. Upload label and box label files before submitting.",
       "loading": {
@@ -1174,6 +1199,7 @@
       "actions": {
         "submitCreate": "Confirm and submit relabel order",
         "submitEdit": "Save changes",
+        "submitCopy": "Submit copied relabel order",
         "cancel": "Cancel"
       },
       "messages": {
@@ -2133,7 +2159,9 @@
     "printLabelCreate": {
       "hero": {
         "title": "Create shipment",
-        "subtitle": "After selecting a channel, choose sender and recipient addresses from the address book or add/edit them in the dialog. Enter package and item details to calculate rates. Compare mode lets you quote multiple channels."
+        "subtitle": "After selecting a channel, choose sender and recipient addresses from the address book or add/edit them in the dialog. Enter package and item details to calculate rates. Compare mode lets you quote multiple channels.",
+        "titleCopy": "Copy shipment",
+        "subtitleCopy": "Data pre-filled from the original order. Please modify the reference number before submitting."
       },
       "globalNotice": {
         "insurance": "To protect your shipment and purchase insurance, please contact customer service for assistance."
@@ -2152,7 +2180,7 @@
       "basic": {
         "title": "Basic information",
         "subtitle": "The reference number and units are used for rate calculation and order submission.",
-        "referenceLabel": "Reference number",
+        "referenceLabel": "Reference number (Own order no.)",
         "referencePlaceholder": "Letters, numbers, and underscores only. 15+ characters recommended",
         "referenceHint": "Only letters, numbers, and underscores are allowed. Invalid characters are removed after blur or IME composition ends.",
         "unitLabel": "Weight/size units",
@@ -2213,7 +2241,8 @@
         "addressBookSubtitle": "Filter by name on the server. Click Select or double-click a row to fill the form."
       },
       "submit": {
-        "now": "Order now"
+        "now": "Order now",
+        "nowCopy": "Submit copied shipment"
       },
       "messages": {
         "referenceRequired": "Enter a reference number",
@@ -2251,10 +2280,13 @@
         "saveFailed": "Save failed",
         "saveSuccess": "Saved successfully",
         "keepOneProduct": "Keep at least one item row",
+        "noEmptyProductRow": "All rows already have data, cannot fill default item",
         "providerInvalid": "Channel configuration is invalid, unable to order",
         "orderSuccess": "Order created. Label generation is in progress. Please check the order list.",
         "unauthorized": "Login expired. Please sign in again.",
         "orderFailed": "Order failed",
+        "copyLoaded": "Order data loaded. Please modify the reference number before submitting.",
+        "copyLoadFailed": "Failed to load order data",
         "compareModeSubmitBlocked": "Compare mode is for rate calculation only. Turn it off and select one channel to order.",
         "rateBeforeOrder": "Calculate rates and select a route before ordering with this channel",
         "noRouteForOrder": "This channel returned no selectable routes and cannot be ordered now",

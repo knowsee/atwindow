@@ -47,6 +47,7 @@
   "login": {
     "title": "登录",
     "subtitle": "使用账号与密码登录管理后台",
+    "register": "免费注册",
     "form": {
       "account": {
         "label": "账号",
@@ -120,6 +121,7 @@
       "title": "货品信息",
       "subtitle": "请逐行填写 SKU、中英文品名、数量与申报；至少保留一行。",
       "add": "添加货品",
+      "addDefault": "添加默认货品",
       "headers": {
         "sku": "SKU",
         "enName": "英文名称",
@@ -177,9 +179,19 @@
       "reset": "重置",
       "search": "搜索",
       "select": "选择",
+      "edit": "编辑",
+      "editSuccess": "地址已更新",
+      "editFailed": "地址更新失败",
+      "countryLoadFailed": "国家列表加载失败",
       "emptyTitle": "暂无地址记录",
       "emptyHint": "试试清空姓名关键词，或先在 WMS 地址簿中维护联系人后再试。",
       "pagination": "共 {total} 条 · 每页 {pageSize} 条"
+    },
+    "fontSizeSwitcher": {
+      "tooltip": "字体大小",
+      "standard": "标准",
+      "large": "大",
+      "xlarge": "超大"
     },
     "loadingOverlay": {
       "defaultMessage": "正在加载..."
@@ -336,7 +348,9 @@
         "batchStatus": "批量出单状态",
         "create": "新建运单",
         "batchDetail": "批次明细",
-        "cancelShipment": "取消运单"
+        "cancelShipment": "取消运单",
+        "mergeDownload": "合并下载面单",
+        "cancelSelection": "取消选择"
       },
       "filters": {
         "refNo": "参考号",
@@ -368,11 +382,13 @@
         "success": "成功",
         "failed": "失败",
         "cancelled": "已取消",
-        "cancelling": "取消中"
+        "cancelling": "取消中",
+        "shipping": "面单获取中"
       },
       "tooltips": {
         "view": "查看",
-        "label": "面单"
+        "label": "面单",
+        "copy": "复制"
       },
       "pagination": {
         "total": "共 {total} 条",
@@ -388,7 +404,13 @@
         "cancelConfirm": "确定取消该运单？",
         "cancelSubmitted": "已提交取消",
         "cancelFailed": "取消失败",
-        "cancelling": "取消中..."
+        "cancelling": "取消中...",
+        "selectMergeDownloadRequired": "请先勾选需要合并下载的运单",
+        "mergeDownloadFailed": "合并下载失败",
+        "mergeDownloadSuccess": "合并下载成功"
+      },
+      "selection": {
+        "selected": "已选择 {count} 项"
       },
       "batchDialog": {
         "title": "批量出单状态",
@@ -1040,7 +1062,7 @@
         "totalFee": "总费用",
         "emptyFees": "暂无费用详细信息",
         "timelineTitle": "时间节点",
-        "erpSource": "ERP 来源"
+        "erpSource": "来源"
       },
       "timeline": {
         "created": "订单创建",
@@ -1087,6 +1109,7 @@
         "fee": "费用",
         "status": "状态",
         "remark": "备注",
+        "trackingNo": "物流单号",
         "adminRemark": "后台备注",
         "createdAt": "创建时间",
         "actions": "操作"
@@ -1110,7 +1133,8 @@
       },
       "tooltips": {
         "detail": "详情",
-        "edit": "编辑"
+        "edit": "编辑",
+        "copy": "复制"
       },
       "pagination": {
         "total": "共 {total} 条"
@@ -1125,7 +1149,8 @@
       "eyebrow": "一件代发 · 换标",
       "title": {
         "create": "创建换标订单",
-        "edit": "编辑换标订单"
+        "edit": "编辑换标订单",
+        "copy": "复制换标订单"
       },
       "subtitle": "填写收件地址、仓库与货品信息；标签与箱标请上传后再提交。",
       "loading": {
@@ -1174,6 +1199,7 @@
       "actions": {
         "submitCreate": "确认并提交换标订单",
         "submitEdit": "保存修改",
+        "submitCopy": "提交复制换标订单",
         "cancel": "取消"
       },
       "messages": {
@@ -2133,7 +2159,9 @@
     "printLabelCreate": {
       "hero": {
         "title": "新建运单",
-        "subtitle": "选择渠道后，发件/收件地址请从地址簿选择或在浮窗中新增、编辑；填写包裹与货品信息后试算运费；比价模式可多选渠道对比报价。"
+        "subtitle": "选择渠道后，发件/收件地址请从地址簿选择或在浮窗中新增、编辑；填写包裹与货品信息后试算运费；比价模式可多选渠道对比报价。",
+        "titleCopy": "复制运单",
+        "subtitleCopy": "已从原订单预填数据，请修改参考号后提交。"
       },
       "globalNotice": {
         "insurance": "如需保障货物安全并进行投保，请联络客服咨询下单。"
@@ -2152,7 +2180,7 @@
       "basic": {
         "title": "基础信息",
         "subtitle": "参考号与计量单位将参与试算与下单。",
-        "referenceLabel": "参考号",
+        "referenceLabel": "参考号（自有单号）",
         "referencePlaceholder": "仅英文、数字、下划线，建议15位以上",
         "referenceHint": "仅允许英文字母、数字与下划线；失焦或选字结束后会自动去掉其它字符（避免输入法过程中乱码）",
         "unitLabel": "重量/尺寸单位",
@@ -2213,7 +2241,8 @@
         "addressBookSubtitle": "按姓名向服务器筛选；单击「选择」或双击整行填入表单。"
       },
       "submit": {
-        "now": "立即下单"
+        "now": "立即下单",
+        "nowCopy": "提交复制运单"
       },
       "messages": {
         "referenceRequired": "请输入参考号",
@@ -2251,10 +2280,13 @@
         "saveFailed": "保存失败",
         "saveSuccess": "保存成功",
         "keepOneProduct": "至少保留一行货品",
+        "noEmptyProductRow": "已有数据，无法填充默认货品",
         "providerInvalid": "渠道配置异常，无法下单",
         "orderSuccess": "订单创建成功，正在出单中，请前往订单列表查看",
         "unauthorized": "登录已过期，请重新登录",
         "orderFailed": "下单失败",
+        "copyLoaded": "订单数据已加载，请修改参考号后提交",
+        "copyLoadFailed": "加载订单数据失败",
         "compareModeSubmitBlocked": "比价模式仅用于试算。请关闭比价模式后选择单个渠道下单",
         "rateBeforeOrder": "该渠道下单前需要先试算运费并选择线路",
         "noRouteForOrder": "该渠道未返回可选线路，暂不能下单",

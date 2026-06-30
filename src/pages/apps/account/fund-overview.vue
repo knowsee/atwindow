@@ -936,7 +936,7 @@ onBeforeUnmount(() => stopWxPolling())
                     {{ $t('pages.accountFundOverview.recharge.bank.transferAccount') }}
                   </div>
                   <div class="text-body-2">
-                    {{ $t('pages.accountFundOverview.recharge.bank.accountName') }}
+                    户名/Account Name：潘威文 (PAN WEIWEN)
                   </div>
                   <div class="text-body-2 mt-2">
                     {{ $t('pages.accountFundOverview.recharge.bank.accountNo') }}

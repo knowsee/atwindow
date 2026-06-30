@@ -542,7 +542,7 @@ onMounted(async () => {
         form.value.warehouseId = cachedWarehouseId
     }
 
-    warehouseOptions.value = await loadWarehouseOptions(t)
+    warehouseOptions.value = await loadWarehouseOptions(t, 3)
     cartonOptions.value = await loadCartonOptions(t)
     countryOptions.value = await loadCountryOptions()
     await loadDetail(!shouldPreload)

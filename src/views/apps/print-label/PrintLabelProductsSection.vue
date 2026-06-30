@@ -28,7 +28,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['add', 'remove'])
+const emit = defineEmits(['add', 'remove', 'addDefault'])
 const { t } = useI18n({ useScope: 'global' })
 
 const headers = computed(() => {
@@ -116,14 +116,24 @@ function lineNo(index) {
       <span class="text-body-2 text-medium-emphasis">{{ $t('components.printLabelProducts.subtitle') }}</span>
     </template>
     <template #append>
-      <VBtn
-        variant="tonal"
-        size="small"
-        prepend-icon="tabler-plus"
-        @click="emit('add')"
-      >
-        {{ $t('components.printLabelProducts.add') }}
-      </VBtn>
+      <div class="d-flex flex-wrap gap-2">
+        <VBtn
+          variant="tonal"
+          size="small"
+          prepend-icon="tabler-plus"
+          @click="emit('addDefault')"
+        >
+          {{ $t('components.printLabelProducts.addDefault') }}
+        </VBtn>
+        <VBtn
+          variant="tonal"
+          size="small"
+          prepend-icon="tabler-plus"
+          @click="emit('add')"
+        >
+          {{ $t('components.printLabelProducts.add') }}
+        </VBtn>
+      </div>
     </template>
 
     <VDataTable

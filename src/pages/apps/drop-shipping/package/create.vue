@@ -397,7 +397,7 @@ onMounted(async () => {
     loading.value = true
 
   try {
-    warehouseOptions.value = await loadWarehouseOptions()
+    warehouseOptions.value = await loadWarehouseOptions(undefined, 3)
     await loadSenderCountryOptions()
     if (!editingId.value)
       form.value.warehouseId = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: true })

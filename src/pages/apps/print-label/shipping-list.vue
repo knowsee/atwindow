@@ -19,6 +19,8 @@ const total = ref(0)
 const page = ref(1)
 const lastPage = ref(1)
 const itemsPerPage = ref(20)
+const selectedIds = ref([])
+const mergeDownloading = ref(false)
 const snack = ref({ show: false, text: '', color: 'info' })
 const batchDialogOpen = ref(false)
 const { t, locale } = useI18n({ useScope: 'global' })
@@ -118,7 +120,7 @@ const headers = computed(() => [
   { title: t('pages.printLabelShippingList.headers.fee'), key: 'customer_fee', minWidth: '96', align: 'end' },
   { title: t('pages.printLabelShippingList.headers.status'), key: 'status', minWidth: '100', align: 'center' },
   { title: t('pages.printLabelShippingList.headers.failReason'), key: 'fail_reason', minWidth: '160' },
-  { title: t('pages.printLabelShippingList.headers.actions'), key: 'actions', sortable: false, minWidth: '180', width: '180', align: 'end', fixed: 'end' },
+  { title: t('pages.printLabelShippingList.headers.actions'), key: 'actions', sortable: false, minWidth: '220', width: '220', align: 'end', fixed: 'end' },
 ])
 
 const dateLocale = computed(() => ({ zh: 'zh-CN', en: 'en-US', fr: 'fr-FR' })[locale.value] || undefined)
@@ -165,6 +167,8 @@ function statusLabelWithCancel(row) {
   const base = statusLabel(row?.status)
   if (Number(row?.cancel_status) === 1)
     return `${base} (${t('pages.printLabelShippingList.statuses.cancelling')})`
+  if (Number(row?.status) === 2 && !String(row?.tracking_number || '').trim())
+    return `${base} (${t('pages.printLabelShippingList.statuses.shipping')})`
 
   return base
 }
@@ -370,6 +374,14 @@ function showCancelButton(row) {
   return Number(row?.status) === 2
 }
 
+function isLabelFetching(row) {
+  return !row?.label_url && (Number(row?.status) === 1 || (Number(row?.status) === 2 && !String(row?.tracking_number || '').trim()))
+}
+
+function showLabelButton(row) {
+  return isLabelFetching(row) || !!row?.label_url
+}
+
 async function cancelShipping(row) {
   const orderId = Number(row?.id)
   if (!Number.isFinite(orderId) || orderId <= 0) {
@@ -400,6 +412,80 @@ async function cancelShipping(row) {
   }
   finally {
     cancellingId.value = null
+  }
+}
+
+async function mergeDownload() {
+  if (!selectedIds.value.length) {
+    toast(t('pages.printLabelShippingList.messages.selectMergeDownloadRequired'), 'warning')
+    
+    return
+  }
+
+  mergeDownloading.value = true
+  try {
+    const accessToken = useCookie('accessToken').value
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+    const body = {
+      order_ids: selectedIds.value.map(id => Number(id)).filter(n => Number.isFinite(n)),
+      ...(accessToken ? { token: accessToken } : {}),
+    }
+
+    const res = await fetch(`${baseURL}/Ordernewapi/shippingMergeDownload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}`, token: accessToken } : {}),
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+
+      toast(text || t('pages.printLabelShippingList.messages.mergeDownloadFailed'), 'error')
+      
+      return
+    }
+
+    const contentType = (res.headers.get('content-type') || '').toLowerCase()
+    if (contentType.includes('application/json')) {
+      const json = await res.json().catch(() => null)
+      if (json) {
+        toast(json.msg || t('pages.printLabelShippingList.messages.mergeDownloadFailed'), 'error')
+      }
+      
+      return
+    }
+
+    const blob = await res.blob()
+    const disposition = res.headers.get('content-disposition')
+    let filename = 'merged-labels.pdf'
+    if (disposition) {
+      const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+      if (match)
+        filename = match[1].replace(/['"]/g, '')
+    }
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    selectedIds.value = []
+    toast(t('pages.printLabelShippingList.messages.mergeDownloadSuccess'), 'success')
+  }
+  catch (e) {
+    toast(e?.message || t('pages.printLabelShippingList.messages.mergeDownloadFailed'), 'error')
+  }
+  finally {
+    mergeDownloading.value = false
   }
 }
 
@@ -543,12 +629,60 @@ watch([page, itemsPerPage], loadList, { immediate: true })
         </VRow>
       </AppQueryPanel>
 
+      <Transition name="slide-down">
+        <div
+          v-if="selectedIds.length"
+          class="batch-action-bar mb-4 px-4 py-3 rounded-lg d-flex align-center justify-space-between flex-wrap gap-3"
+        >
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="28"
+              rounded="circle"
+            >
+              <VIcon
+                icon="tabler-checkbox"
+                size="16"
+              />
+            </VAvatar>
+            <span class="text-body-2 font-weight-medium">
+              {{ $t('pages.printLabelShippingList.selection.selected', { count: selectedIds.length }) }}
+            </span>
+          </div>
+          <div class="d-flex align-center gap-2">
+            <VBtn
+              color="primary"
+              variant="flat"
+              size="small"
+              prepend-icon="tabler-file-download"
+              class="text-none"
+              :loading="mergeDownloading"
+              @click="mergeDownload"
+            >
+              {{ $t('pages.printLabelShippingList.actions.mergeDownload') }}
+            </VBtn>
+            <VBtn
+              variant="text"
+              size="small"
+              color="secondary"
+              class="text-none"
+              @click="selectedIds = []"
+            >
+              {{ $t('pages.printLabelShippingList.actions.cancelSelection') }}
+            </VBtn>
+          </div>
+        </div>
+      </Transition>
+
       <VDataTableServer
+        v-model="selectedIds"
         :headers="headers"
         :items="rows"
         :items-length="total"
         :loading="loading"
         item-value="id"
+        show-select
         class="text-body-2 ds-shipping-list__table"
       >
         <template #item.createtime="{ item }">
@@ -613,51 +747,66 @@ watch([page, itemsPerPage], loadList, { immediate: true })
                   </IconBtn>
                 </template>
               </VTooltip>
-              <VTooltip :text="$t('pages.printLabelShippingList.tooltips.label')">
+              <VTooltip
+                v-if="showLabelButton(item)"
+                :text="isLabelFetching(item) ? $t('pages.printLabelShippingList.statuses.shipping') : $t('pages.printLabelShippingList.tooltips.label')"
+              >
                 <template #activator="{ props: tipProps }">
                   <IconBtn
                     v-bind="tipProps"
                     size="small"
                     color="secondary"
                     :disabled="!item.label_url"
-                    @click="openLabel(item)"
+                    @click="item.label_url && openLabel(item)"
                   >
+                    <VProgressCircular
+                      v-if="isLabelFetching(item)"
+                      indeterminate
+                      size="16"
+                      width="2"
+                      color="secondary"
+                    />
                     <VIcon
+                      v-else
                       icon="tabler-download"
                       size="20"
                     />
                   </IconBtn>
                 </template>
               </VTooltip>
-              <VMenu>
-                <template #activator="{ props: menuProps }">
+              <VTooltip :text="$t('pages.printLabelShippingList.tooltips.copy')">
+                <template #activator="{ props: tipProps }">
                   <IconBtn
-                    v-bind="menuProps"
+                    v-bind="tipProps"
                     size="small"
                     color="secondary"
+                    @click="router.push({ name: 'apps-print-label-create', query: { copyFrom: item.id } })"
                   >
                     <VIcon
-                      icon="tabler-dots-vertical"
+                      icon="tabler-copy"
                       size="20"
                     />
                   </IconBtn>
                 </template>
-                <VList density="compact">
-                  <VListItem
-                    v-if="hasShippingBatch(item)"
-                    :title="$t('pages.printLabelShippingList.actions.batchDetail')"
-                    prepend-icon="tabler-packages"
-                    @click="openBatchDetailFromOrderRow(item)"
-                  />
-                  <VListItem
-                    v-if="showCancelButton(item)"
-                    :title="$t('pages.printLabelShippingList.actions.cancelShipment')"
-                    prepend-icon="tabler-ban"
-                    base-color="error"
+              </VTooltip>
+              <VTooltip
+                v-if="showCancelButton(item)"
+                :text="$t('pages.printLabelShippingList.actions.cancelShipment')"
+              >
+                <template #activator="{ props: tipProps }">
+                  <IconBtn
+                    v-bind="tipProps"
+                    size="small"
+                    color="error"
                     @click="cancelShipping(item)"
-                  />
-                </VList>
-              </VMenu>
+                  >
+                    <VIcon
+                      icon="tabler-ban"
+                      size="20"
+                    />
+                  </IconBtn>
+                </template>
+              </VTooltip>
             </template>
           </div>
         </template>
@@ -721,5 +870,21 @@ watch([page, itemsPerPage], loadList, { immediate: true })
 
 .shipping-list__toolbar-btn--primary {
   padding-inline: 10px !important;
+}
+
+.batch-action-bar {
+  background: rgba(var(--v-theme-primary), 0.06);
+  border: 1px solid rgba(var(--v-theme-primary), 0.18);
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>

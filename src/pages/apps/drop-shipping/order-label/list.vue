@@ -38,11 +38,12 @@ const headers = computed(() => [
   { title: t('pages.dropShippingOrderLabelList.headers.sku'), key: 'sku', minWidth: '120' },
   { title: t('pages.dropShippingOrderLabelList.headers.qty'), key: 'sku_num', minWidth: '80', align: 'end' },
   { title: t('pages.dropShippingOrderLabelList.headers.fee'), key: 'total_fee', minWidth: '88', align: 'end' },
+  { title: t('pages.dropShippingOrderLabelList.headers.trackingNo'), key: 'ht_tracking_no', minWidth: '140' },
   { title: t('pages.dropShippingOrderLabelList.headers.status'), key: 'status', minWidth: '88', align: 'center' },
   { title: t('pages.dropShippingOrderLabelList.headers.remark'), key: 'remark', minWidth: '160' },
   { title: t('pages.dropShippingOrderLabelList.headers.adminRemark'), key: 'remark_admin', minWidth: '160' },
   { title: t('pages.dropShippingOrderLabelList.headers.createdAt'), key: 'createtime', minWidth: '158' },
-  { title: t('pages.dropShippingOrderLabelList.headers.actions'), key: 'actions', sortable: false, width: '140', align: 'end', fixed: 'end' },
+  { title: t('pages.dropShippingOrderLabelList.headers.actions'), key: 'actions', sortable: false, width: '180', align: 'end', fixed: 'end' },
 ])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
@@ -283,6 +284,21 @@ watch([page, itemsPerPage], loadList, { immediate: true })
         item-value="id"
         class="text-body-2 ds-order-label-list__table"
       >
+        <template #item.ht_tracking_no="{ item }">
+          <div
+            v-if="item.ht_tracking_no"
+            class="tracking-no-lines"
+          >
+            <div
+              v-for="(no, i) in String(item.ht_tracking_no).split(';').filter(Boolean)"
+              :key="i"
+            >
+              {{ no }}
+            </div>
+          </div>
+          <span v-else>—</span>
+        </template>
+
         <template #item.remark="{ item }">
           <span
             class="text-truncate d-inline-block"
@@ -341,6 +357,21 @@ watch([page, itemsPerPage], loadList, { immediate: true })
                 >
                   <VIcon
                     icon="tabler-pencil"
+                    size="20"
+                  />
+                </IconBtn>
+              </template>
+            </VTooltip>
+            <VTooltip :text="$t('pages.dropShippingOrderLabelList.tooltips.copy')">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  color="secondary"
+                  @click="router.push({ name: 'apps-drop-shipping-order-label-create', query: { id: item.id, mode: 'copy' } })"
+                >
+                  <VIcon
+                    icon="tabler-copy"
                     size="20"
                   />
                 </IconBtn>

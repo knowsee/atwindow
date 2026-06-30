@@ -7,6 +7,7 @@ import Footer from '@/layouts/components/Footer.vue'
 import NavBarNotifications from '@/layouts/components/NavBarNotifications.vue'
 import NavSearchBar from '@/layouts/components/NavSearchBar.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
+import NavbarFontSizeSwitcher from '@/layouts/components/NavbarFontSizeSwitcher.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import { HorizontalNavLayout } from '@layouts'
@@ -39,6 +40,7 @@ import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
         :languages="themeConfig.app.i18n.langConfig"
       />
 
+      <NavbarFontSizeSwitcher />
       <NavbarThemeSwitcher />
       <NavBarNotifications class="me-2" />
       <UserProfile />
