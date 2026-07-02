@@ -371,7 +371,7 @@ function openView(row) {
 
 /** Can cancel successful shipments (status = 2); backend controls the actual endpoint semantics. */
 function showCancelButton(row) {
-  return Number(row?.status) === 2
+  return Number(row?.status) === 2 && Number(row?.cancel_status) !== 1
 }
 
 function isLabelFetching(row) {
@@ -381,6 +381,40 @@ function isLabelFetching(row) {
 function showLabelButton(row) {
   return isLabelFetching(row) || !!row?.label_url
 }
+
+const hasFetchingLabels = computed(() => rows.value.some(r => isLabelFetching(r)))
+
+let fetchPollTimer = null
+
+function startFetchPolling() {
+  if (fetchPollTimer)
+    return
+  fetchPollTimer = setInterval(() => {
+    if (!hasFetchingLabels.value) {
+      stopFetchPolling()
+      return
+    }
+    loadList()
+  }, 10000)
+}
+
+function stopFetchPolling() {
+  if (fetchPollTimer) {
+    clearInterval(fetchPollTimer)
+    fetchPollTimer = null
+  }
+}
+
+watch(hasFetchingLabels, (fetching) => {
+  if (fetching)
+    startFetchPolling()
+  else
+    stopFetchPolling()
+})
+
+onBeforeUnmount(() => {
+  stopFetchPolling()
+})
 
 async function cancelShipping(row) {
   const orderId = Number(row?.id)

@@ -2,7 +2,7 @@
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
 import { $api } from '@/utils/api'
 import { resolveBackendFileUrl } from '@/utils/backendFileUrl'
-import { createDsStatusItems, normalizeRangeText } from '@/views/apps/drop-shipping/useDropShippingShared'
+import { normalizeRangeText } from '@/views/apps/drop-shipping/useDropShippingShared'
 
 definePage({
   meta: {
@@ -23,14 +23,48 @@ const printingId = ref(null)
 const snack = ref({ show: false, text: '', color: 'info' })
 const { t } = useI18n({ useScope: 'global' })
 
-/** Align with dashboard and other entry query params: status, tracking_no, or trackingNo. */
-function parseRouteQueryToFilters(q) {
-  const base = {
-    status: 1,
+const FILTERS_CACHE_KEY = 'ds-pkg-list-filters'
+
+function getDefaultFilters() {
+  return {
+    status: '',
     sku: '',
     trackingNo: '',
-    timeRange: '',
+    createTime: '',
+    receiveTime: '',
   }
+}
+
+function loadCachedFilters() {
+  try {
+    const raw = sessionStorage.getItem(FILTERS_CACHE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+
+      return { ...getDefaultFilters(), ...parsed }
+    }
+  }
+  catch {}
+
+  return null
+}
+
+function saveCachedFilters(f) {
+  try {
+    sessionStorage.setItem(FILTERS_CACHE_KEY, JSON.stringify(f))
+  }
+  catch {}
+}
+
+function clearCachedFilters() {
+  try {
+    sessionStorage.removeItem(FILTERS_CACHE_KEY)
+  }
+  catch {}
+}
+
+function parseRouteQueryToFilters(q) {
+  const base = getDefaultFilters()
 
   if (q.status !== undefined && q.status !== null && String(q.status).trim() !== '') {
     const n = Number(q.status)
@@ -45,86 +79,66 @@ function parseRouteQueryToFilters(q) {
   return base
 }
 
-const filters = ref(parseRouteQueryToFilters(route.query))
+const filters = ref(loadCachedFilters() || parseRouteQueryToFilters(route.query))
 
-const quickStatusItems = computed(() => createDsStatusItems(t))
+const quickStatusItems = computed(() => [
+  { title: t('pages.dropShippingPackageList.statuses.all'), value: '' },
+  { title: t('pages.dropShippingPackageList.statuses.pendingReceive'), value: 1 },
+  { title: t('pages.dropShippingPackageList.statuses.onShelf'), value: 2 },
+  { title: t('pages.dropShippingPackageList.statuses.pendingShelf'), value: 3 },
+])
 
 const headers = computed(() => [
-  { title: t('pages.dropShippingPackageList.headers.package'), key: 'pkg_info', minWidth: '230' },
-  { title: t('pages.dropShippingPackageList.headers.warehouse'), key: 'warehouse_name', width: '140', minWidth: '120' },
-  { title: t('pages.dropShippingPackageList.headers.sku'), key: 'sku', minWidth: '180', maxWidth: '300' },
-  { title: t('pages.dropShippingPackageList.headers.qty'), key: 'qty', width: '130', minWidth: '180', align: 'center' },
-  { title: t('pages.dropShippingPackageList.headers.status'), key: 'statusStr', width: '110', minWidth: '100', align: 'center' },
+  { title: '', key: 'data-table-expand' },
+  { title: t('pages.dropShippingPackageList.headers.package'), key: 'pkg_info', minWidth: '220' },
+  { title: t('pages.dropShippingPackageList.headers.warehouse'), key: 'warehouse_name', minWidth: '120' },
+  { title: t('pages.dropShippingPackageList.headers.sku'), key: 'sku', minWidth: '180' },
+  { title: t('pages.dropShippingPackageList.headers.status'), key: 'status', width: '110', align: 'center' },
+  { title: t('pages.dropShippingPackageList.headers.receiveTime'), key: 'receivetime', minWidth: '160' },
   { title: t('pages.dropShippingPackageList.headers.actions'), key: 'actions', sortable: false, width: '130', align: 'center', fixed: 'end' },
 ])
 
 const pageLength = computed(() => Math.max(1, Math.ceil(total.value / itemsPerPage.value)))
 
+const createTimeRange = computed(() => normalizeRangeText(filters.value.createTime))
+const receiveTimeRange = computed(() => normalizeRangeText(filters.value.receiveTime))
+
 function toast(text, color = 'info') {
   snack.value = { show: true, text, color }
 }
 
-function resolveStatusColor(str) {
-  const s = String(str || '')
-  if (s.includes('\u5f02\u5e38') || s.includes('\u95ee\u9898'))
-    return 'error'
-  if (s.includes('\u5df2\u5230\u5e93') && !s.includes('\u672a\u4e0a\u62a5'))
-    return 'success'
-  if (s.includes('\u672a\u4e0a\u62a5') || s.includes('\u5f85\u4e0a\u67b6'))
-    return 'info'
-  if (s.includes('\u672a\u5230\u5e93') || s.includes('\u5f85\u6536\u8d27'))
+function resolveStatusColor(status) {
+  const n = Number(status)
+  if (n === 1)
     return 'warning'
+  if (n === 2)
+    return 'success'
+  if (n === 3)
+    return 'info'
 
   return 'primary'
 }
 
-/** Backend often joins multiple values with <br>; render as newlines instead of v-html. */
-function normalizeCellBreaks(val) {
-  if (val == null)
-    return ''
-  const s = String(val).replace(/<br\s*\/?>/gi, '\n').replace(/\r\n/g, '\n')
-
-  return s.trim()
-}
-
-function cellDisplay(val) {
-  const s = normalizeCellBreaks(val)
-
-  return s || '—'
-}
-
-/** Merge sku/sku_num/real_sku_num/cn_name arrays into row objects. */
 function buildSkuRows(item) {
-  const skus = Array.isArray(item.sku) ? item.sku : []
-  const cnNames = Array.isArray(item.cn_name) ? item.cn_name : []
-  const declared = Array.isArray(item.sku_num) ? item.sku_num : []
-  const actual = Array.isArray(item.real_sku_num) ? item.real_sku_num : []
-  const len = Math.max(skus.length, 1)
-
-  return Array.from({ length: len }, (_, i) => ({
-    sku: skus[i] ?? '',
-    cnName: cnNames[i] ?? null,
-    declared: declared[i] ?? null,
-    actual: actual[i] ?? null,
-  }))
+  return Array.isArray(item.sku_list) ? item.sku_list : []
 }
 
 function totalDeclared(item) {
-  const arr = Array.isArray(item.sku_num) ? item.sku_num : []
+  const list = buildSkuRows(item)
 
-  return arr.reduce((s, n) => s + Number(n || 0), 0)
+  return list.reduce((s, r) => s + Number(r.sku_num || 0), 0)
 }
 
 function totalActual(item) {
-  const arr = Array.isArray(item.real_sku_num) ? item.real_sku_num : []
+  const list = buildSkuRows(item)
 
-  return arr.reduce((s, n) => s + Number(n || 0), 0)
+  return list.reduce((s, r) => s + Number(r.real_sku_num || 0), 0)
 }
 
 function buildBody() {
   const body = {
-    'current_page': page.value,
-    'per_page_num': itemsPerPage.value,
+    current_page: page.value,
+    per_page_num: itemsPerPage.value,
   }
 
   if (filters.value.status !== '' && filters.value.status != null)
@@ -132,16 +146,11 @@ function buildBody() {
   if (filters.value.sku.trim())
     body.sku = filters.value.sku.trim()
   if (filters.value.trackingNo.trim())
-    body['tracking_no'] = filters.value.trackingNo.trim()
-
-  const range = normalizeRangeText(filters.value.timeRange)
-  if (range && range.includes(' - ')) {
-    const [start, end] = range.split(' - ')
-    if (start)
-      body.starttime = start.trim()
-    if (end)
-      body.endtime = end.trim()
-  }
+    body.tracking_no = filters.value.trackingNo.trim()
+  if (createTimeRange.value)
+    body.create_time = createTimeRange.value
+  if (receiveTimeRange.value)
+    body.receive_time = receiveTimeRange.value
 
   return body
 }
@@ -149,15 +158,15 @@ function buildBody() {
 async function loadList() {
   loading.value = true
   try {
-    const res = await $api('/package/all', {
+    const res = await $api('/ordernew/packageList', {
       method: 'POST',
       body: buildBody(),
     })
 
     if (Number(res?.code) === 1 && res?.data) {
-      rows.value = Array.isArray(res.data.data) ? res.data.data : []
-      total.value = Number(res.data.count) || 0
-      
+      rows.value = Array.isArray(res.data.list) ? res.data.list : []
+      total.value = Number(res.data.total) || 0
+
       return
     }
 
@@ -176,6 +185,8 @@ async function loadList() {
 }
 
 function searchList() {
+  saveCachedFilters(filters.value)
+
   const alreadyFirst = page.value === 1
 
   page.value = 1
@@ -184,7 +195,8 @@ function searchList() {
 }
 
 function onQuickStatusChange(v) {
-  filters.value.status = v
+  filters.value.status = v === '' ? '' : Number(v)
+  saveCachedFilters(filters.value)
 
   const alreadyFirst = page.value === 1
 
@@ -194,12 +206,8 @@ function onQuickStatusChange(v) {
 }
 
 function resetFilters() {
-  filters.value = {
-    status: 1,
-    sku: '',
-    trackingNo: '',
-    timeRange: '',
-  }
+  filters.value = getDefaultFilters()
+  clearCachedFilters()
   if (Object.keys(route.query).length)
     router.replace({ name: route.name, query: {} })
   searchList()
@@ -231,7 +239,7 @@ async function deleteOne(id) {
 async function batchDelete() {
   if (!selectedIds.value.length) {
     toast(t('pages.dropShippingPackageList.messages.selectDeleteRequired'), 'warning')
-    
+
     return
   }
 
@@ -324,6 +332,7 @@ watch(
   () => [route.query.status, route.query.tracking_no, route.query.trackingNo],
   () => {
     filters.value = parseRouteQueryToFilters(route.query)
+    saveCachedFilters(filters.value)
     page.value = 1
     loadList()
   },
@@ -434,11 +443,24 @@ watch(
             md="3"
           >
             <AppDateTimePicker
-              v-model="filters.timeRange"
+              v-model="filters.createTime"
               :label="$t('pages.dropShippingPackageList.filters.createdAt')"
               hide-details
               density="compact"
-              :config="{ mode: 'range', dateFormat: 'Y-m-d H:i:S', enableTime: true }"
+              :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <AppDateTimePicker
+              v-model="filters.receiveTime"
+              :label="$t('pages.dropShippingPackageList.filters.receiveTime')"
+              hide-details
+              density="compact"
+              :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
             />
           </VCol>
         </VRow>
@@ -508,23 +530,142 @@ watch(
       :items-length="total"
       item-value="id"
       show-select
+      expand-on-click
       density="comfortable"
       hover
       class="ds-pkg-list__table"
     >
+      <template #expanded-row="{ item }">
+        <tr class="v-data-table__tr">
+          <td :colspan="headers.length">
+            <div class="pkg-expanded">
+              <!-- Overview stats -->
+              <div class="pkg-expanded__stats">
+                <div class="pkg-expanded__stat">
+                  <VIcon
+                    icon="tabler-weight"
+                    size="18"
+                    class="pkg-expanded__stat-icon"
+                  />
+                  <div class="pkg-expanded__stat-body">
+                    <span class="pkg-expanded__stat-label">{{ $t('pages.dropShippingPackageList.headers.weight') }}</span>
+                    <span class="pkg-expanded__stat-value">{{ item.total_weight != null ? item.total_weight + ' kg' : '—' }}</span>
+                  </div>
+                </div>
+                <div class="pkg-expanded__stat">
+                  <VIcon
+                    icon="tabler-currency-dollar"
+                    size="18"
+                    class="pkg-expanded__stat-icon"
+                  />
+                  <div class="pkg-expanded__stat-body">
+                    <span class="pkg-expanded__stat-label">{{ $t('pages.dropShippingPackageList.headers.fee') }}</span>
+                    <span class="pkg-expanded__stat-value">{{ item.total_fee != null ? item.total_fee : '—' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sender card -->
+              <div class="pkg-expanded__card">
+                <div class="pkg-expanded__card-header">
+                  <VIcon
+                    icon="tabler-user"
+                    size="16"
+                  />
+                  <span>{{ $t('pages.dropShippingPackageList.expanded.senderInfo') }}</span>
+                </div>
+                <div class="pkg-expanded__card-body">
+                  <template v-if="item.sender && item.sender.name">
+                    <div class="pkg-expanded__row">
+                      <span class="pkg-expanded__row-label">{{ $t('pages.dropShippingPackageList.expanded.senderName') }}</span>
+                      <span class="pkg-expanded__row-value">{{ item.sender.name }}</span>
+                    </div>
+                    <div class="pkg-expanded__row">
+                      <span class="pkg-expanded__row-label">{{ $t('pages.dropShippingPackageList.expanded.senderTelephone') }}</span>
+                      <span class="pkg-expanded__row-value">{{ item.sender.telephone || '—' }}</span>
+                    </div>
+                    <div class="pkg-expanded__row">
+                      <span class="pkg-expanded__row-label">{{ $t('pages.dropShippingPackageList.expanded.senderCountry') }}</span>
+                      <span class="pkg-expanded__row-value">{{ item.sender.country || '—' }}</span>
+                    </div>
+                    <div class="pkg-expanded__row">
+                      <span class="pkg-expanded__row-label">{{ $t('pages.dropShippingPackageList.expanded.senderAddress') }}</span>
+                      <span class="pkg-expanded__row-value">{{ item.sender.address || '—' }}</span>
+                    </div>
+                  </template>
+                  <div
+                    v-else
+                    class="pkg-expanded__empty"
+                  >
+                    {{ $t('pages.dropShippingPackageList.expanded.noSender') }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- SKU detail card -->
+              <div class="pkg-expanded__card">
+                <div class="pkg-expanded__card-header">
+                  <VIcon
+                    icon="tabler-packages"
+                    size="16"
+                  />
+                  <span>{{ $t('pages.dropShippingPackageList.expanded.skuDetail') }}</span>
+                  <span class="pkg-expanded__card-badge">{{ buildSkuRows(item).length }}</span>
+                </div>
+                <div class="pkg-expanded__card-body pkg-expanded__card-body--flush">
+                  <div class="sku-detail-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>SKU</th>
+                          <th class="text-end">{{ $t('pages.dropShippingPackageList.expanded.declaredQty') }}</th>
+                          <th class="text-end">{{ $t('pages.dropShippingPackageList.expanded.actualQty') }}</th>
+                          <th>{{ $t('pages.dropShippingPackageList.expanded.skuStatus') }}</th>
+                          <th class="text-end">{{ $t('pages.dropShippingPackageList.expanded.skuWeight') }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(skuRow, si) in buildSkuRows(item)"
+                          :key="si"
+                        >
+                          <td class="ds-mono">{{ skuRow.sku || '—' }}</td>
+                          <td class="text-end">{{ skuRow.sku_num ?? '—' }}</td>
+                          <td class="text-end">
+                            <span
+                              :class="{ 'sku-detail-table__mismatch': skuRow.real_sku_num !== skuRow.sku_num }"
+                            >{{ skuRow.real_sku_num ?? '—' }}</span>
+                          </td>
+                          <td>
+                            <VChip
+                              v-if="skuRow.status"
+                              size="x-small"
+                              variant="flat"
+                              :color="skuRow.status === '已上架' || skuRow.status === 'On Shelf' ? 'success' : skuRow.status === '待上架' || skuRow.status === 'Pending Shelf' ? 'info' : 'warning'"
+                            >
+                              {{ skuRow.status }}
+                            </VChip>
+                            <span v-else>—</span>
+                          </td>
+                          <td class="text-end">{{ skuRow.weight != null ? skuRow.weight + ' kg' : '—' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </template>
+
       <template #item.pkg_info="{ item }">
         <div
           class="pkg-info-cell"
-          @click="router.push({ name: 'apps-drop-shipping-package-detail', query: { id: item.id } })"
+          @click.stop="router.push({ name: 'apps-drop-shipping-package-detail', query: { id: item.id } })"
         >
           <div class="pkg-info-cell__tracking ds-mono">
-            {{ item.tracking_no || item.order_sn || '—' }}
-          </div>
-          <div
-            v-if="item.tracking_no && item.order_sn"
-            class="pkg-info-cell__sn"
-          >
-            {{ item.order_sn }}
+            {{ item.tracking_no || '—' }}
           </div>
           <div class="pkg-info-cell__time">
             <VIcon
@@ -532,7 +673,7 @@ watch(
               size="12"
               class="me-1"
             />
-            {{ item.createtime || '—' }}
+            {{ item.createtime_text || item.createtime || '—' }}
           </div>
         </div>
       </template>
@@ -547,7 +688,7 @@ watch(
             size="14"
             color="medium-emphasis"
           />
-          <span class="text-body-2">{{ cellDisplay(item.warehouse_name) }}</span>
+          <span class="text-body-2">{{ item.warehouse_name }}</span>
         </div>
         <span
           v-else
@@ -563,20 +704,13 @@ watch(
             class="sku-row"
           >
             <span class="sku-row__code ds-mono">{{ row.sku || '—' }}</span>
-            <span
-              v-if="row.cnName"
-              class="sku-row__cn"
-            >{{ row.cnName }}</span>
           </div>
         </div>
-      </template>
-
-      <template #item.qty="{ item }">
         <div
           v-if="buildSkuRows(item).length === 1"
-          class="qty-compare d-flex align-center justify-center gap-1"
+          class="qty-compare d-flex align-center gap-1 mt-1"
         >
-          <span class="qty-compare__val text-medium-emphasis">{{ buildSkuRows(item)[0].declared ?? '—' }}</span>
+          <span class="qty-compare__val text-medium-emphasis">{{ buildSkuRows(item)[0].sku_num ?? '—' }}</span>
           <VIcon
             icon="tabler-arrow-narrow-right"
             size="14"
@@ -584,61 +718,25 @@ watch(
           />
           <span
             class="qty-compare__val font-weight-semibold"
-            :class="buildSkuRows(item)[0].actual !== buildSkuRows(item)[0].declared ? 'text-warning' : 'text-success'"
-          >{{ buildSkuRows(item)[0].actual ?? '—' }}</span>
-          <VIcon
-            v-if="buildSkuRows(item)[0].actual != null && buildSkuRows(item)[0].actual !== buildSkuRows(item)[0].declared"
-            icon="tabler-alert-triangle"
-            size="13"
-            color="warning"
-          />
-        </div>
-        <div
-          v-else
-          class="qty-compare-multi"
-        >
-          <div
-            v-for="(row, i) in buildSkuRows(item)"
-            :key="i"
-            class="qty-row d-flex align-center justify-center gap-1"
-          >
-            <span class="qty-compare__val text-medium-emphasis">{{ row.declared ?? '—' }}</span>
-            <VIcon
-              icon="tabler-arrow-narrow-right"
-              size="12"
-              color="medium-emphasis"
-            />
-            <span
-              class="qty-compare__val font-weight-semibold"
-              :class="row.actual !== row.declared ? 'text-warning' : 'text-success'"
-            >{{ row.actual ?? '—' }}</span>
-          </div>
-          <VDivider class="my-1" />
-          <div class="qty-row d-flex align-center justify-center gap-1">
-            <span class="text-caption text-medium-emphasis">{{ totalDeclared(item) }}</span>
-            <VIcon
-              icon="tabler-arrow-narrow-right"
-              size="12"
-              color="medium-emphasis"
-            />
-            <span
-              class="text-caption font-weight-bold"
-              :class="totalActual(item) !== totalDeclared(item) ? 'text-warning' : 'text-success'"
-            >{{ totalActual(item) }}</span>
-          </div>
+            :class="buildSkuRows(item)[0].real_sku_num !== buildSkuRows(item)[0].sku_num ? 'text-warning' : 'text-success'"
+          >{{ buildSkuRows(item)[0].real_sku_num ?? '—' }}</span>
         </div>
       </template>
 
-      <template #item.statusStr="{ item }">
+      <template #item.status="{ item }">
         <div class="d-flex justify-center">
           <VChip
             size="small"
             variant="tonal"
-            :color="resolveStatusColor(item.statusStr)"
+            :color="resolveStatusColor(item.status)"
           >
-            {{ item.statusStr || '—' }}
+            {{ item.status_text || '—' }}
           </VChip>
         </div>
+      </template>
+
+      <template #item.receivetime="{ item }">
+        <span class="text-body-2">{{ item.receivetime_text || '—' }}</span>
       </template>
 
       <template #item.actions="{ item }">
@@ -729,7 +827,6 @@ watch(
 </template>
 
 <style scoped>
-/* Table basics */
 .ds-pkg-list__table :deep(.v-data-table__thead .v-data-table__th) {
   font-weight: 600 !important;
   white-space: nowrap;
@@ -743,7 +840,6 @@ watch(
   padding-block: 0.75rem !important;
 }
 
-/* Main inbound-order info cell */
 .pkg-info-cell {
   display: flex;
   flex-direction: column;
@@ -768,14 +864,6 @@ watch(
   transition: color 0.15s;
 }
 
-.pkg-info-cell__sn {
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.55);
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-  word-break: break-all;
-}
-
 .pkg-info-cell__time {
   display: inline-flex;
   align-items: center;
@@ -788,7 +876,6 @@ watch(
   white-space: nowrap;
 }
 
-/* Multi-line SKU list */
 .sku-list {
   display: flex;
   flex-direction: column;
@@ -810,39 +897,8 @@ watch(
   word-break: break-word;
 }
 
-.sku-row__cn {
-  font-size: 0.6875rem;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-}
-
-/* Multi-SKU quantity comparison */
-.qty-compare-multi {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.qty-row {
-  font-size: 0.8125rem;
-}
-
-/* Legacy SKU cell fallback */
-.sku-cell {
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  font-size: 0.8125rem;
-  color: rgba(var(--v-theme-on-surface), 0.87);
-  max-inline-size: 260px;
-  line-height: 1.5;
-}
-
-/* Declared/received comparison */
 .qty-compare {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -851,13 +907,11 @@ watch(
   text-align: center;
 }
 
-/* Batch action bar */
 .batch-action-bar {
   background: rgba(var(--v-theme-primary), 0.06);
   border: 1px solid rgba(var(--v-theme-primary), 0.18);
 }
 
-/* Slide-in animation */
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition: all 0.2s ease;
@@ -869,8 +923,191 @@ watch(
   transform: translateY(-8px);
 }
 
-/* Monospace values */
 .ds-mono {
   font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+}
+
+.pkg-expanded {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pkg-expanded__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.pkg-expanded__stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(var(--v-theme-on-surface), 0.025);
+  border-radius: 12px;
+  border: 0.5px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.pkg-expanded__stat-icon {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pkg-expanded__stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pkg-expanded__stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--v-theme-on-surface), 0.45);
+  line-height: 1.3;
+}
+
+.pkg-expanded__stat-value {
+  font-size: 0.875rem;
+  font-weight: 590;
+  color: rgba(var(--v-theme-on-surface), 0.9);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.pkg-expanded__card {
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 0.5px solid rgba(var(--v-theme-on-surface), 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pkg-expanded__card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 0.5px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.pkg-expanded__card-header .v-icon {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+
+.pkg-expanded__card-badge {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 100px;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  letter-spacing: 0;
+}
+
+.pkg-expanded__card-body {
+  padding: 4px 0;
+}
+
+.pkg-expanded__card-body--flush {
+  padding: 0;
+}
+
+.pkg-expanded__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+}
+
+.pkg-expanded__row + .pkg-expanded__row {
+  border-top: 0.5px solid rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.pkg-expanded__row-label {
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.pkg-expanded__row-value {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.87);
+  text-align: end;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.pkg-expanded__empty {
+  padding: 14px;
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.38);
+  text-align: center;
+}
+
+.sku-detail-table {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.sku-detail-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.sku-detail-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.sku-detail-table th {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--v-theme-on-surface), 0.45);
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  padding: 8px 14px;
+  white-space: nowrap;
+  text-align: start;
+  border-bottom: 0.5px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.sku-detail-table td {
+  padding: 8px 14px;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  border-bottom: 0.5px solid rgba(var(--v-theme-on-surface), 0.04);
+  white-space: nowrap;
+}
+
+.sku-detail-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sku-detail-table__mismatch {
+  color: rgb(var(--v-theme-warning));
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .pkg-expanded__stats {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -731,7 +731,8 @@
         "skuPlaceholder": "Enter SKU code",
         "trackingNo": "Tracking no.",
         "trackingNoPlaceholder": "Enter tracking no.",
-        "createdAt": "Created at"
+        "createdAt": "Created at",
+        "receiveTime": "Received Time"
       },
       "headers": {
         "package": "Inbound order",
@@ -739,7 +740,12 @@
         "sku": "SKU",
         "qty": "Declared / received",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "receiveTime": "Received Time",
+        "location": "Location",
+        "weight": "Weight",
+        "fee": "Fee",
+        "sender": "Sender"
       },
       "selection": {
         "selected": "Selected {count}"
@@ -750,6 +756,26 @@
       },
       "pagination": {
         "total": "Total {total} records"
+      },
+      "statuses": {
+        "all": "All",
+        "pendingReceive": "Pending Receipt",
+        "onShelf": "On Shelf",
+        "pendingShelf": "Pending Shelf"
+      },
+      "expanded": {
+        "senderInfo": "Sender Info",
+        "senderName": "Name",
+        "senderAddress": "Address",
+        "senderTelephone": "Phone",
+        "senderCountry": "Country",
+        "noSender": "No sender",
+        "skuDetail": "SKU Details",
+        "declaredQty": "Declared Qty",
+        "actualQty": "Actual Qty",
+        "skuStatus": "Status",
+        "skuWeight": "Weight",
+        "skuLocation": "Location"
       },
       "messages": {
         "loadFailed": "Failed to load inbound list",
@@ -854,11 +880,17 @@
         "orderNo": "Order no.",
         "referenceNo": "Reference no.",
         "recipient": "Recipient",
+        "receiveTelephone": "Recipient phone",
+        "receiveAddress": "Recipient address",
+        "receiveCity": "Recipient city",
+        "receiveProvince": "Recipient province/state",
+        "receiveCountry": "Recipient country",
         "warehouse": "Warehouse",
         "sku": "SKU",
         "trackingNo": "Tracking no.",
         "fee": "Fee",
         "status": "Status",
+        "createdAt": "Created at",
         "actions": "Actions"
       },
       "tooltips": {
@@ -873,6 +905,9 @@
         "networkFailed": "Network request failed",
         "statusRequired": "Status is required. Select a status first",
         "exportSubmitted": "Export task submitted",
+        "exportLoadFailed": "Failed to fetch export data",
+        "exportNoData": "No data to export under current filters",
+        "exportSuccess": "Exported {count} rows",
         "exportFailed": "Export failed"
       }
     },

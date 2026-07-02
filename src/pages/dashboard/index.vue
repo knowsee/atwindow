@@ -335,10 +335,10 @@ const sevenDayDonutSeries = computed(() => sevenDayActiveSegments.value.map(s =>
 
 const sevenDayDonutOptions = computed(() => {
   const base = getDonutChartConfig(vuetifyTheme.current.value)
-  const t = vuetifyTheme.current.value.colors
+  const themeColors = vuetifyTheme.current.value.colors
   const segs = sevenDayActiveSegments.value
   const labels = segs.map(s => s.label)
-  const palette = [t.warning, t.success, t.error, t.info, t.primary, t.secondary]
+  const palette = [themeColors.warning, themeColors.success, themeColors.error, themeColors.info, themeColors.primary, themeColors.secondary]
   const colors = segs.map((_, i) => palette[i % palette.length])
 
   return {

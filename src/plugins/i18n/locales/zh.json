@@ -731,7 +731,8 @@
         "skuPlaceholder": "输入 SKU 编码",
         "trackingNo": "运单号",
         "trackingNoPlaceholder": "输入运单号",
-        "createdAt": "创建时间"
+        "createdAt": "创建时间",
+        "receiveTime": "入库时间"
       },
       "headers": {
         "package": "入库单",
@@ -739,7 +740,12 @@
         "sku": "SKU",
         "qty": "申报 / 实收",
         "status": "状态",
-        "actions": "操作"
+        "actions": "操作",
+        "receiveTime": "入库时间",
+        "location": "库位",
+        "weight": "重量",
+        "fee": "费用",
+        "sender": "发件人"
       },
       "selection": {
         "selected": "已选 {count} 条"
@@ -750,6 +756,26 @@
       },
       "pagination": {
         "total": "共 {total} 条记录"
+      },
+      "statuses": {
+        "all": "全部",
+        "pendingReceive": "待收货",
+        "onShelf": "已上架",
+        "pendingShelf": "待上架"
+      },
+      "expanded": {
+        "senderInfo": "发件人信息",
+        "senderName": "姓名",
+        "senderAddress": "地址",
+        "senderTelephone": "电话",
+        "senderCountry": "国家",
+        "noSender": "无发件人",
+        "skuDetail": "SKU 明细",
+        "declaredQty": "预报数量",
+        "actualQty": "实收数量",
+        "skuStatus": "状态",
+        "skuWeight": "重量",
+        "skuLocation": "库位"
       },
       "messages": {
         "loadFailed": "加载入库列表失败",
@@ -854,11 +880,17 @@
         "orderNo": "订单号",
         "referenceNo": "参考号",
         "recipient": "收件人",
+        "receiveTelephone": "收件人电话",
+        "receiveAddress": "收件人地址",
+        "receiveCity": "收件人城市",
+        "receiveProvince": "收件人省/州",
+        "receiveCountry": "收件人国家",
         "warehouse": "仓库",
         "sku": "SKU",
         "trackingNo": "运单号",
         "fee": "费用",
         "status": "状态",
+        "createdAt": "创建时间",
         "actions": "操作"
       },
       "tooltips": {
@@ -873,6 +905,9 @@
         "networkFailed": "网络请求失败",
         "statusRequired": "状态为必选项，请先选择状态",
         "exportSubmitted": "导出任务已提交",
+        "exportLoadFailed": "获取导出数据失败",
+        "exportNoData": "当前条件下无数据可导出",
+        "exportSuccess": "已导出 {count} 条",
         "exportFailed": "导出失败"
       }
     },

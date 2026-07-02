@@ -1,5 +1,6 @@
 import { $api } from '@/utils/api'
 import { checkVersion, newVersionAvailable } from '@/composables/useVersionCheck'
+import { getAppAbility } from '@/utils/authAbilityRegistry'
 import { canNavigate } from '@layouts/plugins/casl'
 
 const defaultAbilityRules = [{ action: 'manage', subject: 'all' }]
@@ -41,7 +42,10 @@ async function ensureLoginFromDomainCookie() {
         const res = await $api('/Ordernew/checkToken', { method: 'GET', onResponseError: () => {} })
 
         if (res?.accessToken) {
-          useCookie('userAbilityRules').value = res.userAbilityRules?.length ? res.userAbilityRules : defaultAbilityRules
+          const rules = res.userAbilityRules?.length ? res.userAbilityRules : defaultAbilityRules
+
+          useCookie('userAbilityRules').value = rules
+          getAppAbility()?.update(rules)
           useCookie('userData').value = res.userData || {}
           accessToken.value = res.accessToken
           
@@ -52,6 +56,7 @@ async function ensureLoginFromDomainCookie() {
         const codeOk = Number(res?.code) === 1
         if (codeOk && token) {
           useCookie('userAbilityRules').value = defaultAbilityRules
+          getAppAbility()?.update(defaultAbilityRules)
           useCookie('userData').value = res.data.userinfo
           accessToken.value = token
           
@@ -122,8 +127,8 @@ export const setupGuards = router => {
             /* eslint-enable indent */
     }
 
-    await checkVersion()
-    if (newVersionAvailable.value)
-      return false
+    // ℹ️ 版本检测只做通知，不阻断路由导航
+    // 新版本弹窗由 VersionUpdateDialog 组件处理，无需在守卫中 return false（会导致白屏）
+    checkVersion()
   })
 }

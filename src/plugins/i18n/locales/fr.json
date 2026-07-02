@@ -731,7 +731,8 @@
         "skuPlaceholder": "Saisir le code SKU",
         "trackingNo": "N° de suivi",
         "trackingNoPlaceholder": "Saisir le N° de suivi",
-        "createdAt": "Créé le"
+        "createdAt": "Créé le",
+        "receiveTime": "Heure de réception"
       },
       "headers": {
         "package": "Entrée stock",
@@ -739,7 +740,12 @@
         "sku": "SKU",
         "qty": "Déclaré / reçu",
         "status": "Statut",
-        "actions": "Actions"
+        "actions": "Actions",
+        "receiveTime": "Heure de réception",
+        "location": "Emplacement",
+        "weight": "Poids",
+        "fee": "Frais",
+        "sender": "Expéditeur"
       },
       "selection": {
         "selected": "{count} sélectionné(s)"
@@ -750,6 +756,26 @@
       },
       "pagination": {
         "total": "Total {total} enregistrements"
+      },
+      "statuses": {
+        "all": "Tout",
+        "pendingReceive": "En attente de réception",
+        "onShelf": "Mis en rayon",
+        "pendingShelf": "En attente de mise en rayon"
+      },
+      "expanded": {
+        "senderInfo": "Infos expéditeur",
+        "senderName": "Nom",
+        "senderAddress": "Adresse",
+        "senderTelephone": "Téléphone",
+        "senderCountry": "Pays",
+        "noSender": "Pas d'expéditeur",
+        "skuDetail": "Détails SKU",
+        "declaredQty": "Qté déclarée",
+        "actualQty": "Qté reçue",
+        "skuStatus": "Statut",
+        "skuWeight": "Poids",
+        "skuLocation": "Emplacement"
       },
       "messages": {
         "loadFailed": "Échec du chargement de la liste des entrées stock",
@@ -854,11 +880,17 @@
         "orderNo": "N° de commande",
         "referenceNo": "Référence",
         "recipient": "Destinataire",
+        "receiveTelephone": "Téléphone destinataire",
+        "receiveAddress": "Adresse destinataire",
+        "receiveCity": "Ville destinataire",
+        "receiveProvince": "Province/État destinataire",
+        "receiveCountry": "Pays destinataire",
         "warehouse": "Entrepôt",
         "sku": "SKU",
         "trackingNo": "N° de suivi",
         "fee": "Frais",
         "status": "Statut",
+        "createdAt": "Créée le",
         "actions": "Actions"
       },
       "tooltips": {
@@ -873,6 +905,9 @@
         "networkFailed": "Échec de la requête réseau",
         "statusRequired": "Le statut est obligatoire. Sélectionnez d'abord un statut",
         "exportSubmitted": "Tâche d'export soumise",
+        "exportLoadFailed": "Échec de la récupération des données d'export",
+        "exportNoData": "Aucune donnée à exporter avec les filtres actuels",
+        "exportSuccess": "Exporté {count} lignes",
         "exportFailed": "Échec de l'export"
       }
     },

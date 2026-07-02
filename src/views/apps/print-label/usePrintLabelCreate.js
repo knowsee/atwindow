@@ -11,6 +11,7 @@ import {
 
 export function usePrintLabelCreate() {
   const router = useRouter()
+  const route = useRoute()
   const { t } = useI18n({ useScope: 'global' })
   const channels = PRINT_LABEL_CHANNELS
 

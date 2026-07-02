@@ -1,6 +1,7 @@
 <script setup>
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
 import { $api } from '@/utils/api'
+import { downloadXlsx, makeExportBasename } from '@/utils/exportXlsx'
 import { resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
 import { loadWarehouseOptions, normalizeRangeText } from '@/views/apps/drop-shipping/useDropShippingShared'
 
@@ -20,6 +21,7 @@ const itemsPerPage = ref(20)
 const warehouseOptions = ref([])
 const snack = ref({ show: false, text: '', color: 'info' })
 const warehousePersistReady = ref(false)
+const exporting = ref(false)
 const { t } = useI18n({ useScope: 'global' })
 
 const statusTextKeys = {
@@ -245,21 +247,74 @@ function resetFilters() {
 }
 
 async function exportOrders() {
+  if (exporting.value)
+    return
+
+  exporting.value = true
   try {
     const res = await $api('/order/excelYjdf', {
       method: 'POST',
       body: buildBody(),
     })
 
-    if (Number(res?.code) === 1) {
-      toast(t('pages.dropShippingOrderList.messages.exportSubmitted'), 'success')
+    if (Number(res?.code) !== 1 || !res?.data) {
+      toast(res?.msg || t('pages.dropShippingOrderList.messages.exportLoadFailed'), 'error')
+
+      return
     }
-    else {
-      toast(res?.msg || t('pages.dropShippingOrderList.messages.exportFailed'), 'error')
+
+    const list = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : [])
+    if (!list.length) {
+      toast(t('pages.dropShippingOrderList.messages.exportNoData'), 'warning')
+
+      return
     }
+
+    const rows = list.map(row => ({
+      'order_sn': row.order_sn ?? '',
+      'cankaohao': row.cankaohao ?? '',
+      'name': row.receive_name ?? '',
+      'receive_telephone': row.receive_telephone ?? '',
+      'receive_address': row.receive_address ?? '',
+      'receive_city': row.receive_city ?? '',
+      'receive_province': row.receive_province ?? '',
+      'receive_country': row.receive_country ?? '',
+      'warehouse_name': row.warehouse_name ?? '',
+      'sku': row.sku ?? '',
+      'ht_tracking_no': row.ht_tracking_no ?? '',
+      'total_fee': row.total_fee ?? '',
+      'status_name': row.status_name || getStatusText(row),
+      'createtime': row.createtime ?? '',
+    }))
+
+    await downloadXlsx({
+      filename: makeExportBasename(t('pages.dropShippingOrderList.title')),
+      sheetName: t('pages.dropShippingOrderList.title'),
+      columns: [
+        { key: 'order_sn', title: t('pages.dropShippingOrderList.headers.orderNo') },
+        { key: 'cankaohao', title: t('pages.dropShippingOrderList.headers.referenceNo') },
+        { key: 'name', title: t('pages.dropShippingOrderList.headers.recipient') },
+        { key: 'receive_telephone', title: t('pages.dropShippingOrderList.headers.receiveTelephone') },
+        { key: 'receive_address', title: t('pages.dropShippingOrderList.headers.receiveAddress') },
+        { key: 'receive_city', title: t('pages.dropShippingOrderList.headers.receiveCity') },
+        { key: 'receive_province', title: t('pages.dropShippingOrderList.headers.receiveProvince') },
+        { key: 'receive_country', title: t('pages.dropShippingOrderList.headers.receiveCountry') },
+        { key: 'warehouse_name', title: t('pages.dropShippingOrderList.headers.warehouse') },
+        { key: 'sku', title: t('pages.dropShippingOrderList.headers.sku') },
+        { key: 'ht_tracking_no', title: t('pages.dropShippingOrderList.headers.trackingNo') },
+        { key: 'total_fee', title: t('pages.dropShippingOrderList.headers.fee') },
+        { key: 'status_name', title: t('pages.dropShippingOrderList.headers.status') },
+        { key: 'createtime', title: t('pages.dropShippingOrderList.headers.createdAt') },
+      ],
+      rows,
+    })
+    toast(t('pages.dropShippingOrderList.messages.exportSuccess', { count: list.length }), 'success')
   }
   catch (e) {
     toast(e?.data?.msg || e?.message || t('pages.dropShippingOrderList.messages.exportFailed'), 'error')
+  }
+  finally {
+    exporting.value = false
   }
 }
 
@@ -342,7 +397,8 @@ onMounted(async () => {
             color="primary"
             variant="tonal"
             size="small"
-            prepend-icon="tabler-download"
+            prepend-icon="tabler-file-export"
+            :loading="exporting"
             @click="exportOrders"
           >
             {{ $t('pages.dropShippingOrderList.actions.export') }}
