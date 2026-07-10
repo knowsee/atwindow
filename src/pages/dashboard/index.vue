@@ -236,39 +236,6 @@ function resolveDropshipStatusLabel(status) {
   return key ? t(`pages.dashboard.sevenDay.status.${key}`) : t('pages.dashboard.warehouse.statusFallback', { status })
 }
 
-const globalKpis = computed(() => {
-  const pkg = overview.value?.packages
-  const w7 = overview.value?.waybill_stats
-  const fin = overview.value?.finance
-
-  return [
-    {
-      title: t('pages.dashboard.kpis.packages.title'),
-      subtitle: t('pages.dashboard.kpis.packages.subtitle'),
-      value: pkg?.total != null ? String(pkg.total) : '—',
-      hint: pkg ? t('pages.dashboard.kpis.packages.hint', { pending: pkg.pending ?? 0, arrived: pkg.arrived ?? 0 }) : '',
-      icon: 'tabler-package',
-      color: 'primary',
-    },
-    {
-      title: t('pages.dashboard.kpis.balance.title'),
-      subtitle: 'USD',
-      value: fin?.balance != null ? formatMoney(fin.balance) : '—',
-      hint: fin ? t('pages.dashboard.kpis.balance.hint', { inflow: formatMoney(fin.month_inflow), outflow: formatMoney(fin.month_outflow) }) : '',
-      icon: 'tabler-wallet',
-      color: 'success',
-    },
-    {
-      title: t('pages.dashboard.kpis.sevenDay.title'),
-      subtitle: t('pages.dashboard.kpis.sevenDay.subtitle'),
-      value: w7?.seven_day_total != null ? String(w7.seven_day_total) : '—',
-      hint: w7 ? t('pages.dashboard.kpis.sevenDay.hint') : '',
-      icon: 'tabler-calendar-event',
-      color: 'warning',
-    },
-  ]
-})
-
 const sevenDayParsed = computed(() => {
   const o = overview.value
   if (!o) {
@@ -295,6 +262,42 @@ const sevenDayParsed = computed(() => {
     totalDropship,
   }
 })
+
+const globalKpis = computed(() => {
+  const pkg = overview.value?.packages
+  const fin = overview.value?.finance
+  
+  const totalSevenDay = sevenDayParsed.value.totalWaybill + sevenDayParsed.value.totalDropship
+
+  return [
+    {
+      title: t('pages.dashboard.kpis.packages.title'),
+      subtitle: t('pages.dashboard.kpis.packages.subtitle'),
+      value: pkg?.total != null ? String(pkg.total) : '—',
+      hint: pkg ? t('pages.dashboard.kpis.packages.hint', { pending: pkg.pending ?? 0, arrived: pkg.arrived ?? 0 }) : '',
+      icon: 'tabler-package',
+      color: 'primary',
+    },
+    {
+      title: t('pages.dashboard.kpis.balance.title'),
+      subtitle: 'USD',
+      value: fin?.balance != null ? formatMoney(fin.balance) : '—',
+      hint: fin ? t('pages.dashboard.kpis.balance.hint', { inflow: formatMoney(fin.month_inflow), outflow: formatMoney(fin.month_outflow) }) : '',
+      icon: 'tabler-wallet',
+      color: 'success',
+    },
+    {
+      title: t('pages.dashboard.kpis.sevenDay.title'),
+      subtitle: t('pages.dashboard.kpis.sevenDay.subtitle'),
+      value: String(totalSevenDay),
+      hint: overview.value ? t('pages.dashboard.kpis.sevenDay.hint') : '',
+      icon: 'tabler-calendar-event',
+      color: 'warning',
+    },
+  ]
+})
+
+
 
 const sevenDayActiveSegments = computed(() => {
   return sevenDayOrderSource.value === 'waybill'
@@ -782,23 +785,30 @@ onMounted(async () => {
 
 
 
-    <VTabs
+    <VSlideGroup
       v-if="warehouseOptions.length"
       v-model="warehouseId"
-      color="primary"
-      density="comfortable"
+      class="mb-6"
       show-arrows
-      class="app-dashboard__wh-tabs mb-6"
+      mandatory
     >
-      <VTab
+      <VSlideGroupItem
         v-for="w in warehouseOptions"
         :key="String(w.value)"
         :value="w.value"
-        class="text-none text-body-1"
+        v-slot="{ isSelected, toggle }"
       >
-        {{ w.title }}
-      </VTab>
-    </VTabs>
+        <VChip
+          :color="isSelected ? 'primary' : 'default'"
+          :variant="isSelected ? 'elevated' : 'tonal'"
+          class="mx-2 my-2 text-body-1 font-weight-medium px-5"
+          size="large"
+          @click="toggle"
+        >
+          {{ w.title }}
+        </VChip>
+      </VSlideGroupItem>
+    </VSlideGroup>
 
     <template v-if="warehouseId">
       <AiWarehouseAnalysis :warehouse-id="warehouseId" />
@@ -1331,15 +1341,6 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
-.app-dashboard__wh-tabs {
-  border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-
-  :deep(.v-tab) {
-    min-inline-size: unset;
-    letter-spacing: normal;
-    text-transform: none;
-  }
-}
 
 .app-dashboard__seven-day-tabs {
   border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));

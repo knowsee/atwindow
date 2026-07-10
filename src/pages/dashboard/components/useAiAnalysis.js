@@ -166,8 +166,19 @@ export function useAiAnalysis(warehouseIdRef, localeRef, fallbackErrorMsgFn) {
                   if (state.loadingPhase !== 'streaming') {
                     state.loadingPhase = 'streaming'
                   }
-                  
-                  const chunkData = JSON.parse(msg.data)
+                  if (!msg.data) return
+                  if (msg.data === '[DONE]') {
+                    handleStreamDone()
+                    return
+                  }
+
+                  let chunkData = {}
+                  try {
+                    chunkData = JSON.parse(msg.data)
+                  } catch (err) {
+                    console.warn('Skipping invalid JSON chunk:', msg.data)
+                    return
+                  }
                   
                   // 兼容后端把 code: 200 成功消息当成 message/done 发送
                   if (chunkData.code === 200 && chunkData.message === 'success') {

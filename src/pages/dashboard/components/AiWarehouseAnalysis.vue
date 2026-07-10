@@ -328,13 +328,13 @@ const specializedCharts = computed(() => {
     <template v-else-if="aiData">
 
       <!-- Tabs Navigation -->
-      <div class="mb-4">
-        <VTabs v-model="activeTab" color="primary" class="ai-tabs">
-          <VTab value="analysis" class="text-none">
+      <div class="mb-6 border-b">
+        <VTabs v-model="activeTab" color="primary" align-tabs="start" class="ai-tabs">
+          <VTab value="analysis" class="text-none text-subtitle-2 font-weight-bold px-4">
             <VIcon icon="tabler-file-analytics" class="mr-2" size="20" />
             智能分析
           </VTab>
-          <VTab value="charts" class="text-none" v-if="specializedCharts.length || loading">
+          <VTab value="charts" class="text-none text-subtitle-2 font-weight-bold px-4" v-if="specializedCharts.length || loading">
             <VIcon icon="tabler-chart-pie" class="mr-2" size="20" />
             深度图表
           </VTab>
