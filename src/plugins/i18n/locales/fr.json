@@ -284,6 +284,7 @@
         "subtitle": "Résumé de suivi des colis",
         "headers": {
           "trackingNo": "No suivi",
+          "status": "Statut",
           "time": "Heure"
         },
         "empty": "Aucun enregistrement d'entrée"
@@ -314,6 +315,21 @@
         "overviewFailed": "Échec du chargement de l'aperçu",
         "warehouseFailed": "Échec du chargement des données d'entrepôt",
         "refreshed": "Données actualisées"
+      },
+      "aiAnalysis": {
+        "title": "Analyse Panoramique ATWindow",
+        "reportTitle": "Rapport d'Analyse Complet ATWindow",
+        "reportSubtitle": "Informations approfondies multidimensionnelles basées sur {warehouse} ({count} SKUs)",
+        "updatedAt": "Mis à jour à",
+        "noData": "Les données pré-générées pour cet utilisateur/entrepôt sont introuvables. Veuillez attendre l'exécution de la tâche planifiée ou vérifier les paramètres.",
+        "loading": "Analyse approfondie de l'IA en cours et génération du rapport, veuillez patienter...",
+        "error": "Échec de la récupération des données d'analyse IA, veuillez réessayer.",
+        "topOutOfStock": "Top 5 Risque de Rupture de Stock",
+        "topSales": "Top 5 Ventes (60 Derniers Jours)",
+        "categoryTrends": "Proportion des Sorties par Catégorie",
+        "weeklyTrend": "Tendance des Sorties Hebdomadaires (8 Dernières Semaines)",
+        "quantity": "Quantité",
+        "outbound": "Volume de Sortie"
       }
     },
     "printLabelBatchUpload": {
@@ -339,6 +355,28 @@
         "batchCreated": "Lot {sn} (ID {id}) créé. L'analyse en arrière-plan est en cours.",
         "uploadSuccess": "Import groupé envoyé avec succès",
         "uploadFailed": "Échec de l'import groupé"
+      },
+      "batchStatus": {
+        "title": "Statut d'expédition groupée",
+        "statusLabels": {
+          "processing": "En cours",
+          "completed": "Terminé",
+          "failed": "Échec"
+        },
+        "counts": {
+          "total": "Total",
+          "success": "Réussis",
+          "fail": "Échecs"
+        },
+        "actions": {
+          "downloadZip": "Télécharger ZIP",
+          "viewOrders": "Voir les commandes",
+          "detail": "Détails",
+          "close": "Fermer"
+        },
+        "messages": {
+          "loadFailed": "Échec du chargement du statut"
+        }
       }
     },
     "printLabelShippingList": {
@@ -436,7 +474,58 @@
           "orderNo": "N° de commande",
           "refNo": "Référence",
           "trackingNo": "N° de suivi",
-          "failReason": "Motif d'échec"
+          "failReason": "Motif d'échec",
+          "rowNumber": "Ligne",
+          "failureType": "Type d'échec",
+          "reason": "Motif"
+        },
+        "tabs": {
+          "orders": "Commandes réussies",
+          "failures": "Lignes échouées"
+        },
+        "failureTypes": {
+          "validation": "Validation",
+          "business": "Métier"
+        },
+        "rowData": {
+          "title": "Données importées",
+          "sender": "Expéditeur",
+          "recipient": "Destinataire",
+          "package": "Colis",
+          "item": "Article",
+          "fields": {
+            "senderName": "Nom",
+            "senderPhone": "Téléphone",
+            "senderCountry": "Pays",
+            "senderState": "État",
+            "senderCity": "Ville",
+            "senderAddress1": "Adresse 1",
+            "senderAddress2": "Adresse 2",
+            "senderPostcode": "Code postal",
+            "recipientName": "Nom",
+            "recipientPhone": "Téléphone",
+            "recipientCountry": "Pays",
+            "recipientState": "État",
+            "recipientCity": "Ville",
+            "recipientAddress1": "Adresse 1",
+            "recipientAddress2": "Adresse 2",
+            "recipientPostcode": "Code postal",
+            "packageWeight": "Poids",
+            "packageLength": "Longueur",
+            "packageWidth": "Largeur",
+            "packageHeight": "Hauteur",
+            "packageWeightUnit": "Unité de poids",
+            "packageDimUnit": "Unité de dimension",
+            "declaredValue": "Valeur déclarée",
+            "sku": "SKU",
+            "cnName": "Nom CN",
+            "enName": "Nom EN",
+            "qty": "Qté",
+            "weight": "Poids",
+            "values": "Valeur",
+            "hsCode": "Code HS",
+            "originCountry": "Origine"
+          }
         },
         "statuses": {
           "all": "Tous",
@@ -476,7 +565,8 @@
           "getDownloadLinkFailed": "Échec de récupération du lien de téléchargement",
           "noDownloadUrl": "L'API n'a pas renvoyé d'URL de téléchargement",
           "downloadOpened": "Lien de téléchargement ouvert",
-          "batchNotFound": "Aucun lot correspondant trouvé"
+          "batchNotFound": "Aucun lot correspondant trouvé",
+          "hasFailures": "{count} ligne(s) en échec d'import dans ce lot. Consultez les détails, corrigez et réimportez."
         }
       }
     },
@@ -600,6 +690,10 @@
         "fees": "Détails des frais",
         "customerFee": "Frais d'expédition client",
         "packageContents": "Contenu du colis",
+        "packageSpecs": "Spécifications du colis",
+        "weight": "Poids",
+        "dimensions": "Dimensions (L×l×H)",
+        "declaredValue": "Valeur déclarée",
         "skuCode": "Code SKU",
         "skuCnName": "Nom CN",
         "skuEnName": "Nom EN",
@@ -879,18 +973,33 @@
       "headers": {
         "orderNo": "N° de commande",
         "referenceNo": "Référence",
+        "htOrderNo": "N° de commande HT",
         "recipient": "Destinataire",
         "receiveTelephone": "Téléphone destinataire",
         "receiveAddress": "Adresse destinataire",
         "receiveCity": "Ville destinataire",
         "receiveProvince": "Province/État destinataire",
         "receiveCountry": "Pays destinataire",
+        "receivePostcode": "Code postal destinataire",
+        "country": "Pays",
         "warehouse": "Entrepôt",
+        "transport": "Mode de transport",
+        "source": "Source",
         "sku": "SKU",
+        "skuNum": "Quantité SKU",
+        "cnName": "Nom chinois",
+        "totalWeight": "Poids total",
         "trackingNo": "N° de suivi",
         "fee": "Frais",
+        "handleFee": "Frais de traitement",
+        "paisongFee": "Frais de livraison",
+        "zitickFee": "Frais de retrait",
+        "ppFee": "Frais PP",
+        "materialFee": "Frais de matériel",
         "status": "Statut",
         "createdAt": "Créée le",
+        "username": "Opérateur",
+        "shippedAt": "Expédiée le",
         "actions": "Actions"
       },
       "tooltips": {
@@ -908,7 +1017,10 @@
         "exportLoadFailed": "Échec de la récupération des données d'export",
         "exportNoData": "Aucune donnée à exporter avec les filtres actuels",
         "exportSuccess": "Exporté {count} lignes",
-        "exportFailed": "Échec de l'export"
+        "exportFailed": "Échec de l'export",
+        "empty": "Aucune commande trouvée",
+        "emptyHint": "Ajustez les filtres et réessayez, ou créez une nouvelle commande.",
+        "loadingRows": "Chargement des commandes…"
       }
     },
     "dropShippingOrderBatch": {
@@ -1538,6 +1650,52 @@
         "primaryRequired": "Veuillez sélectionner le mode d'expédition principal",
         "saveSuccess": "Enregistré avec succès",
         "saveFailed": "Échec de l'enregistrement"
+      },
+      "aiSubscription": {
+        "title": "Abonnement ATWindow AI Insight",
+        "subtitle": "Abonnez-vous aux plans d'analyse automatique mensuels pour un contrôle détaillé des mouvements",
+        "currentTier": "Plan Actuel",
+        "nextTier": "Plan Réservé pour le Prochain Cycle",
+        "effectiveFrom": "Effectif: {date} (Lundi Prochain)",
+        "nextBillingDate": "Prochaine facturation: {date}",
+        "tierName": {
+          "1": "Édition Gratuite",
+          "2": "Standard",
+          "3": "Professionnel"
+        },
+        "tierDesc": {
+          "1": "Analyse de base sur un calendrier de génération automatique irrégulier",
+          "2": "Analyse approfondie des données de l'entrepôt une fois toutes les deux semaines",
+          "3": "Analyse approfondie des données de l'entrepôt une fois par semaine"
+        },
+        "price": {
+          "1": "0,00 €/mois",
+          "2": "9,90 €/mois",
+          "3": "14,90 €/mois"
+        },
+        "priceVal": {
+          "1": "0,00 €",
+          "2": "9,90 €",
+          "3": "14,90 €"
+        },
+        "actions": {
+          "subscribe": "S'abonner Maintenant",
+          "current": "Actif Actuel",
+          "pending": "Réservation En Attente",
+          "confirmTitle": "Confirmer le Changement d'Abonnement",
+          "confirmUpgrade": "Le système débitera immédiatement les frais d'abonnement de la première période de {price} de votre solde. En raison des exigences d'initialisation et de synchronisation des données, l'accès à l'analyse AI commencera officiellement le **{date} (Lundi Prochain)**.\n\nConfirmer l'activation de ce plan ?",
+          "confirmChange": "Vous avez planifié un changement pour le plan 【{tierName}】. Cette action n'entraînera pas de facturation immédiate. Le changement prendra effet au début du prochain cycle de facturation (**{date}**), moment auquel la facturation continuera automatiquement au nouveau tarif.\n\nConfirmer la planification de ce changement ?"
+        },
+        "logs": {
+          "title": "Historique de Facturation AI",
+          "headers": {
+            "time": "Date",
+            "amount": "Montant",
+            "balance": "Solde Post-Facturation",
+            "remark": "Remarque"
+          },
+          "empty": "Aucun journal de facturation d'abonnement AI trouvé"
+        }
       }
     },
     "accountAuthManagement": {
@@ -1636,6 +1794,7 @@
         "incomeExpense": "Revenu/dépense",
         "amountUsd": "Montant de transaction (USD)",
         "amountEur": "Montant de transaction (EUR)",
+        "balance": "Solde du compte",
         "remark": "Remarque"
       },
       "recharge": {
@@ -1696,7 +1855,8 @@
         "wxQrFailed": "Échec de récupération du code QR de paiement WeChat",
         "wxPaid": "Paiement WeChat réussi. Solde mis à jour",
         "exportConditionRequired": "Sélectionnez les critères d'exportation (type ou période)",
-        "exportSubmitted": "Tâche d'exportation soumise",
+        "exportSuccess": "{count} enregistrements exportés",
+        "exportNoData": "Aucune donnée à exporter",
         "exportFailed": "Échec de l'exportation"
       }
     },
@@ -1958,6 +2118,7 @@
         "warehouse": "Entrepôt d'entrée",
         "express": "Mode de transport",
         "boxes": "Cartons",
+        "pdfType": "Taille d'étiquette",
         "reference": "Référence",
         "eta": "Arrivée estimée",
         "country": "Pays",

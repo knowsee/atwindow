@@ -15,7 +15,11 @@ body {
   flex-grow: 1;
 
   // TODO: Use grid gutter variable here
-  padding-block: 1.5rem;
+  padding-block: 0.75rem;
+
+  @media (min-width: 600px) {
+    padding-block: 1.5rem;
+  }
 }
 
 .layout-footer {

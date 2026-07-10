@@ -618,10 +618,16 @@ watch(
                       <thead>
                         <tr>
                           <th>SKU</th>
-                          <th class="text-end">{{ $t('pages.dropShippingPackageList.expanded.declaredQty') }}</th>
-                          <th class="text-end">{{ $t('pages.dropShippingPackageList.expanded.actualQty') }}</th>
+                          <th class="text-end">
+                            {{ $t('pages.dropShippingPackageList.expanded.declaredQty') }}
+                          </th>
+                          <th class="text-end">
+                            {{ $t('pages.dropShippingPackageList.expanded.actualQty') }}
+                          </th>
                           <th>{{ $t('pages.dropShippingPackageList.expanded.skuStatus') }}</th>
-                          <th class="text-end">{{ $t('pages.dropShippingPackageList.expanded.skuWeight') }}</th>
+                          <th class="text-end">
+                            {{ $t('pages.dropShippingPackageList.expanded.skuWeight') }}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -629,12 +635,14 @@ watch(
                           v-for="(skuRow, si) in buildSkuRows(item)"
                           :key="si"
                         >
-                          <td class="ds-mono">{{ skuRow.sku || '—' }}</td>
-                          <td class="text-end">{{ skuRow.sku_num ?? '—' }}</td>
+                          <td class="ds-mono">
+                            {{ skuRow.sku || '—' }}
+                          </td>
                           <td class="text-end">
-                            <span
-                              :class="{ 'sku-detail-table__mismatch': skuRow.real_sku_num !== skuRow.sku_num }"
-                            >{{ skuRow.real_sku_num ?? '—' }}</span>
+                            {{ skuRow.sku_num ?? '—' }}
+                          </td>
+                          <td class="text-end">
+                            <span :class="{ 'sku-detail-table__mismatch': skuRow.real_sku_num !== skuRow.sku_num }">{{ skuRow.real_sku_num ?? '—' }}</span>
                           </td>
                           <td>
                             <VChip
@@ -647,7 +655,9 @@ watch(
                             </VChip>
                             <span v-else>—</span>
                           </td>
-                          <td class="text-end">{{ skuRow.weight != null ? skuRow.weight + ' kg' : '—' }}</td>
+                          <td class="text-end">
+                            {{ skuRow.weight != null ? skuRow.weight + ' kg' : '—' }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>

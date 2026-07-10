@@ -5,6 +5,7 @@ import { loadWarehouseOptions } from '@/views/apps/drop-shipping/useDropShipping
 import { resolveYundanStatus } from '@/views/apps/print-label/useYundanList'
 import { getBarChartConfig, getDonutChartConfig } from '@core/libs/apex-chart/apexCharConfig'
 import { useTheme } from 'vuetify'
+import AiWarehouseAnalysis from './components/AiWarehouseAnalysis.vue'
 
 definePage({
   meta: {
@@ -129,6 +130,8 @@ function goDropShippingPackageList(row) {
   const tn = row?.tracking_no != null ? String(row.tracking_no).trim() : ''
   if (tn)
     q['tracking_no'] = tn
+  if (warehouseId.value)
+    q.warehouse_id = warehouseId.value
 
   router.push({
     name: 'apps-drop-shipping-package-list',
@@ -574,7 +577,7 @@ async function refreshAll() {
 }
 
 async function initWarehouses() {
-  const remote = await loadWarehouseOptions()
+  const remote = await loadWarehouseOptions(undefined, 3)
 
   warehouseOptions.value = remote
   warehouseId.value = resolveInitialWarehouseId(warehouseOptions.value, { preferFirstWhenNoCache: true })
@@ -601,7 +604,7 @@ onMounted(async () => {
 <template>
   <VContainer
     fluid
-    class="pa-4 pa-sm-6 app-dashboard"
+    class="px-2 py-4 pa-sm-6 app-dashboard"
   >
     <VSnackbar
       v-model="snack.show"
@@ -714,19 +717,6 @@ onMounted(async () => {
         md="6"
         class="d-flex flex-wrap align-center justify-md-end gap-3"
       >
-        <VChip
-          v-if="overview?.meta?.generated_at_text"
-          size="small"
-          variant="tonal"
-          color="secondary"
-        >
-          <VIcon
-            icon="tabler-clock"
-            start
-            size="16"
-          />
-          {{ $t('pages.dashboard.hero.overviewTime', { time: overview.meta.generated_at_text }) }}
-        </VChip>
         <VBtn
           variant="tonal"
           color="primary"
@@ -738,10 +728,6 @@ onMounted(async () => {
         </VBtn>
       </VCol>
     </VRow>
-
-    <div class="text-overline text-disabled mb-3">
-      {{ $t('pages.dashboard.sections.global') }}
-    </div>
     <VRow class="match-height mb-6">
       <VCol
         v-for="kpi in globalKpis"
@@ -792,6 +778,375 @@ onMounted(async () => {
       </VCol>
     </VRow>
 
+
+
+
+
+    <VTabs
+      v-if="warehouseOptions.length"
+      v-model="warehouseId"
+      color="primary"
+      density="comfortable"
+      show-arrows
+      class="app-dashboard__wh-tabs mb-6"
+    >
+      <VTab
+        v-for="w in warehouseOptions"
+        :key="String(w.value)"
+        :value="w.value"
+        class="text-none text-body-1"
+      >
+        {{ w.title }}
+      </VTab>
+    </VTabs>
+
+    <template v-if="warehouseId">
+      <AiWarehouseAnalysis :warehouse-id="warehouseId" />
+
+
+
+      <VRow class="match-height mb-6">
+        <VCol
+          v-for="wk in warehouseKpis"
+          :key="wk.title"
+          cols="12"
+          md="4"
+        >
+          <VCard
+            :loading="warehouseLoading"
+            border
+            class="h-100"
+          >
+            <VCardText>
+              <div class="d-flex align-center gap-3">
+                <VAvatar
+                  :color="wk.color"
+                  variant="tonal"
+                  rounded
+                  size="44"
+                >
+                  <VIcon
+                    :icon="wk.icon"
+                    size="24"
+                  />
+                </VAvatar>
+                <div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ wk.title }}
+                  </div>
+                  <div class="text-h5 font-weight-semibold tabular-nums">
+                    {{ wk.value }}
+                  </div>
+                  <div
+                    v-if="wk.sub"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    {{ wk.sub }}
+                  </div>
+                </div>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VRow class="match-height mb-6">
+        <VCol
+          cols="12"
+          md="7"
+        >
+          <VCard
+            :loading="warehouseLoading"
+            border
+            class="h-100"
+          >
+            <VCardItem>
+              <VCardTitle class="text-h6">
+                {{ $t('pages.dashboard.sections.topSku') }}
+              </VCardTitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.topSkuSubtitle') }}</VCardSubtitle>
+            </VCardItem>
+            <VCardText>
+              <div
+                v-if="warehouseData?.top_skus?.length"
+                class="pb-1"
+              >
+                <VueApexCharts
+                  type="bar"
+                  :height="topSkuChartHeight"
+                  :options="topSkuChartOptions"
+                  :series="topSkuSeries"
+                />
+              </div>
+              <div
+                v-else
+                class="text-body-2 text-medium-emphasis py-12 text-center"
+              >
+                {{ $t('pages.dashboard.warehouse.topSkuEmpty') }}
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <VCol
+          cols="12"
+          md="5"
+        >
+          <VCard
+            :loading="warehouseLoading"
+            border
+            class="h-100"
+          >
+            <VCardItem>
+              <VCardTitle class="text-h6">
+                {{ $t('pages.dashboard.sections.lowStock') }}
+              </VCardTitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.lowStockSubtitle') }}</VCardSubtitle>
+            </VCardItem>
+            <VCardText>
+              <div
+                v-if="warehouseData?.inventory?.low_stock?.length"
+                class="d-flex flex-column gap-2"
+              >
+                <VSheet
+                  v-for="row in warehouseData.inventory.low_stock"
+                  :key="`low-${row.id}-${row.en_sku}`"
+                  border
+                  rounded="lg"
+                  class="pa-3"
+                  color="surface"
+                >
+                  <div class="d-flex align-start gap-3">
+                    <VAvatar
+                      color="warning"
+                      variant="tonal"
+                      rounded
+                      size="40"
+                      class="flex-shrink-0"
+                    >
+                      <VIcon
+                        icon="tabler-alert-triangle"
+                        size="22"
+                      />
+                    </VAvatar>
+                    <div class="min-w-0 flex-grow-1">
+                      <div class="text-body-2 font-weight-medium text-high-emphasis text-truncate">
+                        {{ row.en_sku || '—' }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis text-wrap mt-1">
+                        {{ row.cn_name || '—' }}
+                      </div>
+                    </div>
+                    <div class="text-end flex-shrink-0">
+                      <div class="text-body-2 tabular-nums">
+                        <span class="text-error font-weight-semibold">{{ row.sku_num }}</span>
+                        <span class="text-medium-emphasis">{{ $t('pages.dashboard.warehouse.warning') }}</span>
+                        <span class="text-medium-emphasis">{{ row.warn_num }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </VSheet>
+              </div>
+              <div
+                v-else
+                class="text-body-2 text-medium-emphasis py-8 text-center"
+              >
+                {{ $t('pages.dashboard.warehouse.lowStockEmpty') }}
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VRow class="mb-6">
+        <VCol cols="12">
+          <VCard
+            :loading="warehouseLoading"
+            border
+          >
+            <VCardItem>
+              <VCardTitle class="text-h6">
+                {{ $t('pages.dashboard.sections.dropshipOrders') }}
+              </VCardTitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.dropshipSubtitle') }}</VCardSubtitle>
+            </VCardItem>
+            <VCardText>
+              <div
+                v-if="warehouseData?.dropship_orders?.by_status && Object.keys(warehouseData.dropship_orders.by_status).length"
+                class="d-flex flex-wrap gap-2 mb-4"
+              >
+                <VChip
+                  v-for="(cnt, st) in warehouseData.dropship_orders.by_status"
+                  :key="String(st)"
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                >
+                  {{ resolveDropshipStatusLabel(st) }}: {{ cnt }}
+                </VChip>
+              </div>
+              <VTable
+                v-if="warehouseData?.dropship_orders?.recent?.length"
+                density="comfortable"
+                hover
+                class="text-body-2 app-dashboard__table"
+              >
+                <thead>
+                  <tr>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.reference') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.trackingNo') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.fee') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.shipTime') }}</th>
+                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.createTime') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="row in warehouseData.dropship_orders.recent"
+                    :key="`ds-${row.id}`"
+                  >
+                    <td class="font-weight-medium">
+                      {{ row.cankaohao || '—' }}
+                    </td>
+                    <td>
+                      <a
+                        v-if="row.ht_tracking_no"
+                        :href="trackUrl17(row.ht_tracking_no)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-primary text-decoration-none"
+                        @click.stop
+                      >
+                        {{ row.ht_tracking_no }}
+                      </a>
+                      <span
+                        v-else
+                        class="text-medium-emphasis"
+                      >—</span>
+                    </td>
+                    <td class="tabular-nums">
+                      {{ formatMoney(row.total_fee) }}
+                    </td>
+                    <td class="text-medium-emphasis">
+                      {{ formatDsFahuotime(row) }}
+                    </td>
+                    <td class="text-medium-emphasis">
+                      {{ formatDsCreatetime(row) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+              <div
+                v-else
+                class="text-body-2 text-medium-emphasis py-4 text-center"
+              >
+                {{ $t('pages.dashboard.dropshipRecent.empty') }}
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VRow class="mb-6">
+        <VCol cols="12">
+          <VCard
+            :loading="warehouseLoading"
+            border
+            class="h-100"
+          >
+            <VCardItem>
+              <VCardTitle class="text-h6">
+                {{ $t('pages.dashboard.sections.recentInbound') }}
+              </VCardTitle>
+              <VCardSubtitle>{{ $t('pages.dashboard.recentInbound.subtitle') }}</VCardSubtitle>
+            </VCardItem>
+            <VCardText class="pt-0">
+              <VTable
+                v-if="warehouseData?.packages?.recent?.length"
+                density="comfortable"
+                hover
+                class="text-body-2 app-dashboard__table"
+              >
+                <thead>
+                  <tr>
+                    <th>{{ $t('pages.dashboard.recentInbound.headers.trackingNo') }}</th>
+                    <th>{{ $t('pages.dashboard.recentInbound.headers.status') || '状态' }}</th>
+                    <th>SKU</th>
+                    <th>{{ $t('pages.dashboard.recentInbound.headers.time') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="row in warehouseData.packages.recent"
+                    :key="`p-${row.order_sn || row.tracking_no}`"
+                    class="app-dashboard__recent-package-row"
+                    role="button"
+                    tabindex="0"
+                    @click="goDropShippingPackageList(row)"
+                    @keydown.enter.prevent="goDropShippingPackageList(row)"
+                  >
+                    <td class="font-weight-medium text-primary">
+                      {{ row.tracking_no || '—' }}
+                    </td>
+                    <td>
+                      <VChip
+                        :color="row.status === 2 ? 'success' : 'warning'"
+                        size="small"
+                        variant="tonal"
+                      >
+                        {{ row.status_text || '—' }}
+                      </VChip>
+                    </td>
+                    <td>
+                      <div class="d-flex flex-wrap gap-1 py-1">
+                        <VChip
+                          v-for="(item, idx) in row.sku_list"
+                          :key="idx"
+                          size="x-small"
+                          color="secondary"
+                          variant="tonal"
+                        >
+                          {{ item.sku }} * {{ item.sku_num }}
+                        </VChip>
+                      </div>
+                    </td>
+                    <td class="text-medium-emphasis">
+                      {{ formatTsText(row) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+              <div
+                v-else
+                class="text-body-2 text-medium-emphasis py-6 text-center"
+              >
+                {{ $t('pages.dashboard.recentInbound.empty') }}
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+    </template>
+
+    <VRow v-else class="mb-6">
+      <VCol cols="12">
+        <VAlert
+          type="info"
+          variant="tonal"
+          border="start"
+          prominent
+        >
+          {{ $t('pages.dashboard.warehouse.noWarehouse') }}
+        </VAlert>
+      </VCol>
+    </VRow>
+
+    <VRow class="mb-6 mt-0">
+      <VCol cols="12" class="py-0">
+        <VDivider />
+      </VCol>
+    </VRow>
+    
     <VRow class="match-height mb-6">
       <VCol
         cols="12"
@@ -972,347 +1327,6 @@ onMounted(async () => {
         </VCard>
       </VCol>
     </VRow>
-
-    <VCard
-      :loading="overviewLoading"
-      border
-      class="mb-8"
-    >
-      <VCardItem>
-        <VCardTitle class="text-h6">
-          {{ $t('pages.dashboard.sections.recentInbound') }}
-        </VCardTitle>
-        <VCardSubtitle>{{ $t('pages.dashboard.recentInbound.subtitle') }}</VCardSubtitle>
-      </VCardItem>
-      <VCardText class="pt-0">
-        <VTable
-          v-if="overview?.packages?.recent?.length"
-          density="comfortable"
-          hover
-          class="text-body-2 app-dashboard__table"
-        >
-          <thead>
-            <tr>
-              <th>{{ $t('pages.dashboard.recentInbound.headers.trackingNo') }}</th>
-              <th>SKU</th>
-              <th>{{ $t('pages.dashboard.recentInbound.headers.time') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="row in overview.packages.recent"
-              :key="`p-${row.id}`"
-              class="app-dashboard__recent-package-row"
-              role="button"
-              tabindex="0"
-              @click="goDropShippingPackageList(row)"
-              @keydown.enter.prevent="goDropShippingPackageList(row)"
-            >
-              <td class="font-weight-medium text-primary">
-                {{ row.tracking_no || '—' }}
-              </td>
-              <td>{{ row.sku || '—' }}</td>
-              <td class="text-medium-emphasis">
-                {{ formatTsText(row) }}
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-        <div
-          v-else
-          class="text-body-2 text-medium-emphasis py-6 text-center"
-        >
-          {{ $t('pages.dashboard.recentInbound.empty') }}
-        </div>
-      </VCardText>
-    </VCard>
-
-    <div class="mb-2">
-      <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-3">
-        <div class="text-overline text-disabled">
-          {{ $t('pages.dashboard.sections.warehouseInsight') }}
-        </div>
-        <VChip
-          v-if="warehouseData?.meta?.generated_at_text"
-          size="small"
-          variant="tonal"
-        >
-          {{ $t('pages.dashboard.warehouse.generatedAt', { time: warehouseData.meta.generated_at_text }) }}
-        </VChip>
-      </div>
-
-      <VTabs
-        v-if="warehouseOptions.length"
-        v-model="warehouseId"
-        color="primary"
-        density="comfortable"
-        show-arrows
-        class="app-dashboard__wh-tabs mb-6"
-      >
-        <VTab
-          v-for="w in warehouseOptions"
-          :key="String(w.value)"
-          :value="w.value"
-          class="text-none text-body-1"
-        >
-          {{ w.title }}
-        </VTab>
-      </VTabs>
-    </div>
-
-    <template v-if="warehouseId">
-      <VRow class="match-height mb-6">
-        <VCol
-          v-for="wk in warehouseKpis"
-          :key="wk.title"
-          cols="12"
-          md="4"
-        >
-          <VCard
-            :loading="warehouseLoading"
-            border
-            class="h-100"
-          >
-            <VCardText>
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  :color="wk.color"
-                  variant="tonal"
-                  rounded
-                  size="44"
-                >
-                  <VIcon
-                    :icon="wk.icon"
-                    size="24"
-                  />
-                </VAvatar>
-                <div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ wk.title }}
-                  </div>
-                  <div class="text-h5 font-weight-semibold tabular-nums">
-                    {{ wk.value }}
-                  </div>
-                  <div
-                    v-if="wk.sub"
-                    class="text-caption text-medium-emphasis"
-                  >
-                    {{ wk.sub }}
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <VRow class="match-height mb-6">
-        <VCol
-          cols="12"
-          xl="7"
-        >
-          <VCard
-            :loading="warehouseLoading"
-            border
-            class="h-100"
-          >
-            <VCardItem>
-              <VCardTitle class="text-h6">
-                {{ $t('pages.dashboard.sections.topSku') }}
-              </VCardTitle>
-              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.topSkuSubtitle') }}</VCardSubtitle>
-            </VCardItem>
-            <VCardText>
-              <div
-                v-if="warehouseData?.top_skus?.length"
-                class="pb-1"
-              >
-                <VueApexCharts
-                  type="bar"
-                  :height="topSkuChartHeight"
-                  :options="topSkuChartOptions"
-                  :series="topSkuSeries"
-                />
-              </div>
-              <div
-                v-else
-                class="text-body-2 text-medium-emphasis py-12 text-center"
-              >
-                {{ $t('pages.dashboard.warehouse.topSkuEmpty') }}
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <VCol
-          cols="12"
-          xl="5"
-        >
-          <VCard
-            :loading="warehouseLoading"
-            border
-            class="h-100"
-          >
-            <VCardItem>
-              <VCardTitle class="text-h6">
-                {{ $t('pages.dashboard.sections.lowStock') }}
-              </VCardTitle>
-              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.lowStockSubtitle') }}</VCardSubtitle>
-            </VCardItem>
-            <VCardText>
-              <div
-                v-if="warehouseData?.inventory?.low_stock?.length"
-                class="d-flex flex-column gap-2"
-              >
-                <VSheet
-                  v-for="row in warehouseData.inventory.low_stock"
-                  :key="`low-${row.id}-${row.en_sku}`"
-                  border
-                  rounded="lg"
-                  class="pa-3"
-                  color="surface"
-                >
-                  <div class="d-flex align-start gap-3">
-                    <VAvatar
-                      color="warning"
-                      variant="tonal"
-                      rounded
-                      size="40"
-                      class="flex-shrink-0"
-                    >
-                      <VIcon
-                        icon="tabler-alert-triangle"
-                        size="22"
-                      />
-                    </VAvatar>
-                    <div class="min-w-0 flex-grow-1">
-                      <div class="text-body-2 font-weight-medium text-high-emphasis text-truncate">
-                        {{ row.en_sku || '—' }}
-                      </div>
-                      <div class="text-caption text-medium-emphasis text-wrap mt-1">
-                        {{ row.cn_name || '—' }}
-                      </div>
-                    </div>
-                    <div class="text-end flex-shrink-0">
-                      <div class="text-body-2 tabular-nums">
-                        <span class="text-error font-weight-semibold">{{ row.sku_num }}</span>
-                        <span class="text-medium-emphasis">{{ $t('pages.dashboard.warehouse.warning') }}</span>
-                        <span class="text-medium-emphasis">{{ row.warn_num }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </VSheet>
-              </div>
-              <div
-                v-else
-                class="text-body-2 text-medium-emphasis py-8 text-center"
-              >
-                {{ $t('pages.dashboard.warehouse.lowStockEmpty') }}
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <VRow>
-        <VCol cols="12">
-          <VCard
-            :loading="warehouseLoading"
-            border
-          >
-            <VCardItem>
-              <VCardTitle class="text-h6">
-                {{ $t('pages.dashboard.sections.dropshipOrders') }}
-              </VCardTitle>
-              <VCardSubtitle>{{ $t('pages.dashboard.warehouse.dropshipSubtitle') }}</VCardSubtitle>
-            </VCardItem>
-            <VCardText>
-              <div
-                v-if="warehouseData?.dropship_orders?.by_status && Object.keys(warehouseData.dropship_orders.by_status).length"
-                class="d-flex flex-wrap gap-2 mb-4"
-              >
-                <VChip
-                  v-for="(cnt, st) in warehouseData.dropship_orders.by_status"
-                  :key="String(st)"
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                >
-                  {{ resolveDropshipStatusLabel(st) }}: {{ cnt }}
-                </VChip>
-              </div>
-              <VTable
-                v-if="warehouseData?.dropship_orders?.recent?.length"
-                density="comfortable"
-                hover
-                class="text-body-2 app-dashboard__table"
-              >
-                <thead>
-                  <tr>
-                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.reference') }}</th>
-                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.trackingNo') }}</th>
-                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.fee') }}</th>
-                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.shipTime') }}</th>
-                    <th>{{ $t('pages.dashboard.dropshipRecent.headers.createTime') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="row in warehouseData.dropship_orders.recent"
-                    :key="`ds-${row.id}`"
-                  >
-                    <td class="font-weight-medium">
-                      {{ row.cankaohao || '—' }}
-                    </td>
-                    <td>
-                      <a
-                        v-if="row.ht_tracking_no"
-                        :href="trackUrl17(row.ht_tracking_no)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-primary text-decoration-none"
-                        @click.stop
-                      >
-                        {{ row.ht_tracking_no }}
-                      </a>
-                      <span
-                        v-else
-                        class="text-medium-emphasis"
-                      >—</span>
-                    </td>
-                    <td class="tabular-nums">
-                      {{ formatMoney(row.total_fee) }}
-                    </td>
-                    <td class="text-medium-emphasis">
-                      {{ formatDsFahuotime(row) }}
-                    </td>
-                    <td class="text-medium-emphasis">
-                      {{ formatDsCreatetime(row) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
-              <div
-                v-else
-                class="text-body-2 text-medium-emphasis py-4 text-center"
-              >
-                {{ $t('pages.dashboard.dropshipRecent.empty') }}
-              </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-    </template>
-
-    <VAlert
-      v-else
-      type="info"
-      variant="tonal"
-      border="start"
-      prominent
-    >
-      {{ $t('pages.dashboard.warehouse.noWarehouse') }}
-    </VAlert>
   </VContainer>
 </template>
 

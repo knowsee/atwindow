@@ -1,4 +1,5 @@
 <script setup>
+/* eslint-disable camelcase -- /Ordernewapi/* query params and row_data fields match backend field names */
 import AppQueryPanel from '@/@core/components/AppQueryPanel.vue'
 import { $api } from '@/utils/api'
 import { resolveBackendFileUrl } from '@/utils/backendFileUrl'
@@ -63,7 +64,6 @@ const headers = computed(() => [
 ])
 
 const detailLoading = ref(false)
-const detailRows = ref([])
 const detailBatch = ref(null)
 const downloadingId = ref(null)
 
@@ -71,16 +71,26 @@ const downloadingId = ref(null)
 const detailDialogVisible = ref(false)
 const detailFilters = ref({ cankaohao: '' })
 const detailPage = ref(1)
-const detailLastPage = ref(1)
 const detailItemsPerPage = ref(20)
-const detailTotal = ref(0)
 
-/** If the API returns an array in one response, filter and paginate reference numbers client-side. */
-const detailClientMode = ref(false)
-const detailOrdersCache = ref([])
+/** Tab switcher between successful orders and failure rows. */
+const detailTab = ref('orders')
+const orderRows = ref([])
+const orderTotal = ref(0)
+const failureRows = ref([])
+const failureTotal = ref(0)
+
+/** Auto-switch to the failures tab on first load when failures exist. */
+const detailFirstLoad = ref(true)
+
+/** Whether the failures tab should be highlighted (has failure rows). */
+const hasFailures = computed(() => failureTotal.value > 0)
+
+const detailRows = computed(() => detailTab.value === 'orders' ? orderRows.value : failureRows.value)
+const detailTotal = computed(() => detailTab.value === 'orders' ? orderTotal.value : failureTotal.value)
 
 const pageLength = computed(() => Math.max(1, lastPage.value))
-const detailPageLength = computed(() => Math.max(1, detailLastPage.value))
+const detailPageLength = computed(() => Math.max(1, Math.ceil(detailTotal.value / detailItemsPerPage.value) || 1))
 const dateLocale = computed(() => ({ zh: 'zh-CN', en: 'en-US', fr: 'fr-FR' })[locale.value] || undefined)
 
 function toast(text, color = 'info') {
@@ -237,10 +247,15 @@ function resetDetailFilters() {
 
 function detailSearch() {
   detailPage.value = 1
-  if (detailClientMode.value)
-    applyDetailClientSlice()
-  else
-    loadBatchDetailList()
+  loadBatchDetailList()
+}
+
+function switchDetailTab(tab) {
+  if (detailTab.value === tab)
+    return
+  detailTab.value = tab
+  detailPage.value = 1
+  loadBatchDetailList()
 }
 
 function closeDialog() {
@@ -257,35 +272,35 @@ function openSourceFile(row) {
   window.open(url, '_blank', 'noopener')
 }
 
-function applyDetailClientSlice() {
-  const all = detailOrdersCache.value
-  const ipp = Number(detailItemsPerPage.value) || 20
-  const p = Math.max(1, Number(detailPage.value) || 1)
-  const ck = String(detailFilters.value.cankaohao ?? '').trim().toLowerCase()
-  let rows = all
-  if (ck) {
-    rows = all.filter(r => {
-      const refNo = String(r?.cankaohao ?? '').trim().toLowerCase()
+function normalizeDetailSection(section) {
+  if (section == null)
+    return { list: [], total: 0 }
+  if (Array.isArray(section))
+    return { list: section, total: section.length }
+  if (typeof section !== 'object')
+    return { list: [], total: 0 }
 
-      return refNo.includes(ck)
-    })
-  }
-  const total = rows.length
-  const last_page = Math.max(1, Math.ceil(total / ipp) || 1)
-  const page = Math.min(p, last_page)
-  if (page !== p)
-    detailPage.value = page
-  const start = (page - 1) * ipp
+  const list = Array.isArray(section.list)
+    ? section.list
+    : Array.isArray(section.data)
+      ? section.data
+      : Array.isArray(section.records)
+        ? section.records
+        : Array.isArray(section.items)
+          ? section.items
+          : []
 
-  detailRows.value = rows.slice(start, start + ipp)
-  detailTotal.value = total
-  detailLastPage.value = last_page
+  const pagination = section.pagination || {}
+  const total = Number(pagination.total ?? section.total ?? section.count ?? list.length) || 0
+  const pageSize = Number(pagination.page_size ?? pagination.per_page ?? section.per_page ?? 20) || 20
+
+  return { list, total, pageSize }
 }
 
 async function loadBatchDetailList() {
-  if (!detailBatch.value?.id) {
+  if (!detailBatch.value?.id)
     return
-  }
+
   detailLoading.value = true
   try {
     const q = {
@@ -303,37 +318,52 @@ async function loadBatchDetailList() {
       query: q,
     })
 
-    if (Number(res?.code) !== 1) {
-      detailRows.value = []
-      detailTotal.value = 0
-      detailLastPage.value = 1
+    if (Number(res?.code) !== 1 || !res?.data) {
+      orderRows.value = []
+      orderTotal.value = 0
+      failureRows.value = []
+      failureTotal.value = 0
       toast(res?.msg || t('pages.printLabelShippingList.batchDialog.messages.loadBatchOrdersFailed'), 'error')
 
       return
     }
-    const raw = res.data
-    if (Array.isArray(raw)) {
-      detailClientMode.value = true
-      detailOrdersCache.value = raw
-      applyDetailClientSlice()
+
+    const data = res.data
+
+    // New structured format: { orders: { list, pagination }, failures: { list, pagination } }
+    if (data.orders || data.failures) {
+      const orders = normalizeDetailSection(data.orders)
+      const failures = normalizeDetailSection(data.failures)
+
+      orderRows.value = orders.list
+      orderTotal.value = orders.total
+      failureRows.value = failures.list
+      failureTotal.value = failures.total
+      if (Number.isFinite(orders.pageSize) && orders.pageSize > 0)
+        detailItemsPerPage.value = orders.pageSize
+
+      if (detailFirstLoad.value && failures.total > 0)
+        detailTab.value = 'failures'
+      detailFirstLoad.value = false
 
       return
     }
-    detailClientMode.value = false
-    detailOrdersCache.value = []
 
-    const { list, total: t, last_page: lp, per_page: ipp } = normalizeBatchesPayload(raw)
+    // Backward compat: legacy array or paginated payload treated as orders.
+    const legacy = normalizeBatchesPayload(data)
 
-    detailRows.value = list
-    detailTotal.value = t
-    detailLastPage.value = lp
-    if (Number.isFinite(Number(ipp)) && Number(ipp) > 0)
-      detailItemsPerPage.value = Number(ipp)
+    orderRows.value = legacy.list
+    orderTotal.value = legacy.total
+    failureRows.value = []
+    failureTotal.value = 0
+    if (Number.isFinite(legacy.per_page) && legacy.per_page > 0)
+      detailItemsPerPage.value = legacy.per_page
   }
   catch (e) {
-    detailRows.value = []
-    detailTotal.value = 0
-    detailLastPage.value = 1
+    orderRows.value = []
+    orderTotal.value = 0
+    failureRows.value = []
+    failureTotal.value = 0
     toast(e?.data?.msg || e?.message || t('pages.printLabelShippingList.batchDialog.messages.loadBatchOrdersFailed'), 'error')
   }
   finally {
@@ -351,13 +381,15 @@ function openBatchDetail(row, opts = {}) {
 
     return
   }
-  detailClientMode.value = false
-  detailOrdersCache.value = []
+  detailTab.value = 'orders'
+  detailFirstLoad.value = true
   detailFilters.value = { cankaohao: '' }
   detailPage.value = 1
   detailItemsPerPage.value = 20
-  detailTotal.value = 0
-  detailLastPage.value = 1
+  orderRows.value = []
+  orderTotal.value = 0
+  failureRows.value = []
+  failureTotal.value = 0
   detailBatch.value = row
   detailDialogVisible.value = true
   if (opts.hideMainWhileDetailOpen) {
@@ -381,11 +413,12 @@ function onDetailDialogUpdate(v) {
 
 function clearDetail() {
   detailBatch.value = null
-  detailRows.value = []
-  detailOrdersCache.value = []
-  detailClientMode.value = false
-  detailTotal.value = 0
-  detailLastPage.value = 1
+  detailTab.value = 'orders'
+  detailFirstLoad.value = true
+  orderRows.value = []
+  orderTotal.value = 0
+  failureRows.value = []
+  failureTotal.value = 0
   detailPage.value = 1
   detailItemsPerPage.value = 20
   detailFilters.value = { cankaohao: '' }
@@ -501,6 +534,142 @@ const detailHeaders = computed(() => [
   { title: t('pages.printLabelShippingList.batchDialog.headers.actions'), key: 'd_actions', sortable: false, minWidth: '100', width: '100', align: 'end' },
 ])
 
+const failureHeaders = computed(() => [
+  { title: '', key: 'data-table-expand' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.rowNumber'), key: 'row_number', width: '80', align: 'end' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.refNo'), key: 'cankaohao', minWidth: '140' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.failureType'), key: 'failure_type', width: '120', align: 'center' },
+  { title: t('pages.printLabelShippingList.batchDialog.headers.reason'), key: 'reason', minWidth: '200' },
+])
+
+function failureTypeColor(type) {
+  const s = String(type || '').toLowerCase()
+  if (s === 'validation')
+    return 'warning'
+  if (s === 'business')
+    return 'error'
+
+  return 'secondary'
+}
+
+function failureTypeLabel(type) {
+  const s = String(type || '').trim()
+  if (!s)
+    return '—'
+
+  const map = {
+    validation: t('pages.printLabelShippingList.batchDialog.failureTypes.validation'),
+    business: t('pages.printLabelShippingList.batchDialog.failureTypes.business'),
+  }
+
+  const key = map[s.toLowerCase()]
+
+  return key || s
+}
+
+/** Extract key fields from uploaded row_data into labelled groups for the expand panel. */
+function buildRowDataGroups(rowData) {
+  if (!rowData || typeof rowData !== 'object')
+    return []
+  const rd = rowData
+  const groups = []
+
+  const senderFields = [
+    ['sender_name', rd.sender_name],
+    ['sender_phone', rd.sender_phone],
+    ['sender_country', rd.sender_country],
+    ['sender_state', rd.sender_state],
+    ['sender_city', rd.sender_city],
+    ['sender_address1', rd.sender_address1],
+    ['sender_address2', rd.sender_address2],
+    ['sender_postcode', rd.sender_postcode],
+  ].filter(([, v]) => v != null && String(v).trim() !== '')
+
+  if (senderFields.length)
+    groups.push({ label: t('pages.printLabelShippingList.batchDialog.rowData.sender'), fields: senderFields })
+
+  const recipientFields = [
+    ['recipient_name', rd.recipient_name],
+    ['recipient_phone', rd.recipient_phone],
+    ['recipient_country', rd.recipient_country],
+    ['recipient_state', rd.recipient_state],
+    ['recipient_city', rd.recipient_city],
+    ['recipient_address1', rd.recipient_address1],
+    ['recipient_address2', rd.recipient_address2],
+    ['recipient_postcode', rd.recipient_postcode],
+  ].filter(([, v]) => v != null && String(v).trim() !== '')
+
+  if (recipientFields.length)
+    groups.push({ label: t('pages.printLabelShippingList.batchDialog.rowData.recipient'), fields: recipientFields })
+
+  const pkgFields = [
+    ['package_weight', rd.package_weight],
+    ['package_length', rd.package_length],
+    ['package_width', rd.package_width],
+    ['package_height', rd.package_height],
+    ['package_weight_unit', rd.package_weight_unit],
+    ['package_dim_unit', rd.package_dim_unit],
+    ['declared_value', rd.declared_value],
+  ].filter(([, v]) => v != null && String(v).trim() !== '')
+
+  if (pkgFields.length)
+    groups.push({ label: t('pages.printLabelShippingList.batchDialog.rowData.package'), fields: pkgFields })
+
+  const itemFields = [
+    ['sku', rd.sku],
+    ['cn_name', rd.cn_name],
+    ['en_name', rd.en_name],
+    ['qty', rd.qty],
+    ['weight', rd.weight],
+    ['values', rd.values],
+    ['hs_code', rd.hs_code],
+    ['origin_country', rd.origin_country],
+  ].filter(([, v]) => v != null && String(v).trim() !== '')
+
+  if (itemFields.length)
+    groups.push({ label: t('pages.printLabelShippingList.batchDialog.rowData.item'), fields: itemFields })
+
+  return groups
+}
+
+function rowDataFieldLabel(key) {
+  const map = {
+    sender_name: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderName'),
+    sender_phone: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderPhone'),
+    sender_country: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderCountry'),
+    sender_state: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderState'),
+    sender_city: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderCity'),
+    sender_address1: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderAddress1'),
+    sender_address2: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderAddress2'),
+    sender_postcode: t('pages.printLabelShippingList.batchDialog.rowData.fields.senderPostcode'),
+    recipient_name: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientName'),
+    recipient_phone: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientPhone'),
+    recipient_country: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientCountry'),
+    recipient_state: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientState'),
+    recipient_city: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientCity'),
+    recipient_address1: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientAddress1'),
+    recipient_address2: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientAddress2'),
+    recipient_postcode: t('pages.printLabelShippingList.batchDialog.rowData.fields.recipientPostcode'),
+    package_weight: t('pages.printLabelShippingList.batchDialog.rowData.fields.packageWeight'),
+    package_length: t('pages.printLabelShippingList.batchDialog.rowData.fields.packageLength'),
+    package_width: t('pages.printLabelShippingList.batchDialog.rowData.fields.packageWidth'),
+    package_height: t('pages.printLabelShippingList.batchDialog.rowData.fields.packageHeight'),
+    package_weight_unit: t('pages.printLabelShippingList.batchDialog.rowData.fields.packageWeightUnit'),
+    package_dim_unit: t('pages.printLabelShippingList.batchDialog.rowData.fields.packageDimUnit'),
+    declared_value: t('pages.printLabelShippingList.batchDialog.rowData.fields.declaredValue'),
+    sku: t('pages.printLabelShippingList.batchDialog.rowData.fields.sku'),
+    cn_name: t('pages.printLabelShippingList.batchDialog.rowData.fields.cnName'),
+    en_name: t('pages.printLabelShippingList.batchDialog.rowData.fields.enName'),
+    qty: t('pages.printLabelShippingList.batchDialog.rowData.fields.qty'),
+    weight: t('pages.printLabelShippingList.batchDialog.rowData.fields.weight'),
+    values: t('pages.printLabelShippingList.batchDialog.rowData.fields.values'),
+    hs_code: t('pages.printLabelShippingList.batchDialog.rowData.fields.hsCode'),
+    origin_country: t('pages.printLabelShippingList.batchDialog.rowData.fields.originCountry'),
+  }
+
+  return map[key] || key
+}
+
 watch([page, itemsPerPage], () => {
   if (props.modelValue && !batchListOpening.value)
     loadBatches()
@@ -509,10 +678,7 @@ watch([page, itemsPerPage], () => {
 watch([detailDialogVisible, detailPage, detailItemsPerPage], () => {
   if (!detailDialogVisible.value || !detailBatch.value?.id)
     return
-  if (detailClientMode.value)
-    applyDetailClientSlice()
-  else
-    loadBatchDetailList()
+  loadBatchDetailList()
 })
 
 async function applyMainDialogOpenFromProps() {
@@ -566,7 +732,7 @@ watch(() => props.modelValue, v => {
 <template>
   <VDialog
     v-if="modelValue && !hideMainBatchDialog"
-    :model-value="true"
+    model-value
     max-width="960"
     scrollable
     @update:model-value="v => { if (!v) emit('update:modelValue', false) }"
@@ -804,7 +970,6 @@ watch(() => props.modelValue, v => {
         </template>
         <template #subtitle>
           <span class="text-body-2 text-medium-emphasis d-flex flex-wrap align-center gap-2">
-            <span>{{ $t('pages.printLabelShippingList.pagination.total', { total: detailTotal }) }}</span>
             <VChip
               v-if="detailBatch?.batch_sn"
               size="small"
@@ -831,6 +996,67 @@ watch(() => props.modelValue, v => {
       <VDivider />
 
       <VCardText class="flex-grow-1 pa-4 pa-sm-5">
+        <VAlert
+          v-if="hasFailures"
+          type="error"
+          variant="tonal"
+          density="compact"
+          border="start"
+          class="mb-4"
+          icon="tabler-alert-triangle"
+        >
+          {{ $t('pages.printLabelShippingList.batchDialog.messages.hasFailures', { count: failureTotal }) }}
+        </VAlert>
+        <div class="d-flex align-center gap-2 mb-4">
+          <VBtn
+            variant="text"
+            size="small"
+            density="comfortable"
+            :color="detailTab === 'orders' ? 'primary' : 'secondary'"
+            class="text-none"
+            @click="switchDetailTab('orders')"
+          >
+            <VIcon
+              icon="tabler-checks"
+              size="16"
+              class="me-1"
+            />
+            {{ $t('pages.printLabelShippingList.batchDialog.tabs.orders') }}
+            <VChip
+              size="x-small"
+              variant="flat"
+              class="ms-1"
+              :color="detailTab === 'orders' ? 'primary' : 'secondary'"
+            >
+              {{ orderTotal }}
+            </VChip>
+          </VBtn>
+          <VBtn
+            :variant="hasFailures && detailTab !== 'failures' ? 'tonal' : 'text'"
+            size="small"
+            density="comfortable"
+            color="error"
+            class="text-none"
+            :class="{ 'failure-tab--alert': hasFailures && detailTab !== 'failures' }"
+            @click="switchDetailTab('failures')"
+          >
+            <VIcon
+              icon="tabler-alert-triangle"
+              size="16"
+              class="me-1"
+            />
+            {{ $t('pages.printLabelShippingList.batchDialog.tabs.failures') }}
+            <VChip
+              size="x-small"
+              variant="flat"
+              class="ms-1"
+              color="error"
+            >
+              {{ failureTotal }}
+            </VChip>
+          </VBtn>
+        </div>
+
         <AppQueryPanel
           class="mb-4"
           :title="$t('pages.printLabelShippingList.batchDialog.detailFilterTitle')"
@@ -859,9 +1085,10 @@ watch(() => props.modelValue, v => {
         </AppQueryPanel>
 
         <VDataTableServer
+          v-if="detailTab === 'orders'"
           :headers="detailHeaders"
-          :items="detailRows"
-          :items-length="detailTotal"
+          :items="orderRows"
+          :items-length="orderTotal"
           :loading="detailLoading"
           item-value="id"
           density="compact"
@@ -915,6 +1142,80 @@ watch(() => props.modelValue, v => {
                 </template>
               </VTooltip>
             </div>
+          </template>
+          <template #no-data>
+            <div class="text-medium-emphasis text-body-2 pa-4 text-center">
+              {{ detailLoading ? $t('pages.printLabelShippingList.batchDialog.empty.loading') : $t('pages.printLabelShippingList.batchDialog.empty.noOrderData') }}
+            </div>
+          </template>
+        </VDataTableServer>
+
+        <VDataTableServer
+          v-else
+          :headers="failureHeaders"
+          :items="failureRows"
+          :items-length="failureTotal"
+          :loading="detailLoading"
+          item-value="id"
+          density="compact"
+          class="shipping-batch-dialog__table shipping-batch-dialog__detail-body-table text-body-2"
+          fixed-header
+          :height="380"
+          hide-default-footer
+          expand-on-click
+        >
+          <template #item.cankaohao="{ item }">
+            <span
+              class="text-truncate d-inline-block"
+              style="max-inline-size: 200px;"
+              :title="item.cankaohao || ''"
+            >{{ item.cankaohao || '—' }}</span>
+          </template>
+          <template #item.failure_type="{ item }">
+            <VChip
+              size="small"
+              variant="tonal"
+              :color="failureTypeColor(item.failure_type)"
+            >
+              {{ failureTypeLabel(item.failure_type) }}
+            </VChip>
+          </template>
+          <template #item.reason="{ item }">
+            <span class="text-body-2">{{ item.reason || '—' }}</span>
+          </template>
+          <template #expanded-row="{ item }">
+            <tr>
+              <td :colspan="failureHeaders.length">
+                <div class="pa-3">
+                  <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-2">
+                    {{ $t('pages.printLabelShippingList.batchDialog.rowData.title') }}
+                  </div>
+                  <VRow dense>
+                    <VCol
+                      v-for="group in buildRowDataGroups(item.row_data)"
+                      :key="group.label"
+                      cols="12"
+                      sm="6"
+                      md="4"
+                    >
+                      <div class="failure-row-data__group">
+                        <div class="text-caption font-weight-medium text-medium-emphasis mb-1">
+                          {{ group.label }}
+                        </div>
+                        <div
+                          v-for="([key, val]) in group.fields"
+                          :key="key"
+                          class="d-flex justify-space-between gap-2 text-body-2 py-1"
+                        >
+                          <span class="text-medium-emphasis">{{ rowDataFieldLabel(key) }}</span>
+                          <span class="font-weight-medium text-end">{{ val }}</span>
+                        </div>
+                      </div>
+                    </VCol>
+                  </VRow>
+                </div>
+              </td>
+            </tr>
           </template>
           <template #no-data>
             <div class="text-medium-emphasis text-body-2 pa-4 text-center">
@@ -1038,5 +1339,24 @@ watch(() => props.modelValue, v => {
 
 .shipping-batch-dialog__pagination :deep(.v-pagination__list) {
   margin-block: 0;
+}
+
+.failure-row-data__group {
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.failure-tab--alert {
+  animation: failure-tab-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes failure-tab-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-error), 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(var(--v-theme-error), 0.12);
+  }
 }
 </style>

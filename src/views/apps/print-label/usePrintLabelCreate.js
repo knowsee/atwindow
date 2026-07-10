@@ -1024,12 +1024,40 @@ export function usePrintLabelCreate() {
           selectedQid.value = Number(detail.provider)
 
         const senderAddr = mapSnapshotToAddress(detail.sender_snapshot)
-        if (senderAddr)
-          sender.value = senderAddr
+        if (senderAddr) {
+          const sid = detail.sender_address_id ?? detail.sender_id ?? senderAddr.id
+
+          sender.value = { ...senderAddr, id: sid != null && sid !== '' ? String(sid) : senderAddr.id }
+          if (sender.value.id) {
+            senderAddressLocked.value = true
+            senderSelectedFromBeianAddr.value = false
+          }
+        }
 
         const receiverAddr = mapSnapshotToAddress(detail.recipient_snapshot)
-        if (receiverAddr)
-          receiver.value = receiverAddr
+        if (receiverAddr) {
+          const rid = detail.recipient_address_id ?? detail.recipient_id ?? detail.receiver_id ?? receiverAddr.id
+
+          receiver.value = { ...receiverAddr, id: rid != null && rid !== '' ? String(rid) : receiverAddr.id }
+          if (receiver.value.id)
+            receiverAddressLocked.value = true
+        }
+
+        if (detail.weight != null || detail.length != null || detail.width != null || detail.height != null) {
+          pkg.value = {
+            weight: detail.weight != null ? String(detail.weight) : '',
+            length: detail.length != null ? String(detail.length) : '',
+            width: detail.width != null ? String(detail.width) : '',
+            height: detail.height != null ? String(detail.height) : '',
+          }
+        }
+
+        const wu = String(detail.weight_unit || '').toUpperCase()
+        const du = String(detail.dim_unit || '').toUpperCase()
+        if (wu === 'LB' || du === 'IN')
+          danwei.value = 1
+        else if (wu === 'KG' || du === 'CM')
+          danwei.value = 0
 
         if (Array.isArray(detail.sku_items) && detail.sku_items.length) {
           products.value = detail.sku_items.map(item => ({

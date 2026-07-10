@@ -4,7 +4,11 @@
 %boxed-content {
   @at-root #{&}-spacing {
     // TODO: Use grid gutter variable here
-    padding-inline: 1.5rem;
+    padding-inline: 0.75rem;
+
+    @media (min-width: 600px) {
+      padding-inline: 1.5rem;
+    }
   }
 
   inline-size: 100%;

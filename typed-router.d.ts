@@ -282,6 +282,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'dashboard-components-ai-warehouse-analysis': RouteRecordInfo<
+      'dashboard-components-ai-warehouse-analysis',
+      '/dashboard/components/AiWarehouseAnalysis',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'login': RouteRecordInfo<
       'login',
       '/login',
@@ -535,6 +542,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/dashboard/index.vue': {
       routes:
         | 'dashboard'
+      views:
+        | never
+    }
+    'src/pages/dashboard/components/AiWarehouseAnalysis.vue': {
+      routes:
+        | 'dashboard-components-ai-warehouse-analysis'
       views:
         | never
     }

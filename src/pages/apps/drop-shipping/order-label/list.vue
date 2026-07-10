@@ -20,16 +20,50 @@ const itemsPerPage = ref(10)
 const snack = ref({ show: false, text: '', color: 'info' })
 const { t } = useI18n({ useScope: 'global' })
 
+const FILTERS_CACHE_KEY = 'ds-order-label-list-filters'
+
+function getDefaultFilters() {
+  return {
+    createRange: '',
+    remarkAdmin: '',
+    remark: '',
+  }
+}
+
+function loadCachedFilters() {
+  try {
+    const raw = sessionStorage.getItem(FILTERS_CACHE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+
+      return { ...getDefaultFilters(), ...parsed }
+    }
+  }
+  catch {}
+
+  return null
+}
+
+function saveCachedFilters(f) {
+  try {
+    sessionStorage.setItem(FILTERS_CACHE_KEY, JSON.stringify(f))
+  }
+  catch {}
+}
+
+function clearCachedFilters() {
+  try {
+    sessionStorage.removeItem(FILTERS_CACHE_KEY)
+  }
+  catch {}
+}
+
 const summary = ref({
   totalFee: null,
   skuNum: null,
 })
 
-const filters = ref({
-  createRange: '',
-  remarkAdmin: '',
-  remark: '',
-})
+const filters = ref(loadCachedFilters() || getDefaultFilters())
 
 const headers = computed(() => [
   { title: t('pages.dropShippingOrderLabelList.headers.orderNo'), key: 'order_sn', minWidth: '200' },
@@ -145,6 +179,8 @@ async function loadList() {
 }
 
 function searchList() {
+  saveCachedFilters(filters.value)
+
   const alreadyFirst = page.value === 1
 
   page.value = 1
@@ -153,11 +189,8 @@ function searchList() {
 }
 
 function resetFilters() {
-  filters.value = {
-    createRange: '',
-    remarkAdmin: '',
-    remark: '',
-  }
+  filters.value = getDefaultFilters()
+  clearCachedFilters()
   searchList()
 }
 

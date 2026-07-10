@@ -16,6 +16,7 @@ export const LOGISTICS_CHANNELS = [
   { title: '自提', value: 200, modules: ['drop-shipping'] },
   { title: 'USPS（T5）', value: 27, modules: ['drop-shipping'] },
   { title: 'SPEEDX', value: 53, modules: ['drop-shipping'] },
+  { title: 'OnTrac', name: 'OnTrac', value: 3003, qid: 3003, provider: 3003, logo: '/images/translogo/ontrac.png', currency: 'USD', senderCountryLock: 'US', receiverCountryLock: 'US', senderNeedBeianAddr: false, valueRequired: false, needRouteSelect: false, cnNameRequired: false, modules: ['drop-shipping'] },
 
   // ============ 仅运单模块专用 ============
   { title: 'USPS', name: 'USPS', value: 10201, qid: 10201, provider: 10201, logo: '/images/translogo/usps.png', currency: 'USD', senderCountryLock: 'US', receiverCountryLock: 'US', senderNeedBeianAddr: false, valueRequired: false, needRouteSelect: false, cnNameRequired: false, modules: ['print-label'] },

@@ -392,6 +392,7 @@ function startFetchPolling() {
   fetchPollTimer = setInterval(() => {
     if (!hasFetchingLabels.value) {
       stopFetchPolling()
+      
       return
     }
     loadList()
@@ -405,7 +406,7 @@ function stopFetchPolling() {
   }
 }
 
-watch(hasFetchingLabels, (fetching) => {
+watch(hasFetchingLabels, fetching => {
   if (fetching)
     startFetchPolling()
   else

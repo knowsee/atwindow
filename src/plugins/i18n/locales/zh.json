@@ -284,6 +284,7 @@
         "subtitle": "包裹轨迹摘要",
         "headers": {
           "trackingNo": "运单号",
+          "status": "状态",
           "time": "时间"
         },
         "empty": "暂无入库记录"
@@ -314,6 +315,21 @@
         "overviewFailed": "加载概览失败",
         "warehouseFailed": "加载仓库数据失败",
         "refreshed": "数据已刷新"
+      },
+      "aiAnalysis": {
+        "title": "ATWindow 全景分析",
+        "reportTitle": "ATWindow 综合分析报告",
+        "reportSubtitle": "基于 {warehouse} ({count} SKUs) 的多维度深度洞察",
+        "updatedAt": "更新于",
+        "noData": "未找到该用户/仓库的预生成数据，请等待定时任务生成或检查参数。",
+        "loading": "正在进行 AI 深度分析并生成报告，请稍候...",
+        "error": "获取 AI 分析数据失败，请重试。",
+        "topOutOfStock": "断货危险 Top 5",
+        "topSales": "过去60天销售 Top 5",
+        "categoryTrends": "品类出库占比",
+        "weeklyTrend": "近8周出库趋势",
+        "quantity": "数量",
+        "outbound": "出库量"
       }
     },
     "printLabelBatchUpload": {
@@ -339,6 +355,28 @@
         "batchCreated": "已创建批次 {sn}（ID {id}），后台解析中",
         "uploadSuccess": "批量上传提交成功",
         "uploadFailed": "批量上传失败"
+      },
+      "batchStatus": {
+        "title": "批量出单状态",
+        "statusLabels": {
+          "processing": "处理中",
+          "completed": "已完成",
+          "failed": "失败"
+        },
+        "counts": {
+          "total": "总数",
+          "success": "成功",
+          "fail": "失败"
+        },
+        "actions": {
+          "downloadZip": "下载面单ZIP",
+          "viewOrders": "查看订单列表",
+          "detail": "明细",
+          "close": "关闭"
+        },
+        "messages": {
+          "loadFailed": "加载批次状态失败"
+        }
       }
     },
     "printLabelShippingList": {
@@ -436,7 +474,58 @@
           "orderNo": "订单号",
           "refNo": "参考号",
           "trackingNo": "跟踪号",
-          "failReason": "失败原因"
+          "failReason": "失败原因",
+          "rowNumber": "行号",
+          "failureType": "失败类型",
+          "reason": "原因"
+        },
+        "tabs": {
+          "orders": "成功订单",
+          "failures": "失败行"
+        },
+        "failureTypes": {
+          "validation": "数据校验",
+          "business": "业务逻辑"
+        },
+        "rowData": {
+          "title": "原始上传数据",
+          "sender": "发件人",
+          "recipient": "收件人",
+          "package": "包裹",
+          "item": "商品",
+          "fields": {
+            "senderName": "姓名",
+            "senderPhone": "电话",
+            "senderCountry": "国家",
+            "senderState": "州/省",
+            "senderCity": "城市",
+            "senderAddress1": "地址1",
+            "senderAddress2": "地址2",
+            "senderPostcode": "邮编",
+            "recipientName": "姓名",
+            "recipientPhone": "电话",
+            "recipientCountry": "国家",
+            "recipientState": "州/省",
+            "recipientCity": "城市",
+            "recipientAddress1": "地址1",
+            "recipientAddress2": "地址2",
+            "recipientPostcode": "邮编",
+            "packageWeight": "重量",
+            "packageLength": "长",
+            "packageWidth": "宽",
+            "packageHeight": "高",
+            "packageWeightUnit": "重量单位",
+            "packageDimUnit": "尺寸单位",
+            "declaredValue": "申报价值",
+            "sku": "SKU",
+            "cnName": "中文名",
+            "enName": "英文名",
+            "qty": "数量",
+            "weight": "重量",
+            "values": "价值",
+            "hsCode": "海关编码",
+            "originCountry": "原产地"
+          }
         },
         "statuses": {
           "all": "全部",
@@ -476,7 +565,8 @@
           "getDownloadLinkFailed": "获取下载链接失败",
           "noDownloadUrl": "接口未返回下载地址",
           "downloadOpened": "已打开下载链接",
-          "batchNotFound": "未找到对应批次"
+          "batchNotFound": "未找到对应批次",
+          "hasFailures": "本批次有 {count} 行导入失败，请查看失败详情并修正后重新上传"
         }
       }
     },
@@ -600,6 +690,10 @@
         "fees": "费用明细",
         "customerFee": "客户应付运费",
         "packageContents": "包裹内容",
+        "packageSpecs": "包裹规格",
+        "weight": "重量",
+        "dimensions": "尺寸 (长×宽×高)",
+        "declaredValue": "申报价值",
         "skuCode": "SKU编码",
         "skuCnName": "中文名称",
         "skuEnName": "英文名称",
@@ -879,18 +973,33 @@
       "headers": {
         "orderNo": "订单号",
         "referenceNo": "参考号",
+        "htOrderNo": "HT订单号",
         "recipient": "收件人",
         "receiveTelephone": "收件人电话",
         "receiveAddress": "收件人地址",
         "receiveCity": "收件人城市",
         "receiveProvince": "收件人省/州",
         "receiveCountry": "收件人国家",
+        "receivePostcode": "收件人邮编",
+        "country": "国家",
         "warehouse": "仓库",
+        "transport": "运输方式",
+        "source": "来源",
         "sku": "SKU",
+        "skuNum": "SKU数量",
+        "cnName": "中文名称",
+        "totalWeight": "总重量",
         "trackingNo": "运单号",
         "fee": "费用",
+        "handleFee": "处理费",
+        "paisongFee": "派送费",
+        "zitickFee": "自提费",
+        "ppFee": "PP费",
+        "materialFee": "材料费",
         "status": "状态",
         "createdAt": "创建时间",
+        "username": "操作人",
+        "shippedAt": "发货时间",
         "actions": "操作"
       },
       "tooltips": {
@@ -908,7 +1017,10 @@
         "exportLoadFailed": "获取导出数据失败",
         "exportNoData": "当前条件下无数据可导出",
         "exportSuccess": "已导出 {count} 条",
-        "exportFailed": "导出失败"
+        "exportFailed": "导出失败",
+        "empty": "暂无订单数据",
+        "emptyHint": "调整筛选条件后重试，或创建一笔新订单。",
+        "loadingRows": "正在加载订单…"
       }
     },
     "dropShippingOrderBatch": {
@@ -1538,6 +1650,52 @@
         "primaryRequired": "请选择首选运输方式",
         "saveSuccess": "保存成功",
         "saveFailed": "保存失败"
+      },
+      "aiSubscription": {
+        "title": "ATWindow AI 智能分析订阅",
+        "subtitle": "订阅包月自动分析套餐，助力全局动销精细化管理",
+        "currentTier": "当前生效套餐",
+        "nextTier": "下期预定生效套餐",
+        "effectiveFrom": "生效时间：{date}（下周一）",
+        "nextBillingDate": "下期扣费时间：{date}",
+        "tierName": {
+          "1": "免费版",
+          "2": "标准版",
+          "3": "专业版"
+        },
+        "tierDesc": {
+          "1": "提供基础全景分析，不定期自动生成报告",
+          "2": "每半月自动进行 1 次深度仓储全景数据分析",
+          "3": "每周自动进行 1 次深度仓储全景数据分析"
+        },
+        "price": {
+          "1": "$0/月",
+          "2": "$9.90/月",
+          "3": "$14.90/月"
+        },
+        "priceVal": {
+          "1": "$0.00",
+          "2": "$9.90",
+          "3": "$14.90"
+        },
+        "actions": {
+          "subscribe": "立即订阅",
+          "current": "当前使用中",
+          "pending": "预约中",
+          "confirmTitle": "确认变更订阅套餐",
+          "confirmUpgrade": "系统将即时自您的账户余额中扣除首期订阅费用 {price}。因数据初始化与同步需要，AI 智能分析权限将于 **{date}（下周一）** 起正式生效。\n\n是否确认开通此套餐？",
+          "confirmChange": "您已预约将套餐变更为【{tierName}】。此操作不会即时扣费，预约将于下个计费周期起点（**{date}**）自动生效，届时将按新套餐费率自动续费。\n\n是否确认提交此变更预约？"
+        },
+        "logs": {
+          "title": "AI 订阅扣费明细",
+          "headers": {
+            "time": "时间",
+            "amount": "变动金额",
+            "balance": "扣款后余额",
+            "remark": "备注"
+          },
+          "empty": "暂无 AI 服务包月扣款流水"
+        }
       }
     },
     "accountAuthManagement": {
@@ -1636,6 +1794,7 @@
         "incomeExpense": "收支",
         "amountUsd": "交易金额(USD)",
         "amountEur": "交易金额(EUR)",
+        "balance": "账户余额",
         "remark": "备注"
       },
       "recharge": {
@@ -1696,7 +1855,8 @@
         "wxQrFailed": "微信支付二维码获取失败",
         "wxPaid": "微信支付成功，余额已更新",
         "exportConditionRequired": "请选择导出条件（类型或时间范围）",
-        "exportSubmitted": "导出任务已提交",
+        "exportSuccess": "已导出 {count} 条账单明细",
+        "exportNoData": "没有可导出的数据",
         "exportFailed": "导出失败"
       }
     },
@@ -1958,6 +2118,7 @@
         "warehouse": "入库仓库",
         "express": "运输方式",
         "boxes": "箱数",
+        "pdfType": "箱唛尺寸",
         "reference": "参考号",
         "eta": "预计到仓时间",
         "country": "国家",

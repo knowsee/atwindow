@@ -1,5 +1,6 @@
 <script setup>
 import { $api } from '@/utils/api'
+import { downloadXlsx, makeExportBasename } from '@/utils/exportXlsx'
 
 definePage({
   meta: {
@@ -9,6 +10,7 @@ definePage({
 })
 
 const loading = ref(false)
+const exporting = ref(false)
 const rechargeVisible = ref(false)
 const submitting = ref(false)
 const activeRechargeTab = ref('rmb')
@@ -86,13 +88,13 @@ const rechargeEurCurrencyOptions = computed(() => [
 const autoAmountOptions = [500, 1000, 3000, 5000]
 
 const tableHeadersBase = computed(() => [
-  { title: t('pages.accountFundOverview.headers.createTime'), key: 'createtime', width: 126 },
+  { title: t('pages.accountFundOverview.headers.createTime'), key: 'create_time', width: 126 },
   { title: t('pages.accountFundOverview.headers.orderNo'), key: 'order_sn', width: 220 },
-  { title: t('pages.accountFundOverview.headers.trackingNo'), key: 'ht_tracking_no', width: 160 },
+  { title: t('pages.accountFundOverview.headers.trackingNo'), key: 'tracking_no', width: 160 },
   { title: t('pages.accountFundOverview.headers.tradeType'), key: 'pay_type', width: 152 },
-  { title: t('pages.accountFundOverview.headers.incomeExpense'), key: 'type_name', width: 122, align: 'center' },
+  { title: t('pages.accountFundOverview.headers.incomeExpense'), key: 'type', width: 122, align: 'center' },
   { title: t('pages.accountFundOverview.headers.amountUsd'), key: 'change_money', width: 168, align: 'end' },
-  { title: t('pages.accountFundOverview.headers.amountEur'), key: 'change_money_eur', width: 112, align: 'end' },
+  { title: t('pages.accountFundOverview.headers.balance') || '账户余额', key: 'last_money', width: 112, align: 'end' },
   { title: t('pages.accountFundOverview.headers.remark'), key: 'remark', minWidth: 320 },
 ])
 
@@ -158,7 +160,7 @@ function formatCreatetimeLines(raw) {
 }
 
 function getCreatetimeParts(item) {
-  return formatCreatetimeLines(item?.createtime)
+  return formatCreatetimeLines(item?.create_time || item?.createtime)
 }
 
 async function copyText(text) {
@@ -515,10 +517,11 @@ async function exportFinance() {
   const createTime = buildTimeRangeParam(filters.timeRange)
   if (!filters.type && !createTime) {
     toast(t('pages.accountFundOverview.messages.exportConditionRequired'), 'warning')
-    
+
     return
   }
 
+  exporting.value = true
   try {
     const res = await $api('/user/excelFinance', {
       method: 'POST',
@@ -528,13 +531,57 @@ async function exportFinance() {
       },
     })
 
-    if (Number(res?.code) === 1)
-      toast(t('pages.accountFundOverview.messages.exportSubmitted'), 'success')
-    else
+    if (Number(res?.code) !== 1) {
       toast(res?.msg || t('pages.accountFundOverview.messages.exportFailed'), 'error')
+
+      return
+    }
+
+    const rawRows = Array.isArray(res?.data?.data)
+      ? res.data.data
+      : Array.isArray(res?.data)
+        ? res.data
+        : []
+
+    if (!rawRows.length) {
+      toast(t('pages.accountFundOverview.messages.exportNoData'), 'warning')
+
+      return
+    }
+
+    const exportRows = rawRows.map(item => ({
+      create_time: item.create_time || '',
+      ['order_sn']: item.order_sn || '',
+      ['tracking_no']: item.tracking_no || '',
+      ['pay_type']: item.pay_type || '',
+      ['type']: item.type || '',
+      ['change_money']: item.change_money || '0',
+      ['last_money']: item.last_money || '0',
+      remark: item.remark || '',
+    }))
+
+    await downloadXlsx({
+      filename: makeExportBasename(t('pages.accountFundOverview.title')),
+      sheetName: t('pages.accountFundOverview.title'),
+      columns: [
+        { key: 'create_time', title: t('pages.accountFundOverview.headers.createTime') },
+        { key: 'order_sn', title: t('pages.accountFundOverview.headers.orderNo') },
+        { key: 'tracking_no', title: t('pages.accountFundOverview.headers.trackingNo') },
+        { key: 'pay_type', title: t('pages.accountFundOverview.headers.tradeType') },
+        { key: 'type', title: t('pages.accountFundOverview.headers.incomeExpense') },
+        { key: 'change_money', title: t('pages.accountFundOverview.headers.amountUsd') },
+        { key: 'last_money', title: t('pages.accountFundOverview.headers.balance') || '账户余额' },
+        { key: 'remark', title: t('pages.accountFundOverview.headers.remark') },
+      ],
+      rows: exportRows,
+    })
+    toast(t('pages.accountFundOverview.messages.exportSuccess', { count: exportRows.length }), 'success')
   }
   catch (error) {
     toast(error?.data?.msg || error?.message || t('pages.accountFundOverview.messages.exportFailed'), 'error')
+  }
+  finally {
+    exporting.value = false
   }
 }
 
@@ -649,6 +696,7 @@ onBeforeUnmount(() => stopWxPolling())
             variant="tonal"
             size="small"
             prepend-icon="tabler-download"
+            :loading="exporting"
             @click="exportFinance"
           >
             {{ $t('pages.accountFundOverview.actions.export') }}
@@ -732,7 +780,7 @@ onBeforeUnmount(() => stopWxPolling())
         :class="{ 'fund-flow-table--with-eur': showEurColumn }"
         item-value="id"
       >
-        <template #item.createtime="{ item }">
+        <template #item.create_time="{ item }">
           <div
             v-if="getCreatetimeParts(item)"
             class="fund-time text-no-wrap"
@@ -768,19 +816,19 @@ onBeforeUnmount(() => stopWxPolling())
             </IconBtn>
           </div>
         </template>
-        <template #item.ht_tracking_no="{ item }">
-          <div class="fund-reference-cell d-flex align-center gap-1 min-w-0">
+        <template #item.tracking_no="{ item }">
+          <div class="d-flex align-center gap-1">
             <span
-              class="fund-reference-text text-truncate"
-              :title="item.ht_tracking_no || ''"
-            >{{ item.ht_tracking_no || '—' }}</span>
+              class="text-truncate"
+              style="max-inline-size: 130px;"
+              :title="item.tracking_no || ''"
+            >{{ item.tracking_no || '—' }}</span>
             <IconBtn
-              v-if="item.ht_tracking_no"
-              size="small"
+              v-if="item.tracking_no"
+              size="x-small"
+              color="primary"
               variant="text"
-              color="secondary"
-              class="flex-shrink-0 fund-copy-btn"
-              @click.stop="copyText(item.ht_tracking_no)"
+              @click.stop="copyText(item.tracking_no)"
             >
               <VIcon
                 icon="tabler-copy"
@@ -795,13 +843,13 @@ onBeforeUnmount(() => stopWxPolling())
             :title="item['pay_type'] || ''"
           >{{ item['pay_type'] || '—' }}</span>
         </template>
-        <template #item.type_name="{ item }">
+        <template #item.type="{ item }">
           <VChip
-            :color="item.type_name === INCOME_TYPE ? 'success' : 'error'"
+            :color="item.type === INCOME_TYPE ? 'success' : 'error'"
             size="small"
             variant="tonal"
           >
-            {{ resolveFlowTypeName(item.type_name) }}
+            {{ item.type || '—' }}
           </VChip>
         </template>
         <template #item.change_money="{ item }">
@@ -814,18 +862,19 @@ onBeforeUnmount(() => stopWxPolling())
             </span>
           </div>
         </template>
-        <template #item.change_money_eur="{ item }">
-          <div class="fund-money-cell text-end">
+        <template #item.last_money="{ item }">
+          <div class="d-flex flex-column align-end">
             <span
-              v-if="Math.abs(parseMoney(item.change_money_eur)) < 1e-9"
-              class="text-medium-emphasis"
-            >—</span>
+              v-if="Math.abs(parseMoney(item.last_money)) < 1e-9"
+              class="text-disabled"
+            >
+              —
+            </span>
             <span
               v-else
-              class="tabular-nums"
-              :class="parseMoney(item.change_money_eur) >= 0 ? 'text-success' : 'text-error'"
+              class="text-body-1 font-weight-medium"
             >
-              {{ item.change_money_eur }}
+              {{ item.last_money }}
             </span>
           </div>
         </template>

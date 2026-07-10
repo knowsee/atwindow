@@ -284,6 +284,7 @@
         "subtitle": "Package tracking summary",
         "headers": {
           "trackingNo": "Tracking no.",
+          "status": "Status",
           "time": "Time"
         },
         "empty": "No inbound records"
@@ -314,6 +315,21 @@
         "overviewFailed": "Failed to load overview",
         "warehouseFailed": "Failed to load warehouse data",
         "refreshed": "Data refreshed"
+      },
+      "aiAnalysis": {
+        "title": "ATWindow Panoramic Analysis",
+        "reportTitle": "ATWindow Comprehensive Analysis Report",
+        "reportSubtitle": "Multi-dimensional deep insights based on {warehouse} ({count} SKUs)",
+        "updatedAt": "Updated at",
+        "noData": "Pre-generated data for this user/warehouse not found. Please wait for the scheduled task to run or check parameters.",
+        "loading": "Performing deep AI analysis and generating report, please wait...",
+        "error": "Failed to fetch AI analysis data, please try again.",
+        "topOutOfStock": "Top 5 Out of Stock Risk",
+        "topSales": "Top 5 Sales (Last 60 Days)",
+        "categoryTrends": "Category Outbound Proportion",
+        "weeklyTrend": "Weekly Outbound Trend (Last 8 Weeks)",
+        "quantity": "Quantity",
+        "outbound": "Outbound Volume"
       }
     },
     "printLabelBatchUpload": {
@@ -339,6 +355,28 @@
         "batchCreated": "Batch {sn} (ID {id}) created. Background parsing is in progress.",
         "uploadSuccess": "Batch upload submitted successfully",
         "uploadFailed": "Batch upload failed"
+      },
+      "batchStatus": {
+        "title": "Batch shipping status",
+        "statusLabels": {
+          "processing": "Processing",
+          "completed": "Completed",
+          "failed": "Failed"
+        },
+        "counts": {
+          "total": "Total",
+          "success": "Success",
+          "fail": "Fail"
+        },
+        "actions": {
+          "downloadZip": "Download ZIP",
+          "viewOrders": "View order list",
+          "detail": "Details",
+          "close": "Close"
+        },
+        "messages": {
+          "loadFailed": "Failed to load batch status"
+        }
       }
     },
     "printLabelShippingList": {
@@ -436,7 +474,58 @@
           "orderNo": "Order no.",
           "refNo": "Reference no.",
           "trackingNo": "Tracking no.",
-          "failReason": "Failure reason"
+          "failReason": "Failure reason",
+          "rowNumber": "Row",
+          "failureType": "Failure type",
+          "reason": "Reason"
+        },
+        "tabs": {
+          "orders": "Successful orders",
+          "failures": "Failed rows"
+        },
+        "failureTypes": {
+          "validation": "Validation",
+          "business": "Business"
+        },
+        "rowData": {
+          "title": "Uploaded row data",
+          "sender": "Sender",
+          "recipient": "Recipient",
+          "package": "Package",
+          "item": "Item",
+          "fields": {
+            "senderName": "Name",
+            "senderPhone": "Phone",
+            "senderCountry": "Country",
+            "senderState": "State",
+            "senderCity": "City",
+            "senderAddress1": "Address 1",
+            "senderAddress2": "Address 2",
+            "senderPostcode": "Postcode",
+            "recipientName": "Name",
+            "recipientPhone": "Phone",
+            "recipientCountry": "Country",
+            "recipientState": "State",
+            "recipientCity": "City",
+            "recipientAddress1": "Address 1",
+            "recipientAddress2": "Address 2",
+            "recipientPostcode": "Postcode",
+            "packageWeight": "Weight",
+            "packageLength": "Length",
+            "packageWidth": "Width",
+            "packageHeight": "Height",
+            "packageWeightUnit": "Weight unit",
+            "packageDimUnit": "Dim. unit",
+            "declaredValue": "Declared value",
+            "sku": "SKU",
+            "cnName": "CN name",
+            "enName": "EN name",
+            "qty": "Qty",
+            "weight": "Weight",
+            "values": "Value",
+            "hsCode": "HS code",
+            "originCountry": "Origin"
+          }
         },
         "statuses": {
           "all": "All",
@@ -476,7 +565,8 @@
           "getDownloadLinkFailed": "Failed to get download link",
           "noDownloadUrl": "The API did not return a download URL",
           "downloadOpened": "Download link opened",
-          "batchNotFound": "Matching batch not found"
+          "batchNotFound": "Matching batch not found",
+          "hasFailures": "{count} row(s) failed to import in this batch. Review the failure details, fix and re-upload."
         }
       }
     },
@@ -600,6 +690,10 @@
         "fees": "Fee details",
         "customerFee": "Customer shipping fee",
         "packageContents": "Package contents",
+        "packageSpecs": "Package specs",
+        "weight": "Weight",
+        "dimensions": "Dimensions (L×W×H)",
+        "declaredValue": "Declared value",
         "skuCode": "SKU code",
         "skuCnName": "CN name",
         "skuEnName": "EN name",
@@ -879,18 +973,33 @@
       "headers": {
         "orderNo": "Order no.",
         "referenceNo": "Reference no.",
+        "htOrderNo": "HT order no.",
         "recipient": "Recipient",
         "receiveTelephone": "Recipient phone",
         "receiveAddress": "Recipient address",
         "receiveCity": "Recipient city",
         "receiveProvince": "Recipient province/state",
         "receiveCountry": "Recipient country",
+        "receivePostcode": "Recipient postcode",
+        "country": "Country",
         "warehouse": "Warehouse",
+        "transport": "Transport method",
+        "source": "Source",
         "sku": "SKU",
+        "skuNum": "SKU quantity",
+        "cnName": "Chinese name",
+        "totalWeight": "Total weight",
         "trackingNo": "Tracking no.",
         "fee": "Fee",
+        "handleFee": "Handling fee",
+        "paisongFee": "Delivery fee",
+        "zitickFee": "Self-pickup fee",
+        "ppFee": "PP fee",
+        "materialFee": "Material fee",
         "status": "Status",
         "createdAt": "Created at",
+        "username": "Operator",
+        "shippedAt": "Shipped at",
         "actions": "Actions"
       },
       "tooltips": {
@@ -908,7 +1017,10 @@
         "exportLoadFailed": "Failed to fetch export data",
         "exportNoData": "No data to export under current filters",
         "exportSuccess": "Exported {count} rows",
-        "exportFailed": "Export failed"
+        "exportFailed": "Export failed",
+        "empty": "No orders found",
+        "emptyHint": "Adjust your filters and try again, or create a new order.",
+        "loadingRows": "Loading orders…"
       }
     },
     "dropShippingOrderBatch": {
@@ -1538,6 +1650,52 @@
         "primaryRequired": "Please select the primary shipping method",
         "saveSuccess": "Saved successfully",
         "saveFailed": "Save failed"
+      },
+      "aiSubscription": {
+        "title": "ATWindow AI Insight Subscription",
+        "subtitle": "Subscribe to monthly auto-analysis plans for detailed movement control",
+        "currentTier": "Current Plan",
+        "nextTier": "Booked Plan for Next Cycle",
+        "effectiveFrom": "Effective: {date} (Next Mon)",
+        "nextBillingDate": "Next billing: {date}",
+        "tierName": {
+          "1": "Free Edition",
+          "2": "Standard",
+          "3": "Professional"
+        },
+        "tierDesc": {
+          "1": "Basic analysis on an irregular auto-generation schedule",
+          "2": "Deep warehouse data analysis once every half month",
+          "3": "Deep warehouse data analysis once every week"
+        },
+        "price": {
+          "1": "$0.00/mo",
+          "2": "$9.90/mo",
+          "3": "$14.90/mo"
+        },
+        "priceVal": {
+          "1": "$0.00",
+          "2": "$9.90",
+          "3": "$14.90"
+        },
+        "actions": {
+          "subscribe": "Subscribe Now",
+          "current": "Current Active",
+          "pending": "Pending Booked",
+          "confirmTitle": "Confirm Subscription Change",
+          "confirmUpgrade": "The system will immediately debit the first period subscription fee of {price} from your account balance. Due to data initialization and synchronization requirements, AI insight access will officially start on **{date} (Next Monday)**.\n\nConfirm activation of this plan?",
+          "confirmChange": "You have scheduled a change to the 【{tierName}】 plan. This action will not result in immediate billing. The change will take effect at the start of the next billing cycle (**{date}**), at which point billing will automatically continue at the new rate.\n\nConfirm scheduling this change?"
+        },
+        "logs": {
+          "title": "AI Subscription Billing Logs",
+          "headers": {
+            "time": "Time",
+            "amount": "Amount",
+            "balance": "Post-Billing Balance",
+            "remark": "Remark"
+          },
+          "empty": "No AI subscription logs found"
+        }
       }
     },
     "accountAuthManagement": {
@@ -1636,6 +1794,7 @@
         "incomeExpense": "Income/expense",
         "amountUsd": "Transaction amount (USD)",
         "amountEur": "Transaction amount (EUR)",
+        "balance": "Account Balance",
         "remark": "Remark"
       },
       "recharge": {
@@ -1696,7 +1855,8 @@
         "wxQrFailed": "Failed to get WeChat payment QR code",
         "wxPaid": "WeChat payment succeeded. Balance updated",
         "exportConditionRequired": "Select export criteria (type or time range)",
-        "exportSubmitted": "Export task submitted",
+        "exportSuccess": "Exported {count} billing records",
+        "exportNoData": "No data to export",
         "exportFailed": "Export failed"
       }
     },
@@ -1958,6 +2118,7 @@
         "warehouse": "Inbound warehouse",
         "express": "Shipping method",
         "boxes": "Boxes",
+        "pdfType": "Label size",
         "reference": "Reference number",
         "eta": "Estimated arrival",
         "country": "Country",

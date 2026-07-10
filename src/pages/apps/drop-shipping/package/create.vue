@@ -1,6 +1,8 @@
 <script setup>
+/* eslint-disable camelcase -- /package/* API field names match backend */
 import FormPageLoadingOverlay from '@/components/FormPageLoadingOverlay.vue'
 import { $api, $apiJson } from '@/utils/api'
+import { resolveBackendFileUrl } from '@/utils/backendFileUrl'
 import { resolveInitialWarehouseId, setPreferredWarehouseId } from '@/utils/warehousePreference'
 import { loadWarehouseOptions, normalizeRangeText, resolvePackageYjdcTimeRange } from '@/views/apps/drop-shipping/useDropShippingShared'
 import PrintLabelSectionCard from '@/views/apps/print-label/PrintLabelSectionCard.vue'
@@ -43,6 +45,11 @@ const expressOptions = computed(() => [
   { title: t('pages.dropShippingPackageCreate.express.air'), value: 4 },
 ])
 
+const pdfTypeOptions = [
+  { title: 'A4', value: '1' },
+  { title: '4 × 6 in', value: '2' },
+]
+
 const skuOptions = ref([])
 
 const mode = computed(() => String(route.query.mode || 'create'))
@@ -65,6 +72,7 @@ const form = ref({
   warehouseId: null,
   expressId: null,
   boxNum: 1,
+  pdfType: '1',
   trackingNo: '',
   timeRange: '',
   products: [{ id: '', enSku: '', cnName: '', qty: 1 }],
@@ -264,6 +272,7 @@ async function loadDetail(withLoading = true) {
         warehouseId: Number(pkg.warehouse_id || res.data.warehouse_id || 0) || null,
         expressId: resolveExpressIdFromPackage(pkg),
         boxNum: Number(pkg.box_num || 1),
+        pdfType: String(pkg.pdf_type || '1'),
         trackingNo: pkg.tracking_no || '',
         timeRange: resolvePackageYjdcTimeRange(pkg),
         products: productRows.length
@@ -331,7 +340,7 @@ function buildPayload() {
     'send_name': senderInfo.value.sendName.trim(),
     'warehouse_id': String(form.value.warehouseId ?? ''),
     'box_type': boxTypeTitle,
-    'pdf_type': '1',
+    'pdf_type': String(form.value.pdfType || '1'),
     type: '',
     id: isEdit.value && editingId.value ? String(editingId.value) : '',
     'tracking_no': form.value.trackingNo.trim(),
@@ -370,6 +379,11 @@ async function submitForm() {
 
     if (Number(res?.code) === 1) {
       toast(res?.msg || t('pages.dropShippingPackageCreate.messages.saveSuccess'), 'success')
+
+      const pdfUrl = resolveBackendFileUrl(res?.data?.pdf)
+
+      if (pdfUrl)
+        window.open(pdfUrl, '_blank', 'noopener')
       setTimeout(goList, 500)
     }
     else {
@@ -509,7 +523,7 @@ onMounted(async () => {
                 </VCol>
                 <VCol
                   cols="12"
-                  md="6"
+                  md="4"
                 >
                   <AppTextField
                     v-model="form.trackingNo"
@@ -523,12 +537,25 @@ onMounted(async () => {
                 </VCol>
                 <VCol
                   cols="12"
-                  md="6"
+                  md="4"
                 >
                   <AppDateTimePicker
                     v-model="form.timeRange"
                     :label="$t('pages.dropShippingPackageCreate.fields.eta')"
                     :config="{ mode: 'range', dateFormat: 'Y-m-d' }"
+                    :disabled="pageBlocking"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="4"
+                >
+                  <AppSelect
+                    v-model="form.pdfType"
+                    :items="pdfTypeOptions"
+                    item-title="title"
+                    item-value="value"
+                    :label="$t('pages.dropShippingPackageCreate.fields.pdfType')"
                     :disabled="pageBlocking"
                   />
                 </VCol>

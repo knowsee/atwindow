@@ -107,7 +107,144 @@ function goBack() {
   router.back()
 }
 
-onMounted(loadConfig)
+// AI Subscription State
+const subStatus = ref(null)
+const subLogs = ref([])
+const subLogsLoading = ref(false)
+const subLogsTotal = ref(0)
+const subLogsPage = ref(1)
+const subLogsLimit = 5
+
+const isSubscribing = ref(false)
+const subConfirmDialog = ref({
+  show: false,
+  targetTier: null,
+  isUpgrade: false,
+  message: '',
+  title: ''
+})
+
+async function loadSubStatus() {
+  try {
+    const res = await $api('/ordernewapi/aiSubscribeStatus', { method: 'GET' })
+    if ((Number(res?.code) === 1 || Number(res?.code) === 200) && res.data) {
+      subStatus.value = res.data
+    }
+  } catch (e) {
+    console.error('Failed to load subscription status', e)
+  }
+}
+
+async function loadSubLogs(page = 1) {
+  subLogsLoading.value = true
+  try {
+    const res = await $api('/ordernewapi/aiSubscribeLogs', {
+      method: 'GET',
+      query: { page, limit: subLogsLimit }
+    })
+    if ((Number(res?.code) === 1 || Number(res?.code) === 200) && res.data) {
+      subLogs.value = res.data.data || []
+      subLogsTotal.value = Number(res.data.total) || 0
+      subLogsPage.value = Number(res.data.current_page) || 1
+    }
+  } catch (e) {
+    console.error('Failed to load subscription logs', e)
+  } finally {
+    subLogsLoading.value = false
+  }
+}
+
+function requestChangeTier(tier) {
+  if (!subStatus.value) return
+  
+  const current = Number(subStatus.value.current_tier || 1)
+  const target = Number(tier)
+  
+  if (current === target && Number(subStatus.value.next_tier || current) === target) return
+  
+  const isUpgrade = current === 1 && (target === 2 || target === 3)
+  const nextMon = getNextMondayText()
+  const currentCycleEnd = subStatus.value.billing_cycle_end || subStatus.value.next_billing_date || '—'
+  
+  const targetName = t(`pages.accountPersonalization.aiSubscription.tierName.${target}`)
+  const targetPriceVal = t(`pages.accountPersonalization.aiSubscription.priceVal.${target}`)
+  
+  let confirmMsg = ''
+  if (isUpgrade) {
+    confirmMsg = t('pages.accountPersonalization.aiSubscription.actions.confirmUpgrade', {
+      tierName: targetName,
+      price: targetPriceVal,
+      date: nextMon
+    })
+  } else {
+    confirmMsg = t('pages.accountPersonalization.aiSubscription.actions.confirmChange', {
+      tierName: targetName,
+      date: currentCycleEnd
+    })
+  }
+  
+  subConfirmDialog.value = {
+    show: true,
+    targetTier: target,
+    isUpgrade,
+    title: t('pages.accountPersonalization.aiSubscription.actions.confirmTitle'),
+    message: confirmMsg
+  }
+}
+
+async function confirmSubscriptionChange() {
+  const tier = subConfirmDialog.value.targetTier
+  if (!tier) return
+  
+  subConfirmDialog.value.show = false
+  isSubscribing.value = true
+  try {
+    const res = await $apiJson('/ordernewapi/aiSubscribe', {
+      method: 'POST',
+      body: { tier: Number(tier) }
+    })
+    
+    if (Number(res?.code) === 1 || Number(res?.code) === 200) {
+      toast(res?.message || t('pages.accountPersonalization.messages.saveSuccess'), 'success')
+      await loadSubStatus()
+      await loadSubLogs(1)
+    } else {
+      toast(res?.message || t('pages.accountPersonalization.messages.saveFailed'), 'error')
+    }
+  } catch (e) {
+    toast(e?.data?.message || e?.message || t('pages.accountPersonalization.messages.networkFailed'), 'error')
+  } finally {
+    isSubscribing.value = false
+  }
+}
+
+function getNextMondayText() {
+  const d = new Date()
+  const day = d.getDay()
+  const diff = d.getDate() + (day === 0 ? 1 : 8 - day)
+  const nextMon = new Date(d.setDate(diff))
+  const yyyy = nextMon.getFullYear()
+  const mm = String(nextMon.getMonth() + 1).padStart(2, '0')
+  const dd = String(nextMon.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function formatDate(ts) {
+  if (!ts) return '—'
+  const d = new Date(ts * 1000)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const min = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}`
+}
+
+onMounted(async () => {
+  await loadConfig()
+  await loadSubStatus()
+  await loadSubLogs(1)
+})
 </script>
 
 <template>
@@ -280,7 +417,256 @@ onMounted(loadConfig)
         </VForm>
       </VCardText>
     </VCard>
+
+    <!-- AI Subscription Card -->
+    <VCard class="rounded-lg position-relative mt-6">
+      <VOverlay
+        :model-value="isSubscribing"
+        contained
+        persistent
+        class="align-center justify-center"
+      >
+        <div class="d-flex align-center gap-3 px-4 py-3 bg-surface rounded animate-pulse">
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="24"
+          />
+          <span class="text-body-2">{{ $t('pages.accountPersonalization.loading') }}</span>
+        </div>
+      </VOverlay>
+      
+      <VCardItem class="pb-3 pt-5 px-6">
+        <template #title>
+          <span class="text-h5 font-weight-medium">{{ $t('pages.accountPersonalization.aiSubscription.title') }}</span>
+        </template>
+        <template #subtitle>
+          <span class="text-body-2 text-medium-emphasis">{{ $t('pages.accountPersonalization.aiSubscription.subtitle') }}</span>
+        </template>
+      </VCardItem>
+      <VDivider />
+      
+      <VCardText class="pa-4 pa-sm-6">
+        <!-- Status Display -->
+        <VRow v-if="subStatus" class="mb-6">
+          <VCol cols="12" md="6">
+            <VCard border flat class="pa-4 h-100 bg-var-theme-background">
+              <div class="text-subtitle-2 text-medium-emphasis mb-1">
+                {{ $t('pages.accountPersonalization.aiSubscription.currentTier') }}
+              </div>
+              <div class="d-flex align-center gap-2">
+                <span class="text-h6 font-weight-bold text-primary">
+                  {{ $t(`pages.accountPersonalization.aiSubscription.tierName.${subStatus.current_tier || 1}`) }}
+                </span>
+                <VChip color="primary" variant="tonal" size="small">
+                  {{ $t(`pages.accountPersonalization.aiSubscription.price.${subStatus.current_tier || 1}`) }}
+                </VChip>
+              </div>
+              <div v-if="subStatus.next_billing_date && Number(subStatus.current_tier) > 1" class="text-caption text-medium-emphasis mt-2">
+                {{ $t('pages.accountPersonalization.aiSubscription.nextBillingDate', { date: subStatus.next_billing_date }) }}
+              </div>
+            </VCard>
+          </VCol>
+          
+          <VCol cols="12" md="6" v-if="subStatus.next_tier && Number(subStatus.next_tier) !== Number(subStatus.current_tier)">
+            <VCard border flat class="pa-4 h-100 bg-light-warning">
+              <div class="text-subtitle-2 text-warning mb-1 font-weight-medium d-flex align-center gap-1">
+                <VIcon icon="tabler-clock" size="18" />
+                {{ $t('pages.accountPersonalization.aiSubscription.nextTier') }}
+              </div>
+              <div class="d-flex align-center gap-2">
+                <span class="text-h6 font-weight-bold text-warning">
+                  {{ $t(`pages.accountPersonalization.aiSubscription.tierName.${subStatus.next_tier}`) }}
+                </span>
+                <VChip color="warning" variant="tonal" size="small">
+                  {{ $t(`pages.accountPersonalization.aiSubscription.price.${subStatus.next_tier}`) }}
+                </VChip>
+              </div>
+              <div v-if="subStatus.active_from" class="text-caption text-medium-emphasis mt-2">
+                {{ $t('pages.accountPersonalization.aiSubscription.effectiveFrom', { date: subStatus.active_from }) }}
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+        
+        <!-- Pricing Tiers Grid -->
+        <VRow class="mb-8">
+          <VCol
+            v-for="tier in [1, 2, 3]"
+            :key="tier"
+            cols="12"
+            md="4"
+          >
+            <VCard
+              border
+              class="pricing-card h-100 d-flex flex-column"
+              :class="{
+                'pricing-card--active': subStatus && Number(subStatus.current_tier || 1) === tier,
+                'pricing-card--pending': subStatus && Number(subStatus.next_tier || 1) === tier && Number(subStatus.current_tier || 1) !== tier
+              }"
+            >
+              <VCardItem class="text-center pt-6 pb-2">
+                <VIcon
+                  :icon="tier === 1 ? 'tabler-gift' : (tier === 2 ? 'tabler-sparkles' : 'tabler-crown')"
+                  size="36"
+                  class="mb-3 text-primary"
+                />
+                <VCardTitle class="text-h6 font-weight-bold">
+                  {{ $t(`pages.accountPersonalization.aiSubscription.tierName.${tier}`) }}
+                </VCardTitle>
+                <div class="text-h5 font-weight-black text-primary mt-2">
+                  {{ $t(`pages.accountPersonalization.aiSubscription.price.${tier}`) }}
+                </div>
+              </VCardItem>
+              
+              <VCardText class="text-center flex-grow-1 px-4 py-3 text-body-2 text-medium-emphasis">
+                {{ $t(`pages.accountPersonalization.aiSubscription.tierDesc.${tier}`) }}
+              </VCardText>
+              
+              <VDivider />
+              
+              <div class="pa-4 text-center">
+                <!-- Current Plan -->
+                <VBtn
+                  v-if="subStatus && Number(subStatus.current_tier || 1) === tier"
+                  color="success"
+                  variant="flat"
+                  block
+                  disabled
+                >
+                  <VIcon icon="tabler-check" class="me-1" />
+                  {{ $t('pages.accountPersonalization.aiSubscription.actions.current') }}
+                </VBtn>
+                
+                <!-- Booked Plan -->
+                <VBtn
+                  v-else-if="subStatus && Number(subStatus.next_tier || 1) === tier"
+                  color="warning"
+                  variant="flat"
+                  block
+                  disabled
+                >
+                  <VIcon icon="tabler-clock" class="me-1" />
+                  {{ $t('pages.accountPersonalization.aiSubscription.actions.pending') }}
+                </VBtn>
+                
+                <!-- Subscribe Btn -->
+                <VBtn
+                  v-else
+                  color="primary"
+                  variant="elevated"
+                  block
+                  @click="requestChangeTier(tier)"
+                >
+                  {{ $t('pages.accountPersonalization.aiSubscription.actions.subscribe') }}
+                </VBtn>
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+        
+        <!-- Billing Logs Table -->
+        <div class="logs-section mt-8">
+          <div class="text-h6 font-weight-bold mb-4 d-flex align-center gap-2">
+            <VIcon icon="tabler-file-text" color="primary" />
+            {{ $t('pages.accountPersonalization.aiSubscription.logs.title') }}
+          </div>
+          
+          <VTable
+            v-if="subLogs.length"
+            density="comfortable"
+            class="logs-table border rounded-lg overflow-hidden text-body-2"
+          >
+            <thead>
+              <tr>
+                <th>{{ $t('pages.accountPersonalization.aiSubscription.logs.headers.time') }}</th>
+                <th>{{ $t('pages.accountPersonalization.aiSubscription.logs.headers.amount') }}</th>
+                <th>{{ $t('pages.accountPersonalization.aiSubscription.logs.headers.balance') }}</th>
+                <th>{{ $t('pages.accountPersonalization.aiSubscription.logs.headers.remark') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="log in subLogs" :key="log.id">
+                <td class="text-no-wrap text-medium-emphasis">
+                  {{ formatDate(log.createtime) }}
+                </td>
+                <td class="font-weight-medium" :class="Number(log.change_money) < 0 ? 'text-error' : 'text-success'">
+                  {{ Number(log.change_money) < 0 ? '-' : '+' }}${{ Math.abs(Number(log.change_money)).toFixed(2) }}
+                </td>
+                <td class="text-medium-emphasis">
+                  ${{ Number(log.last_money).toFixed(2) }}
+                </td>
+                <td class="text-wrap">
+                  {{ log.remark || '—' }}
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+          
+          <div
+            v-else-if="subLogsLoading"
+            class="d-flex justify-center py-6"
+          >
+            <VProgressCircular indeterminate color="primary" />
+          </div>
+          
+          <div
+            v-else
+            class="text-center py-6 text-body-2 text-medium-emphasis border rounded-lg"
+          >
+            {{ $t('pages.accountPersonalization.aiSubscription.logs.empty') }}
+          </div>
+          
+          <!-- Pagination -->
+          <div v-if="subLogsTotal > subLogsLimit" class="d-flex justify-end mt-4">
+            <VPagination
+              v-model="subLogsPage"
+              :length="Math.ceil(subLogsTotal / subLogsLimit)"
+              total-visible="5"
+              size="small"
+              @update:model-value="loadSubLogs"
+            />
+          </div>
+        </div>
+      </VCardText>
+    </VCard>
   </VContainer>
+
+  <!-- Subscription Confirmation Dialog -->
+  <VDialog
+    v-model="subConfirmDialog.show"
+    max-width="500"
+  >
+    <VCard class="rounded-lg">
+      <VCardItem class="pb-2">
+        <VCardTitle class="text-h6 font-weight-bold d-flex align-center gap-2">
+          <VIcon icon="tabler-alert-circle" color="warning" />
+          {{ subConfirmDialog.title }}
+        </VCardTitle>
+      </VCardItem>
+      <VCardText class="pb-4">
+        <div class="text-body-1 style-message-text" style="white-space: pre-line;">
+          {{ subConfirmDialog.message }}
+        </div>
+      </VCardText>
+      <VCardActions class="px-6 pb-6 pt-0 d-flex justify-end gap-2">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          @click="subConfirmDialog.show = false"
+        >
+          取消
+        </VBtn>
+        <VBtn
+          color="primary"
+          variant="elevated"
+          @click="confirmSubscriptionChange"
+        >
+          确认变更
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>
@@ -320,6 +706,33 @@ onMounted(loadConfig)
   gap: 0.75rem;
   max-inline-size: 1280px;
   margin-inline: auto;
+}
+
+.pricing-card {
+  transition: all 0.22s ease-in-out;
+  border-width: 1px !important;
+}
+
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.pricing-card--active {
+  border: 2px solid rgb(var(--v-theme-success)) !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-success), 0.15) !important;
+}
+
+.pricing-card--pending {
+  border: 2px dashed rgb(var(--v-theme-warning)) !important;
+}
+
+.bg-light-warning {
+  background-color: rgba(var(--v-theme-warning), 0.08) !important;
+}
+
+.style-message-text {
+  line-height: 1.6;
 }
 
 @media (max-width: 599px) {

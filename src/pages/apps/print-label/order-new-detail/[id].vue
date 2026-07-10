@@ -66,6 +66,19 @@ function formatMoney(v, currency) {
   return currency ? `${s} ${currency}` : s
 }
 
+function formatDimensions(d) {
+  if (!d)
+    return '—'
+  const l = d.length
+  const w = d.width
+  const h = d.height
+  if (l == null && w == null && h == null)
+    return '—'
+  const unit = d.dim_unit ? ` ${d.dim_unit}` : ''
+
+  return `${l ?? '—'} × ${w ?? '—'} × ${h ?? '—'}${unit}`
+}
+
 function joinAddress(snapshot) {
   if (!snapshot)
     return '—'
@@ -503,6 +516,58 @@ onMounted(loadDetail)
                     </div>
                   </div>
                 </div>
+              </VCardText>
+            </VCard>
+
+            <VCard
+              class="mb-4"
+              elevation="0"
+              border
+            >
+              <VCardTitle class="px-5 pt-5 pb-3 text-subtitle-1 font-weight-bold d-flex align-center gap-2">
+                <VIcon
+                  icon="tabler-box"
+                  size="20"
+                  color="primary"
+                />
+                {{ $t('pages.printLabelOrderNewDetail.labels.packageSpecs') }}
+              </VCardTitle>
+              <VCardText class="px-5 pb-5 pt-0">
+                <VRow dense>
+                  <VCol
+                    cols="6"
+                    sm="3"
+                  >
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      {{ $t('pages.printLabelOrderNewDetail.labels.weight') }}
+                    </div>
+                    <div class="text-body-1 font-weight-medium">
+                      {{ detail.weight != null ? `${detail.weight} ${detail.weight_unit || ''}`.trim() : '—' }}
+                    </div>
+                  </VCol>
+                  <VCol
+                    cols="6"
+                    sm="3"
+                  >
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      {{ $t('pages.printLabelOrderNewDetail.labels.dimensions') }}
+                    </div>
+                    <div class="text-body-1 font-weight-medium">
+                      {{ formatDimensions(detail) }}
+                    </div>
+                  </VCol>
+                  <VCol
+                    cols="6"
+                    sm="3"
+                  >
+                    <div class="text-caption text-medium-emphasis mb-1">
+                      {{ $t('pages.printLabelOrderNewDetail.labels.declaredValue') }}
+                    </div>
+                    <div class="text-body-1 font-weight-medium">
+                      {{ detail.declared_value != null ? formatMoney(detail.declared_value, detail.currency) : '—' }}
+                    </div>
+                  </VCol>
+                </VRow>
               </VCardText>
             </VCard>
 

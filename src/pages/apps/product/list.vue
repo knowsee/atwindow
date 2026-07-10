@@ -18,6 +18,44 @@ const categories = ref([])
 const router = useRouter()
 const { t } = useI18n({ useScope: 'global' })
 
+const FILTERS_CACHE_KEY = 'product-list-filters'
+
+function getDefaultFilters() {
+  return {
+    'en_sku': '',
+    'cn_name': '',
+    'cat_id': null,
+  }
+}
+
+function loadCachedFilters() {
+  try {
+    const raw = sessionStorage.getItem(FILTERS_CACHE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+
+      return { ...getDefaultFilters(), ...parsed }
+    }
+  }
+  catch {}
+
+  return null
+}
+
+function saveCachedFilters(f) {
+  try {
+    sessionStorage.setItem(FILTERS_CACHE_KEY, JSON.stringify(f))
+  }
+  catch {}
+}
+
+function clearCachedFilters() {
+  try {
+    sessionStorage.removeItem(FILTERS_CACHE_KEY)
+  }
+  catch {}
+}
+
 const pagination = reactive({
   page: 1,
   perPage: 10,
@@ -217,14 +255,14 @@ async function exportToExcel() {
 }
 
 function searchList() {
+  saveCachedFilters({ ...filters })
   pagination.page = 1
   fetchProductList()
 }
 
 function resetSearch() {
-  filters['en_sku'] = ''
-  filters['cn_name'] = ''
-  filters['cat_id'] = null
+  clearCachedFilters()
+  Object.assign(filters, getDefaultFilters())
   pagination.page = 1
   fetchProductList()
 }
@@ -342,6 +380,9 @@ function openPreview(url) {
 watch(() => [pagination.page, pagination.perPage], fetchProductList)
 
 onMounted(async () => {
+  const cached = loadCachedFilters()
+  if (cached)
+    Object.assign(filters, cached)
   await fetchCategoryList()
   await fetchProductList()
 })

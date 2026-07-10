@@ -136,7 +136,7 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'http://192.168.0.176:8002',
+        target: 'http://192.168.0.176:8002', //http://192.168.0.176:8002
         changeOrigin: true,
         secure: false, // 目标是 HTTP，不需要 SSL 证书验证
       },
