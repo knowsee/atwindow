@@ -266,6 +266,7 @@ const sevenDayParsed = computed(() => {
 const globalKpis = computed(() => {
   const pkg = overview.value?.packages
   const fin = overview.value?.finance
+  const inv = overview.value?.inventory
   
   const totalSevenDay = sevenDayParsed.value.totalWaybill + sevenDayParsed.value.totalDropship
 
@@ -277,6 +278,14 @@ const globalKpis = computed(() => {
       hint: pkg ? t('pages.dashboard.kpis.packages.hint', { pending: pkg.pending ?? 0, arrived: pkg.arrived ?? 0 }) : '',
       icon: 'tabler-package',
       color: 'primary',
+    },
+    {
+      title: t('pages.dashboard.kpis.inventory.title'),
+      subtitle: t('pages.dashboard.kpis.inventory.subtitle'),
+      value: inv?.volume_m3 != null ? String(inv.volume_m3) : '—',
+      hint: inv?.volume_cm3 != null ? t('pages.dashboard.kpis.inventory.hint', { cm3: inv.volume_cm3 }) : '',
+      icon: 'tabler-box-margin',
+      color: 'info',
     },
     {
       title: t('pages.dashboard.kpis.balance.title'),
@@ -337,17 +346,26 @@ const sevenDayAnalysisPeriodText = computed(() => {
   return ''
 })
 
-const sevenDayDonutSeries = computed(() => sevenDayActiveSegments.value.map(s => s.value))
+let _sevenDayDonutSeriesCache = []
+const sevenDayDonutSeries = computed(() => {
+  const segs = sevenDayActiveSegments.value
+  if (!segs.length && _sevenDayDonutSeriesCache.length) return _sevenDayDonutSeriesCache
+  _sevenDayDonutSeriesCache = segs.map(s => s.value)
+  return _sevenDayDonutSeriesCache
+})
 
+let _sevenDayDonutOptionsCache = null
 const sevenDayDonutOptions = computed(() => {
+  const segs = sevenDayActiveSegments.value
+  if (!segs.length && _sevenDayDonutOptionsCache) return _sevenDayDonutOptionsCache
+
   const base = getDonutChartConfig(vuetifyTheme.current.value)
   const themeColors = vuetifyTheme.current.value.colors
-  const segs = sevenDayActiveSegments.value
   const labels = segs.map(s => s.label)
   const palette = [themeColors.warning, themeColors.success, themeColors.error, themeColors.info, themeColors.primary, themeColors.secondary]
   const colors = segs.map((_, i) => palette[i % palette.length])
 
-  return {
+  _sevenDayDonutOptionsCache = {
     ...base,
     chart: {
       type: 'donut',
@@ -388,23 +406,29 @@ const sevenDayDonutOptions = computed(() => {
       },
     ],
   }
+  return _sevenDayDonutOptionsCache
 })
 
+let _topSkuSeriesCache = []
 const topSkuSeries = computed(() => {
   const rows = warehouseData.value?.top_skus || []
-
-  return [{
+  if (!rows.length && _topSkuSeriesCache.length) return _topSkuSeriesCache
+  _topSkuSeriesCache = [{
     name: t('pages.dashboard.warehouse.topSkuSeries'),
     data: rows.map(r => Number(r.qty) || 0),
   }]
+  return _topSkuSeriesCache
 })
 
+let _topSkuOptionsCache = null
 const topSkuChartOptions = computed(() => {
-  const cfg = getBarChartConfig(vuetifyTheme.current.value)
   const rows = warehouseData.value?.top_skus || []
+  if (!rows.length && _topSkuOptionsCache) return _topSkuOptionsCache
+  
+  const cfg = getBarChartConfig(vuetifyTheme.current.value)
   const primary = vuetifyTheme.current.value.colors.primary
 
-  return {
+  _topSkuOptionsCache = {
     ...cfg,
     chart: {
       ...cfg.chart,
@@ -431,6 +455,7 @@ const topSkuChartOptions = computed(() => {
       },
     },
   }
+  return _topSkuOptionsCache
 })
 
 const topSkuChartHeight = computed(() => {
@@ -882,6 +907,7 @@ onMounted(async () => {
                 class="pb-1"
               >
                 <VueApexCharts
+                  :key="`top-skus-${warehouseData?.top_skus?.length || 0}-${topSkuSeries[0]?.data?.join(',') || 'empty'}`"
                   type="bar"
                   :height="topSkuChartHeight"
                   :options="topSkuChartOptions"
@@ -1201,7 +1227,7 @@ onMounted(async () => {
               class="d-flex justify-center"
             >
               <VueApexCharts
-                :key="sevenDayOrderSource"
+                :key="`seven-day-${sevenDayActiveTotal}-${sevenDayDonutSeries.join(',')}`"
                 type="donut"
                 height="300"
                 :options="sevenDayDonutOptions"

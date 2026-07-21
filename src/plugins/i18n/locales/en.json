@@ -229,6 +229,11 @@
           "subtitle": "Total warehouse flow",
           "hint": "Pending inbound {pending} · arrived {arrived}"
         },
+        "inventory": {
+          "title": "Inventory Volume",
+          "subtitle": "m³",
+          "hint": "Volume(cm³): {cm3}"
+        },
         "balance": {
           "title": "Account balance",
           "hint": "Monthly inflow {inflow} · outflow {outflow}"
@@ -320,6 +325,7 @@
         "title": "ATWindow Panoramic Analysis",
         "reportTitle": "ATWindow Comprehensive Analysis Report",
         "reportSubtitle": "Multi-dimensional deep insights based on {warehouse} ({count} SKUs)",
+        "generatedTip": "Based on different analysis plans, we will regularly perform large model analysis.\nFor accurate analysis, please ensure product data is complete to receive more precise results.",
         "updatedAt": "Updated at",
         "noData": "Pre-generated data for this user/warehouse not found. Please wait for the scheduled task to run or check parameters.",
         "loading": "Performing deep AI analysis and generating report, please wait...",
@@ -2000,6 +2006,11 @@
         "detail": "View basic product data, specifications, images, and sub SKUs"
       },
       "overlay": "Loading...",
+      "aiTip": {
+        "title": "💡 AI Analysis Tip",
+        "desc": "Completing key information such as [Basic information], [Specifications], and [Sale price] can significantly improve the accuracy of AI intelligent analysis. It is recommended to fill them out completely.",
+        "badge": "Used for AI Analysis"
+      },
       "sections": {
         "basic": "Basic information",
         "basicSubtitle": "Maintain product names, brand, and SKU.",
@@ -2030,7 +2041,7 @@
         "hsCode": "HS code",
         "origin": "Origin",
         "declaredValue": "Declared value",
-        "price1": "Sale price 1",
+        "price1": "Sale price",
         "price2": "Sale price 2",
         "price3": "Sale price 3",
         "cnDesc": "Chinese description",
@@ -2490,6 +2501,71 @@
         "compareOrderConfirm": "Confirm ordering with channel \"{channel}\"?\nRoute: {route} · Fee: {fee} {currency}",
         "submitConfirm": "Confirm ordering with channel \"{channel}\" (QID: {qid})?{route}",
         "selectedRoute": "\nSelected route: {route} / {fee} {currency}"
+      }
+    },
+    "dataCenterInventoryAnalysis": {
+      "title": "Inventory Analysis",
+      "subtitle": "Comprehensive overview and insights of your warehouse stock.",
+      "selectWarehouse": "Select Warehouse",
+      "dataGenerating": "Data is Generating",
+      "dataGeneratingDesc": "No inventory data found. Analytics are currently being generated, please try again later.",
+      "overview": {
+        "totalSkus": "Total SKUs Analyzed",
+        "generatedAt": "Generated at:",
+        "gmv60d": "60-Day GMV",
+        "inventoryValue": "Total Inventory Value",
+        "turnover60d": "Warehouse Turnover (60d)",
+        "outbound": "Outbound:",
+        "stock": "Stock:"
+      },
+      "charts": {
+        "salesTrends": "Sales Trends (Last 8 Weeks)",
+        "outboundUnits": "Outbound Units",
+        "gmv": "GMV ($)",
+        "inventoryAge": "Inventory Age Distribution (FIFO)",
+        "days0_30": "0-30 Days",
+        "days31_60": "31-60 Days",
+        "days61_90": "61-90 Days",
+        "days90Plus": "90+ Days"
+      },
+      "insights": {
+        "topCategories": "Top Categories",
+        "category": "Category",
+        "outbound60d": "Outbound (60d)",
+        "gmv60d": "GMV (60d)",
+        "skuAffinity": "SKU Affinity (Co-occurrences)",
+        "orders": "orders"
+      },
+      "table": {
+        "title": "SKU Analytics List",
+        "tabs": {
+          "all": "All SKUs",
+          "stagnant": "Stagnant Risks",
+          "critical": "Critical Shortages",
+          "topSellers": "Top Sellers"
+        },
+        "limit": "Limit",
+        "refresh": "Refresh",
+        "columns": {
+          "sku": "SKU",
+          "nameCat": "Name / Category",
+          "price": "Price",
+          "stockWarn": "Stock (Warn)",
+          "status": "Status",
+          "daysLeft": "Days Left",
+          "inOut60d": "60d In/Out",
+          "noSaleDays": "No Sale (Days)"
+        },
+        "noData": "No SKUs found for this criteria.",
+        "showingText": "Showing up to {limit} of {total} total matching SKUs.",
+        "status": {
+          "sufficient": "Sufficient",
+          "low": "Low Stock",
+          "critical": "Critical",
+          "out_of_stock": "Out of Stock",
+          "stagnant": "Stagnant",
+          "moderate": "Moderate"
+        }
       }
     }
   },

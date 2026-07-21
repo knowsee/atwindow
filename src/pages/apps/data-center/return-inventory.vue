@@ -226,6 +226,7 @@ onMounted(async () => {
         </AppQueryPanel>
 
         <VDataTableServer
+          disable-sort
           :headers="headers"
           :items="rows"
           :items-length="total"

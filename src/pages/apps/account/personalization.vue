@@ -23,17 +23,9 @@ const form = ref({
   fallbackLogisticsId: 0,
 })
 
-const logisticsList = [
-  { id: 27, name: 'USPS' },
-  { id: 50, name: 'UPS' },
-  { id: 52, name: 'FedEx 2Day' },
-  { id: 53, name: 'SPEEDX' },
-  { id: 56, name: 'Amazon' },
-  { id: 213, name: 'NEXTDAY' },
-  { id: 214, name: 'USPS-Y' },
-]
+import { DROP_SHIPPING_CHANNELS } from '@/views/apps/print-label/printLabelConfig'
 
-const logisticsItems = logisticsList.map(i => ({ title: i.name, value: i.id }))
+const logisticsItems = DROP_SHIPPING_CHANNELS.map(i => ({ title: i.title, value: i.value }))
 const optionalLogisticsItems = computed(() => [{ title: t('pages.accountPersonalization.optionalDisabled'), value: 0 }, ...logisticsItems])
 
 function toast(text, color = 'info') {
@@ -114,6 +106,7 @@ const subLogsLoading = ref(false)
 const subLogsTotal = ref(0)
 const subLogsPage = ref(1)
 const subLogsLimit = 5
+const subscribePlans = ref([])
 
 const isSubscribing = ref(false)
 const subConfirmDialog = ref({
@@ -123,6 +116,17 @@ const subConfirmDialog = ref({
   message: '',
   title: ''
 })
+
+async function loadSubscribePlans() {
+  try {
+    const res = await $api('/ordernewapi/aiSubscribePlans', { method: 'GET' })
+    if ((Number(res?.code) === 1 || Number(res?.code) === 200) && res.data?.plans) {
+      subscribePlans.value = res.data.plans
+    }
+  } catch (e) {
+    console.error('Failed to load subscription plans', e)
+  }
+}
 
 async function loadSubStatus() {
   try {
@@ -166,8 +170,9 @@ function requestChangeTier(tier) {
   const nextMon = getNextMondayText()
   const currentCycleEnd = subStatus.value.billing_cycle_end || subStatus.value.next_billing_date || '—'
   
-  const targetName = t(`pages.accountPersonalization.aiSubscription.tierName.${target}`)
-  const targetPriceVal = t(`pages.accountPersonalization.aiSubscription.priceVal.${target}`)
+  const plan = subscribePlans.value.find(p => Number(p.tier) === target)
+  const targetName = plan?.tier_name || t(`pages.accountPersonalization.aiSubscription.tierName.${target}`)
+  const targetPriceVal = plan ? `$${plan.price}` : t(`pages.accountPersonalization.aiSubscription.priceVal.${target}`)
   
   let confirmMsg = ''
   if (isUpgrade) {
@@ -240,8 +245,23 @@ function formatDate(ts) {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}`
 }
 
+function getPlanInfo(tier) {
+  const plan = subscribePlans.value.find(p => Number(p.tier) === Number(tier))
+  if (plan) {
+    return {
+      name: plan.tier_name || t(`pages.accountPersonalization.aiSubscription.tierName.${tier}`),
+      price: Number(plan.price) === 0 ? t(`pages.accountPersonalization.aiSubscription.price.1`) : `$${plan.price}/mo`
+    }
+  }
+  return {
+    name: t(`pages.accountPersonalization.aiSubscription.tierName.${tier}`),
+    price: t(`pages.accountPersonalization.aiSubscription.price.${tier}`)
+  }
+}
+
 onMounted(async () => {
   await loadConfig()
+  await loadSubscribePlans()
   await loadSubStatus()
   await loadSubLogs(1)
 })
@@ -456,10 +476,10 @@ onMounted(async () => {
               </div>
               <div class="d-flex align-center gap-2">
                 <span class="text-h6 font-weight-bold text-primary">
-                  {{ $t(`pages.accountPersonalization.aiSubscription.tierName.${subStatus.current_tier || 1}`) }}
+                  {{ getPlanInfo(subStatus.current_tier || 1).name }}
                 </span>
                 <VChip color="primary" variant="tonal" size="small">
-                  {{ $t(`pages.accountPersonalization.aiSubscription.price.${subStatus.current_tier || 1}`) }}
+                  {{ getPlanInfo(subStatus.current_tier || 1).price }}
                 </VChip>
               </div>
               <div v-if="subStatus.next_billing_date && Number(subStatus.current_tier) > 1" class="text-caption text-medium-emphasis mt-2">
@@ -476,10 +496,10 @@ onMounted(async () => {
               </div>
               <div class="d-flex align-center gap-2">
                 <span class="text-h6 font-weight-bold text-warning">
-                  {{ $t(`pages.accountPersonalization.aiSubscription.tierName.${subStatus.next_tier}`) }}
+                  {{ getPlanInfo(subStatus.next_tier).name }}
                 </span>
                 <VChip color="warning" variant="tonal" size="small">
-                  {{ $t(`pages.accountPersonalization.aiSubscription.price.${subStatus.next_tier}`) }}
+                  {{ getPlanInfo(subStatus.next_tier).price }}
                 </VChip>
               </div>
               <div v-if="subStatus.active_from" class="text-caption text-medium-emphasis mt-2">
@@ -490,10 +510,10 @@ onMounted(async () => {
         </VRow>
         
         <!-- Pricing Tiers Grid -->
-        <VRow class="mb-8">
+        <VRow class="mb-8" v-if="subscribePlans.length">
           <VCol
-            v-for="tier in [1, 2, 3]"
-            :key="tier"
+            v-for="plan in subscribePlans"
+            :key="plan.tier"
             cols="12"
             md="4"
           >
@@ -501,26 +521,26 @@ onMounted(async () => {
               border
               class="pricing-card h-100 d-flex flex-column"
               :class="{
-                'pricing-card--active': subStatus && Number(subStatus.current_tier || 1) === tier,
-                'pricing-card--pending': subStatus && Number(subStatus.next_tier || 1) === tier && Number(subStatus.current_tier || 1) !== tier
+                'pricing-card--active': subStatus && Number(subStatus.current_tier || 1) === Number(plan.tier),
+                'pricing-card--pending': subStatus && Number(subStatus.next_tier || 1) === Number(plan.tier) && Number(subStatus.current_tier || 1) !== Number(plan.tier)
               }"
             >
               <VCardItem class="text-center pt-6 pb-2">
                 <VIcon
-                  :icon="tier === 1 ? 'tabler-gift' : (tier === 2 ? 'tabler-sparkles' : 'tabler-crown')"
+                  :icon="Number(plan.tier) === 1 ? 'tabler-gift' : (Number(plan.tier) === 2 ? 'tabler-sparkles' : 'tabler-crown')"
                   size="36"
                   class="mb-3 text-primary"
                 />
                 <VCardTitle class="text-h6 font-weight-bold">
-                  {{ $t(`pages.accountPersonalization.aiSubscription.tierName.${tier}`) }}
+                  {{ plan.tier_name || $t(`pages.accountPersonalization.aiSubscription.tierName.${plan.tier}`) }}
                 </VCardTitle>
                 <div class="text-h5 font-weight-black text-primary mt-2">
-                  {{ $t(`pages.accountPersonalization.aiSubscription.price.${tier}`) }}
+                  {{ Number(plan.price) === 0 ? $t(`pages.accountPersonalization.aiSubscription.price.1`) : `$${plan.price}/mo` }}
                 </div>
               </VCardItem>
               
               <VCardText class="text-center flex-grow-1 px-4 py-3 text-body-2 text-medium-emphasis">
-                {{ $t(`pages.accountPersonalization.aiSubscription.tierDesc.${tier}`) }}
+                {{ plan.description || $t(`pages.accountPersonalization.aiSubscription.tierDesc.${plan.tier}`) }}
               </VCardText>
               
               <VDivider />
@@ -528,7 +548,7 @@ onMounted(async () => {
               <div class="pa-4 text-center">
                 <!-- Current Plan -->
                 <VBtn
-                  v-if="subStatus && Number(subStatus.current_tier || 1) === tier"
+                  v-if="subStatus && Number(subStatus.current_tier || 1) === Number(plan.tier)"
                   color="success"
                   variant="flat"
                   block
@@ -540,7 +560,7 @@ onMounted(async () => {
                 
                 <!-- Booked Plan -->
                 <VBtn
-                  v-else-if="subStatus && Number(subStatus.next_tier || 1) === tier"
+                  v-else-if="subStatus && Number(subStatus.next_tier || 1) === Number(plan.tier)"
                   color="warning"
                   variant="flat"
                   block
@@ -556,7 +576,7 @@ onMounted(async () => {
                   color="primary"
                   variant="elevated"
                   block
-                  @click="requestChangeTier(tier)"
+                  @click="requestChangeTier(Number(plan.tier))"
                 >
                   {{ $t('pages.accountPersonalization.aiSubscription.actions.subscribe') }}
                 </VBtn>

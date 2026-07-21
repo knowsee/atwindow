@@ -365,6 +365,7 @@ function resolveStatus(status) {
           </AppQueryPanel>
 
           <VDataTableServer
+            disable-sort
             v-model:items-per-page="itemsPerPage"
             v-model:page="page"
             :headers="headers"

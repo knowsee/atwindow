@@ -389,7 +389,7 @@ onMounted(loadDetail)
             </VCard>
 
             <VAlert
-              v-if="detail.fail_reason"
+              v-if="detail.fail_reason && Number(detail.status) !== 1"
               type="error"
               variant="tonal"
               border="start"

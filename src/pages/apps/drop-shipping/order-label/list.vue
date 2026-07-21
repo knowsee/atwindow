@@ -310,6 +310,7 @@ watch([page, itemsPerPage], loadList, { immediate: true })
       </AppQueryPanel>
 
       <VDataTableServer
+        disable-sort
         :headers="headers"
         :items="rows"
         :items-length="total"

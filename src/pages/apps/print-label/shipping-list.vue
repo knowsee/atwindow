@@ -711,6 +711,7 @@ watch([page, itemsPerPage], loadList, { immediate: true })
       </Transition>
 
       <VDataTableServer
+        disable-sort
         v-model="selectedIds"
         :headers="headers"
         :items="rows"

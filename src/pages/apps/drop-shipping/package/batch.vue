@@ -21,9 +21,15 @@ const warehousePersistReady = ref(false)
 const fileInputRef = ref()
 const { t } = useI18n({ useScope: 'global' })
 
+const pdfTypeOptions = [
+  { title: 'A4', value: 'A' },
+  { title: '4 × 6 in', value: 'B' },
+]
+
 const form = ref({
   warehouseId: null,
   excelFile: null,
+  pdfType: 'A',
 })
 
 function toast(text, color = 'info') {
@@ -67,6 +73,8 @@ async function submitBatch() {
     body.append('file', form.value.excelFile)
     if (form.value.warehouseId)
       body.append('warehouse_id', String(form.value.warehouseId))
+    if (form.value.pdfType)
+      body.append('pdf_type', String(form.value.pdfType))
 
     const res = await $api('/package/batchruku', {
       method: 'POST',
@@ -161,6 +169,19 @@ const currentWarehouseInfo = computed(() =>
               item-value="value"
               :label="$t('pages.dropShippingPackageBatch.settings.warehouse')"
               clearable
+              density="comfortable"
+            />
+          </VCol>
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <AppSelect
+              v-model="form.pdfType"
+              :items="pdfTypeOptions"
+              item-title="title"
+              item-value="value"
+              :label="$t('pages.dropShippingPackageCreate.fields.pdfType')"
               density="comfortable"
             />
           </VCol>

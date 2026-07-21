@@ -229,6 +229,11 @@
           "subtitle": "累计在库流程",
           "hint": "待入库 {pending} · 已到库 {arrived}"
         },
+        "inventory": {
+          "title": "库存体积",
+          "subtitle": "m³",
+          "hint": "体积(cm³): {cm3}"
+        },
         "balance": {
           "title": "账户余额",
           "hint": "本月流入 {inflow} · 流出 {outflow}"
@@ -320,6 +325,7 @@
         "title": "ATWindow 全景分析",
         "reportTitle": "ATWindow 综合分析报告",
         "reportSubtitle": "基于 {warehouse} ({count} SKUs) 的多维度深度洞察",
+        "generatedTip": "根据不同分析套餐我们会定期进行大模型分析。\n为了分析准确，请务必完善产品资料，我们将提供更加精准的分析结果。",
         "updatedAt": "更新于",
         "noData": "未找到该用户/仓库的预生成数据，请等待定时任务生成或检查参数。",
         "loading": "正在进行 AI 深度分析并生成报告，请稍候...",
@@ -2000,6 +2006,11 @@
         "detail": "查看产品基础资料、规格参数、图片及子 SKU"
       },
       "overlay": "加载中...",
+      "aiTip": {
+        "title": "💡 AI 智能分析提示",
+        "desc": "完善【基础信息】、【规格参数】以及【销售价】等关键资料，可大幅提升 AI 智能分析的精准度，建议您尽可能填写完整。",
+        "badge": "参与 AI 分析"
+      },
       "sections": {
         "basic": "基础信息",
         "basicSubtitle": "维护产品名称、品牌与 SKU。",
@@ -2030,7 +2041,7 @@
         "hsCode": "海关编码",
         "origin": "原产地",
         "declaredValue": "申报价值",
-        "price1": "销售价1",
+        "price1": "销售价",
         "price2": "销售价2",
         "price3": "销售价3",
         "cnDesc": "中文描述",
@@ -2490,6 +2501,71 @@
         "compareOrderConfirm": "确认通过渠道「{channel}」下单？\n线路：{route} · 费用：{fee} {currency}",
         "submitConfirm": "确认通过渠道「{channel}」（QID: {qid}）下单？{route}",
         "selectedRoute": "\n已选线路：{route} / {fee} {currency}"
+      }
+    },
+    "dataCenterInventoryAnalysis": {
+      "title": "库存分析",
+      "subtitle": "全面了解您的仓库库存概览和深度洞察。",
+      "selectWarehouse": "选择仓库",
+      "dataGenerating": "数据正在生成中",
+      "dataGeneratingDesc": "暂无库存数据，系统正在为您生成分析报告，请稍后再试。",
+      "overview": {
+        "totalSkus": "参与分析的 SKU 总数",
+        "generatedAt": "生成时间:",
+        "gmv60d": "近60天 GMV",
+        "inventoryValue": "当前库存总价值",
+        "turnover60d": "仓库流转率 (60天)",
+        "outbound": "出库:",
+        "stock": "在库:"
+      },
+      "charts": {
+        "salesTrends": "销售趋势 (近8周)",
+        "outboundUnits": "出库件数",
+        "gmv": "GMV ($)",
+        "inventoryAge": "库存账龄分布 (FIFO)",
+        "days0_30": "0-30 天",
+        "days31_60": "31-60 天",
+        "days61_90": "61-90 天",
+        "days90Plus": "90 天以上"
+      },
+      "insights": {
+        "topCategories": "热门品类排行",
+        "category": "品类",
+        "outbound60d": "出库件数 (60天)",
+        "gmv60d": "GMV (60天)",
+        "skuAffinity": "商品高频共购组合 (SKU 连带)",
+        "orders": "单"
+      },
+      "table": {
+        "title": "SKU 数据明细",
+        "tabs": {
+          "all": "全部商品",
+          "stagnant": "滞销风险",
+          "critical": "缺货警报",
+          "topSellers": "热销畅销"
+        },
+        "limit": "每页条数",
+        "refresh": "刷新",
+        "columns": {
+          "sku": "SKU",
+          "nameCat": "商品名称 / 品类",
+          "price": "单价",
+          "stockWarn": "当前库存 (预警)",
+          "status": "状态",
+          "daysLeft": "可支撑天数",
+          "inOut60d": "60天 入/出",
+          "noSaleDays": "未出单天数"
+        },
+        "noData": "没有符合条件的商品数据。",
+        "showingText": "最多显示 {limit} 条数据，共匹配到 {total} 个 SKU。",
+        "status": {
+          "sufficient": "库存充足",
+          "low": "库存较低",
+          "critical": "缺货预警",
+          "out_of_stock": "已断货",
+          "stagnant": "滞销库存",
+          "moderate": "库存适中"
+        }
       }
     }
   },

@@ -291,6 +291,7 @@ onMounted(loadCountries)
         </div>
 
         <VDataTable
+          disable-sort
           :headers="headers"
           :items="rows"
           :loading="loading"

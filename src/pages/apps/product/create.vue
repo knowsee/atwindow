@@ -337,9 +337,11 @@ async function onPickFiles(event) {
 }
 
 function validateForm() {
-  const skuError = validateSkuValue(form.en_sku)
-  if (skuError)
-    return skuError
+  if (!isEditLike.value) {
+    const skuError = validateSkuValue(form.en_sku)
+    if (skuError)
+      return skuError
+  }
   if (!form.cn_name)
     return t('pages.productCreate.messages.cnNameRequired')
   if (!form.en_name)
@@ -479,10 +481,34 @@ onMounted(async () => {
         </VCard>
       </VOverlay>
 
+      <VAlert
+        color="primary"
+        variant="tonal"
+        class="mb-6"
+        icon="tabler-wand"
+        closable
+      >
+        <template #title>
+          {{ $t('pages.productCreate.aiTip.title') }}
+        </template>
+        {{ $t('pages.productCreate.aiTip.desc') }}
+      </VAlert>
+
       <PrintLabelSectionCard
         :title="$t('pages.productCreate.sections.basic')"
         :subtitle="$t('pages.productCreate.sections.basicSubtitle')"
       >
+        <template #append>
+          <VChip
+            color="primary"
+            variant="tonal"
+            size="small"
+            class="font-weight-medium"
+          >
+            <VIcon icon="tabler-wand" size="16" class="mr-1" />
+            {{ $t('pages.productCreate.aiTip.badge') }}
+          </VChip>
+        </template>
         <VRow>
           <VCol
             cols="12"
@@ -560,6 +586,17 @@ onMounted(async () => {
         :title="$t('pages.productCreate.sections.spec')"
         :subtitle="$t('pages.productCreate.sections.specSubtitle')"
       >
+        <template #append>
+          <VChip
+            color="primary"
+            variant="tonal"
+            size="small"
+            class="font-weight-medium"
+          >
+            <VIcon icon="tabler-wand" size="16" class="mr-1" />
+            {{ $t('pages.productCreate.aiTip.badge') }}
+          </VChip>
+        </template>
         <VRow>
           <VCol
             cols="12"
@@ -704,7 +741,7 @@ onMounted(async () => {
             <AppTextField
               v-model.number="form.price1"
               type="number"
-              :label="$t('pages.productCreate.fields.price1')"
+              :label="`${$t('pages.productCreate.fields.price1')} (${$t('pages.productCreate.aiTip.badge')})`"
               :disabled="isDetail"
             />
           </VCol>

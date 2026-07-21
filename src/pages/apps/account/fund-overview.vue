@@ -769,6 +769,7 @@ onBeforeUnmount(() => stopWxPolling())
       </AppQueryPanel>
 
       <VDataTable
+        disable-sort
         :headers="tableHeaders"
         :items="financeRows"
         :loading="loading"
@@ -1044,13 +1045,17 @@ onBeforeUnmount(() => stopWxPolling())
                   variant="accordion"
                 >
                   <VExpansionPanel value="boa">
-                    <VExpansionPanelTitle>Bank of America</VExpansionPanelTitle>
+                    <VExpansionPanelTitle>WellsFargo</VExpansionPanelTitle>
                     <VExpansionPanelText>
-                      Company: Atwindow LLC<br>
-                      Account: 485015819047<br>
-                      ABA Number: 026009593<br>
-                      FEDWIRE: 323070380<br>
-                      Swift: BOFAUS3N
+                      SWIFTCode: WFBIUS6S<br>
+                      FEDWIRE=ABARouting:<br>
+                      121000248<br>
+                      Account:2400781338<br>
+                      Bank: WellsFargo<br>
+                      BeneficiaryBankAddress:<br>
+                      7200NEButlerSt<br>
+                      Hi11sboro,0R97124<br>
+                      Companyname:WinswayLLC<br>
                     </VExpansionPanelText>
                   </VExpansionPanel>
                   <VExpansionPanel value="zelle">

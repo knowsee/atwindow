@@ -88,7 +88,6 @@ const headers = computed(() => [
   { title: t('pages.productList.headers.lwh'), key: 'lwh', width: 170, align: 'center' },
   { title: t('pages.productList.headers.origin'), key: 'original_places', width: 130 },
   { title: t('pages.productList.headers.category'), key: 'cat_name', width: 130 },
-  { title: t('pages.productList.headers.stock'), key: 'number', width: 100, align: 'end' },
   { title: t('pages.productList.headers.image'), key: 'img_url', width: 100, align: 'center' },
   { title: t('pages.productList.headers.status'), key: 'status', width: 100, align: 'center' },
   { title: t('pages.productList.headers.actions'), key: 'actions', width: 140, align: 'end', sortable: false },
@@ -222,7 +221,6 @@ async function exportToExcel() {
       'lwh': `${item.length || 0}*${item.width || 0}*${item.height || 0}`,
       'original_places': item.original_places ?? '',
       'cat_name': item.cat_name ?? '',
-      'number': item.number ?? '',
       'img_url': item.img_url ?? '',
       'status': item.status ?? '',
     }))
@@ -238,7 +236,6 @@ async function exportToExcel() {
         { key: 'lwh', title: t('pages.productList.headers.lwh') },
         { key: 'original_places', title: t('pages.productList.headers.origin') },
         { key: 'cat_name', title: t('pages.productList.headers.category') },
-        { key: 'number', title: t('pages.productList.headers.stock') },
         { key: 'img_url', title: t('pages.productList.headers.imageUrl') },
         { key: 'status', title: t('pages.productList.headers.status') },
       ],
@@ -495,6 +492,7 @@ onMounted(async () => {
       </AppQueryPanel>
 
       <VDataTable
+        disable-sort
         v-model="selectedRows"
         :headers="headers"
         :items="tableRows"

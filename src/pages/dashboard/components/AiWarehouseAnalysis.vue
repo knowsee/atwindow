@@ -226,7 +226,8 @@ const globalOverviewCharts = computed(() => {
   const charts = aiData.value?.analysis?.chartData?.globalOverview || []
   return charts.map(chart => ({
     title: chart.title,
-    options: getDynamicChartOptions(chart, currentThemeColors.value)
+    options: getDynamicChartOptions(chart, currentThemeColors.value),
+    rawChartInfo: chart
   }))
 })
 
@@ -234,9 +235,37 @@ const specializedCharts = computed(() => {
   const charts = aiData.value?.analysis?.chartData?.specializedCharts || []
   return charts.map(chart => ({
     title: chart.title,
-    options: getDynamicChartOptions(chart, currentThemeColors.value)
+    options: getDynamicChartOptions(chart, currentThemeColors.value),
+    rawChartInfo: chart
   }))
 })
+
+const skuDialog = ref({
+  show: false,
+  title: '',
+  skus: []
+})
+
+const handleChartClick = (params, chartObj) => {
+  const chartInfo = chartObj.rawChartInfo
+  if (!chartInfo || !chartInfo.datasets) return
+  
+  const datasetIndex = params.seriesIndex || 0
+  const dataIndex = params.dataIndex
+  
+  const dataset = chartInfo.datasets[datasetIndex]
+  if (!dataset) return
+  
+  const skus = dataset.skuLists ? dataset.skuLists[dataIndex] : []
+  
+  if (skus && skus.length > 0) {
+    skuDialog.value = {
+      show: true,
+      title: `${params.name || '该分类'} 包含的 SKU`,
+      skus: skus
+    }
+  }
+}
 </script>
 
 <template>
@@ -384,7 +413,7 @@ const specializedCharts = computed(() => {
                   </VCardTitle>
                 </VCardItem>
                 <VCardText>
-                  <VChart class="chart" :option="chart.options" autoresize />
+                  <VChart class="chart" :option="chart.options" autoresize @click="handleChartClick($event, chart)" />
                 </VCardText>
               </VCard>
             </VCol>
@@ -411,8 +440,20 @@ const specializedCharts = computed(() => {
                   {{ Number(subStatus.current_tier || 1) === 1 ? 'FREE' : (Number(subStatus.current_tier) === 2 ? 'STANDARD' : 'PRO') }}
                 </VChip>
               </VCardTitle>
-              <VCardSubtitle class="text-wrap mt-1">
-                {{ $t('pages.dashboard.aiAnalysis.reportSubtitle', { warehouse: aiData.warehouse, count: aiData.sku_count }) }}
+              <VCardSubtitle class="text-wrap mt-1 d-flex flex-wrap justify-space-between align-center gap-2 w-100">
+                <span>{{ $t('pages.dashboard.aiAnalysis.reportSubtitle', { warehouse: aiData.warehouse, count: aiData.sku_count }) }}</span>
+                <div
+                  v-if="aiData.generated_at"
+                  class="text-caption text-medium-emphasis d-flex align-center gap-1 font-weight-regular"
+                >
+                  <span>{{ aiData.generated_at }}</span>
+                  <VTooltip location="top" max-width="250">
+                    <template #activator="{ props }">
+                      <VIcon v-bind="props" icon="tabler-info-circle" size="14" />
+                    </template>
+                    <span style="white-space: pre-line;">{{ $t('pages.dashboard.aiAnalysis.generatedTip') }}</span>
+                  </VTooltip>
+                </div>
               </VCardSubtitle>
             </VCardItem>
             <VDivider />
@@ -424,10 +465,11 @@ const specializedCharts = computed(() => {
               
               <!-- AI Streaming Indicator -->
               <div
-                v-if="loading && loadingPhase === 'streaming'"
+                v-if="loading && (loadingPhase === 'streaming' || loadingPhase === 'rendering')"
                 class="mt-4 d-flex align-center gap-2 text-primary text-caption font-weight-bold"
               >
-                <span class="pulse-text">AI 正在飞速撰写报告中...</span>
+                <span v-if="loadingPhase === 'streaming'" class="pulse-text">AI 正在飞速撰写报告中...</span>
+                <span v-else-if="loadingPhase === 'rendering'" class="pulse-text">正在渲染多维深度图表...</span>
               </div>
             </VCardText>
           </VCard>
@@ -449,7 +491,7 @@ const specializedCharts = computed(() => {
                   </VCardTitle>
                 </VCardItem>
                 <VCardText>
-                  <VChart class="chart" :option="chart.options" autoresize />
+                  <VChart class="chart" :option="chart.options" autoresize @click="handleChartClick($event, chart)" />
                 </VCardText>
               </VCard>
             </VCol>
@@ -630,6 +672,58 @@ const specializedCharts = computed(() => {
             @click="executeSubscribe"
           >
             确认付款
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- SKU List Dialog -->
+    <VDialog
+      v-model="skuDialog.show"
+      max-width="550"
+      scrollable
+    >
+      <VCard class="rounded-lg">
+        <VCardItem class="pb-2 pt-6 px-6">
+          <VCardTitle class="text-h6 font-weight-bold d-flex align-center gap-2">
+            <VIcon icon="tabler-box" color="primary" />
+            {{ skuDialog.title }}
+          </VCardTitle>
+          <VBtn
+            icon
+            variant="text"
+            size="small"
+            class="position-absolute right-0 top-0 mt-3 mr-3"
+            @click="skuDialog.show = false"
+          >
+            <VIcon icon="tabler-x" />
+          </VBtn>
+        </VCardItem>
+        <VDivider class="mt-2" />
+        <VCardText class="pa-0" style="max-height: 400px;">
+          <VList lines="one" class="px-2">
+            <VListItem
+              v-for="(sku, index) in skuDialog.skus"
+              :key="index"
+              :title="sku"
+              class="rounded my-1"
+            >
+              <template #prepend>
+                <VAvatar color="primary" variant="tonal" size="32" class="mr-3">
+                  <span class="text-caption font-weight-bold">{{ index + 1 }}</span>
+                </VAvatar>
+              </template>
+            </VListItem>
+          </VList>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4 d-flex justify-end">
+          <VBtn
+            color="primary"
+            variant="elevated"
+            @click="skuDialog.show = false"
+          >
+            关闭
           </VBtn>
         </VCardActions>
       </VCard>

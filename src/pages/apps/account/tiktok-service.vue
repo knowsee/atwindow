@@ -786,13 +786,37 @@ watch(activeTab, val => {
             <p class="text-body-1 text-medium-emphasis mb-0">
               {{ $t('pages.tiktokService.shops.empty') }}
             </p>
-            <VBtn
-              color="primary"
-              prepend-icon="tabler-link"
-              @click="goToAuthManagement"
-            >
-              {{ $t('pages.tiktokService.shops.goAuth') }}
-            </VBtn>
+            <VMenu location="bottom center">
+              <template #activator="{ props: menuProps }">
+                <VBtn
+                  color="primary"
+                  prepend-icon="tabler-link"
+                  v-bind="menuProps"
+                >
+                  {{ $t('pages.tiktokService.shops.goAuth') }}
+                  <VIcon
+                    end
+                    icon="tabler-chevron-down"
+                    size="16"
+                  />
+                </VBtn>
+              </template>
+              <VList
+                density="compact"
+                min-width="180"
+              >
+                <VListItem
+                  prepend-icon="tabler-map-pin"
+                  :title="$t('pages.tiktokService.usSite')"
+                  @click="openAuthUrl('US')"
+                />
+                <VListItem
+                  prepend-icon="tabler-map-pin"
+                  :title="$t('pages.tiktokService.ukSite')"
+                  @click="openAuthUrl('EU')"
+                />
+              </VList>
+            </VMenu>
           </VCardText>
         </VCard>
 
@@ -1084,6 +1108,7 @@ watch(activeTab, val => {
 
           <div class="tiktok-table-scroll tiktok-log-table">
             <VDataTable
+              disable-sort
               :headers="logColumns"
               :items="logs"
               :loading="logsLoading"

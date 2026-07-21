@@ -26,7 +26,6 @@ export const LOGISTICS_CHANNELS = [
 
   // ============ 共用（一件代发 + 运单模块） ============
   { title: 'UPS Ground', name: 'UPS', value: 50, qid: 50, provider: 50, logo: '/images/translogo/ups.png', currency: 'USD', senderCountryLock: 'US', receiverCountryLock: 'US', senderNeedBeianAddr: false, valueRequired: false, needRouteSelect: false, cnNameRequired: false, modules: ['drop-shipping', 'print-label'] },
-  { title: 'Amazon', name: '亚马逊物流', value: 56, qid: 56, provider: 56, logo: '/images/translogo/amazon.png', currency: 'USD', senderCountryLock: 'US', receiverCountryLock: 'US', senderNeedBeianAddr: false, valueRequired: false, needRouteSelect: false, cnNameRequired: false, modules: ['drop-shipping', 'print-label'] },
   { title: 'UNI', name: 'UniUni', value: 211, qid: 211, provider: 211, logo: '/images/translogo/uniuni.png', currency: 'USD', senderCountryLock: 'US', receiverCountryLock: null, senderNeedBeianAddr: false, valueRequired: false, needRouteSelect: false, cnNameRequired: false, modules: ['drop-shipping', 'print-label'] },
 ]
 

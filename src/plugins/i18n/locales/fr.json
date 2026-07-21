@@ -320,6 +320,7 @@
         "title": "Analyse Panoramique ATWindow",
         "reportTitle": "Rapport d'Analyse Complet ATWindow",
         "reportSubtitle": "Informations approfondies multidimensionnelles basées sur {warehouse} ({count} SKUs)",
+        "generatedTip": "En fonction des différents forfaits d'analyse, nous effectuerons régulièrement des analyses de grands modèles.\nPour une analyse précise, veuillez vous assurer que les données du produit sont complètes afin de recevoir des résultats plus précis.",
         "updatedAt": "Mis à jour à",
         "noData": "Les données pré-générées pour cet utilisateur/entrepôt sont introuvables. Veuillez attendre l'exécution de la tâche planifiée ou vérifier les paramètres.",
         "loading": "Analyse approfondie de l'IA en cours et génération du rapport, veuillez patienter...",
@@ -2000,6 +2001,11 @@
         "detail": "Consultez les données de base, spécifications, images et sous-SKU"
       },
       "overlay": "Chargement...",
+      "aiTip": {
+        "title": "💡 Conseil d'Analyse IA",
+        "desc": "Compléter les informations clés telles que [Informations de base], [Spécifications] et [Prix de vente] peut améliorer considérablement la précision de l'analyse intelligente de l'IA. Il est recommandé de les remplir entièrement.",
+        "badge": "Utilisé pour l'IA"
+      },
       "sections": {
         "basic": "Informations de base",
         "basicSubtitle": "Gérer les noms, la marque et le SKU du produit.",
@@ -2030,7 +2036,7 @@
         "hsCode": "Code HS",
         "origin": "Origine",
         "declaredValue": "Valeur déclarée",
-        "price1": "Prix de vente 1",
+        "price1": "Prix de vente",
         "price2": "Prix de vente 2",
         "price3": "Prix de vente 3",
         "cnDesc": "Description chinoise",
@@ -2490,6 +2496,71 @@
         "compareOrderConfirm": "Confirmer la commande via le canal « {channel} » ?\nRoute : {route} · Frais : {fee} {currency}",
         "submitConfirm": "Confirmer la commande via le canal « {channel} » (QID : {qid}) ?{route}",
         "selectedRoute": "\nRoute sélectionnée : {route} / {fee} {currency}"
+      }
+    },
+    "dataCenterInventoryAnalysis": {
+      "title": "Analyse des Stocks",
+      "subtitle": "Aperçu complet et informations sur le stock de votre entrepôt.",
+      "selectWarehouse": "Sélectionner l'entrepôt",
+      "dataGenerating": "Génération de données en cours",
+      "dataGeneratingDesc": "Aucune donnée d'inventaire trouvée. Les analyses sont en cours de génération, veuillez réessayer plus tard.",
+      "overview": {
+        "totalSkus": "Total des SKU analysés",
+        "generatedAt": "Généré à:",
+        "gmv60d": "GMV 60 jours",
+        "inventoryValue": "Valeur totale du stock",
+        "turnover60d": "Taux de rotation (60j)",
+        "outbound": "Sortant:",
+        "stock": "Stock:"
+      },
+      "charts": {
+        "salesTrends": "Tendances des ventes (8 dernières semaines)",
+        "outboundUnits": "Unités sortantes",
+        "gmv": "GMV ($)",
+        "inventoryAge": "Répartition de l'âge du stock (FIFO)",
+        "days0_30": "0-30 jours",
+        "days31_60": "31-60 jours",
+        "days61_90": "61-90 jours",
+        "days90Plus": "Plus de 90 jours"
+      },
+      "insights": {
+        "topCategories": "Top Catégories",
+        "category": "Catégorie",
+        "outbound60d": "Sortant (60j)",
+        "gmv60d": "GMV (60j)",
+        "skuAffinity": "Affinité SKU (Co-occurrences)",
+        "orders": "commandes"
+      },
+      "table": {
+        "title": "Liste des analyses SKU",
+        "tabs": {
+          "all": "Tous les SKU",
+          "stagnant": "Risques de stagnation",
+          "critical": "Pénuries critiques",
+          "topSellers": "Meilleures ventes"
+        },
+        "limit": "Limite",
+        "refresh": "Rafraîchir",
+        "columns": {
+          "sku": "SKU",
+          "nameCat": "Nom / Catégorie",
+          "price": "Prix",
+          "stockWarn": "Stock (Alerte)",
+          "status": "Statut",
+          "daysLeft": "Jours restants",
+          "inOut60d": "60j Entrée/Sortie",
+          "noSaleDays": "Jours sans vente"
+        },
+        "noData": "Aucun SKU trouvé pour ces critères.",
+        "showingText": "Affichage jusqu'à {limit} de {total} SKU correspondants.",
+        "status": {
+          "sufficient": "Suffisant",
+          "low": "Stock faible",
+          "critical": "Critique",
+          "out_of_stock": "Rupture de stock",
+          "stagnant": "Stagnant",
+          "moderate": "Modéré"
+        }
       }
     }
   },
